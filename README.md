@@ -1,3 +1,5 @@
+# BrainLes: A brain imaging toolkit beyond BraTS and lesion segmentation.
+
 # niftyreg_preprocessor
 does the following
 * co-registration
