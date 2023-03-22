@@ -68,7 +68,7 @@ def niftyreg_caller(
 
         with open(log_file, "a") as file:
             file.write("\n" + "************************************************" + "\n")
-            file.write("niftyreg CALL: " + readableCmd + "\n")
+            file.write("CALL: " + readableCmd + "\n")
             file.write("************************************************" + "\n")
             file.write("************************************************" + "\n")
             file.write("start time: " + starttime + "\n")
@@ -135,7 +135,7 @@ def skullstrip(input_image, masked_image, log_file, mode):
 
         with open(log_file, "a") as file:
             file.write("\n" + "************************************************" + "\n")
-            file.write("HD-BET CALL: " + readableCmd + "\n")
+            file.write("CALL: " + readableCmd + "\n")
             file.write("************************************************" + "\n")
             file.write("************************************************" + "\n")
             file.write("start time: " + starttime + "\n")
