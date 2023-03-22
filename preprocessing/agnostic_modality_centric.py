@@ -10,7 +10,7 @@ import shutil
 def modality_centric_atlas_preprocessing(
     primary_modality: Modality,
     moving_modalities: list[Modality],
-    atlas_image: str = "atlas/t1_brats_space.nii",
+    atlas_image: str = "preprocessing/atlas/t1_brats_space.nii",
     bet_mode: str = "gpu",
     limit_cuda_visible_devices: str = None,
     keep_coregistration: str = None,
@@ -163,43 +163,4 @@ def modality_centric_atlas_preprocessing(
 
 
 if __name__ == "__main__":
-    test_path = turbopath(
-        "/home/koflerf/niftyreg_preprocessor/module/atlas/t1_brats_space.nii"
-    )
-    print(name_extractor(test_path))
-
-    io_dict = {
-        "t1c": {
-            "input": "input_path",
-            "output": "output_path",
-            "bet": True,
-        },
-        "t1": {
-            "input": "input_path",
-            "output": "output_path",
-            "bet": True,
-        },
-        "t2": {
-            "input": "input_path",
-            "output": "output_path",
-            "bet": True,
-        },
-        "flair": {
-            "input": "input_path",
-            "output": "output_path",
-            "bet": True,
-        },
-    }
-
-    options_dict = {
-        "atlas_image": "atlas/t1_brats_space.nii",
-        "bet_mode": "gpu",
-        "keep_coregistration": None,
-        "keep_atlas_registration": None,
-        "keep_brainextraction": None,
-    }
-
-    modality_centric_atlas_preprocessing(
-        io_dict=io_dict,
-        options_dict=options_dict,
-    )
+    pass
