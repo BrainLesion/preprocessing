@@ -1,5 +1,5 @@
 import os
-from .lib import brats_preprocessing
+from .core import brats_preprocessing
 
 DATA = os.getenv("DATA")
 LOGS = os.getenv("LOGS")
