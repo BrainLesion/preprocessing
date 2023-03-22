@@ -33,7 +33,6 @@ def modality_centric_atlas_preprocessing(
     coregistration_dir = temp_folder + "/coregistration"
     os.makedirs(coregistration_dir, exist_ok=True)
 
-    primary_input_image = primary_modality.input_path
     coregistered_modalities = []
     for mm in moving_modalities:
         reg_name = "/co__" + primary_modality.modality_name + "__" + mm.modality_name
@@ -42,11 +41,9 @@ def modality_centric_atlas_preprocessing(
         co_registered_log = coregistration_dir + reg_name + ".log"
         co_registered_matrix = coregistration_dir + reg_name + ".txt"
 
-        moving_input_image = mm.input_path
-
         niftyreg_caller(
-            fixed_image=primary_input_image,
-            moving_image=moving_input_image,
+            fixed_image=primary_modality.input_path,
+            moving_image=primary_modality.input_path,
             transformed_image=co_registered,
             matrix=co_registered_matrix,
             log_file=co_registered_log,
@@ -64,7 +61,7 @@ def modality_centric_atlas_preprocessing(
             + ".nii.gz"
         )
 
-        shutil.copyfile(primary_input_image, native_cm)
+        shutil.copyfile(primary_modality.input_path, native_cm)
         # and copy the folder to keep it
         shutil.copytree(coregistration_dir, keep_coregistration, dirs_exist_ok=True)
 
@@ -84,7 +81,7 @@ def modality_centric_atlas_preprocessing(
 
     niftyreg_caller(
         fixed_image=atlas_image,
-        moving_image=primary_input_image,
+        moving_image=primary_modality.input_path,
         transformed_image=atlas_pm,
         matrix=atlas_pm_matrix,
         log_file=atlas_pm_log,
@@ -134,17 +131,16 @@ def modality_centric_atlas_preprocessing(
             shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
 
     # O U T P U T S
-    pm_output = primary_modality.output_path
-    os.makedirs(pm_output.parent, exist_ok=True)
+    os.makedirs(primary_modality.output_path.parent, exist_ok=True)
     if primary_modality.bet == False:
         shutil.copyfile(
             atlas_pm,
-            pm_output,
+            primary_modality.output_path,
         )
     else:
         shutil.copyfile(
             atlas_bet_pm,
-            pm_output,
+            primary_modality.output_path,
         )
 
     # now mask the rest or copy the non masked images
