@@ -1,14 +1,5 @@
 from path import Path
 import os
-from collections import namedtuple
-
-
-class Modality:
-    def __init__(self, modality_name, input_path, output_path, bet) -> None:
-        self.modality_name = modality_name
-        self.input_path = turbopath(input_path)
-        self.output_path = turbopath(output_path)
-        self.bet = bet
 
 
 def turbopath(ipath):
