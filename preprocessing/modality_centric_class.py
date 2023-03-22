@@ -35,7 +35,7 @@ def modality_centric_atlas_preprocessing(
     primary_input_image = primary_modality.input_path
     coregistered_modalities = []
     for mm in moving_modalities:
-        reg_name = "/co__" + primary_modality + "__" + mm.modality_name
+        reg_name = "/co__" + primary_modality.modality_name + "__" + mm.modality_name
 
         co_registered = coregistration_dir + reg_name + ".nii.gz"
         co_registered_log = coregistration_dir + reg_name + ".log"
@@ -73,11 +73,11 @@ def modality_centric_atlas_preprocessing(
     os.makedirs(atlas_dir, exist_ok=True)
 
     # register center_modality
-    atlas_pm_matrix = atlas_dir + "/atlas__" + primary_modality + ".txt"
+    atlas_pm_matrix = atlas_dir + "/atlas__" + primary_modality.modality_name + ".txt"
 
-    atlas_pm_log = atlas_dir + "/atlas__" + primary_modality + ".log"
+    atlas_pm_log = atlas_dir + "/atlas__" + primary_modality.modality_name + ".log"
 
-    atlas_pm = atlas_dir + "/atlas__" + primary_modality + ".nii.gz"
+    atlas_pm = atlas_dir + "/atlas__" + primary_modality.modality_name + ".nii.gz"
 
     atlas_image = turbopath(atlas_image)
 
@@ -92,8 +92,8 @@ def modality_centric_atlas_preprocessing(
 
     # transform moving modalities
     for coreg, mm in zip(coregistered_modalities, moving_modalities):
-        atlas_coreg = atlas_dir + "/atlas__" + mm + ".nii.gz"
-        atlas_coreg_log = atlas_dir + "/atlas__" + mm + ".log"
+        atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
+        atlas_coreg_log = atlas_dir + "/atlas__" + mm.modality_name + ".log"
 
         niftyreg_caller(
             fixed_image=atlas_image,
