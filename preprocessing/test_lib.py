@@ -1,5 +1,5 @@
-from lib import brats_preprocessing
-from lib import t1c_focused_preprocessing
+from preprocessing.core import brats_preprocessing
+from preprocessing.core import t1c_focused_preprocessing
 
 if __name__ == "__main__":
     # keep in mind that tests need to be executed from the main directory not from the test subfolder!
