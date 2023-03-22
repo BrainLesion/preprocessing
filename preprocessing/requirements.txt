@@ -3,7 +3,7 @@ path==16.2.0
 ttictoc==0.5.6
 pathlib==1.0.1
 nibabel==3.2.1
-numpy==1.21.2
+numpy==1.23.0
 
 # hd-bet reqs
 SimpleITK==2.2.1
