@@ -11,15 +11,15 @@ def modality_centric_atlas_preprocessing(
     moving_modalities: list[Modality],
     atlas_image: str = "atlas/t1_brats_space.nii",
     bet_mode: str = "gpu",
-    cuda_devices: str = "0",
+    limit_cuda_visible_devices: str = None,
     keep_coregistration: str = None,
     keep_atlas_registration: str = None,
     keep_brainextraction: str = None,
 ):
     # CUDA devices
-    if cuda_devices is not None:
+    if limit_cuda_visible_devices is not None:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = cuda_devices
+        os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
 
     # create temporary storage
     storage = tempfile.TemporaryDirectory()
