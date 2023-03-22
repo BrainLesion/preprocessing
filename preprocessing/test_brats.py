@@ -18,13 +18,13 @@ def preprocess(inputDir):
 
         # is the exam already processed?
         brainles_dir = Path(inputDir) + "/" + inputDir.name + "_brainles"
-        prep_dir = brainles_dir + "/hdbet_brats-space"
+        prep_dir = brainles_dir + "/preprocessed"
 
         if not os.path.exists(prep_dir):
             t1_file = btk_raw_dir.files("*t1.nii.gz")
             t1c_file = btk_raw_dir.files("*t1c.nii.gz")
             t2_file = btk_raw_dir.files("*t2.nii.gz")
-            flair_file = btk_raw_dir.files("*flair.nii.gz")
+            flair_file = btk_raw_dir.files("*fla.nii.gz")
 
             if len(t1_file) == len(t1c_file) == len(t2_file) == len(flair_file) == 1:
                 print(t1_file)
@@ -49,9 +49,9 @@ def preprocess(inputDir):
                     output_flair=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
                     bet_mode="gpu",
                     limit_cuda_visible_devices="1",
-                    keep_coregistration=prep_dir + "/co-registration",
-                    keep_atlas_registration=prep_dir + "/atlas-registration",
-                    keep_brainextraction=prep_dir + "/brain-extraction",
+                    keep_coregistration=brainles_dir + "/co-registration",
+                    keep_atlas_registration=brainles_dir + "/atlas-registration",
+                    keep_brainextraction=brainles_dir + "/brain-extraction",
                 )
 
     except Exception as e:
