@@ -11,3 +11,6 @@ scikit-image==0.18.3
 -e git+https://github.com/MIC-DKFZ/batchgenerators#egg=batchgenerators
 torch
 -f https://download.pytorch.org/whl/torch_stable.html
+
+# utils
+tqdm
