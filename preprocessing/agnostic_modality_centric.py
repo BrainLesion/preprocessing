@@ -1,6 +1,6 @@
 from utils import turbopath
 
-from preprocessing.core import niftyreg_caller, skullstrip, apply_mask, Modality
+from core import niftyreg_caller, skullstrip, apply_mask, Modality
 
 import tempfile
 import os
