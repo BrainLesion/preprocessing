@@ -1,5 +1,4 @@
-from agnostic_modality_centric import modality_centric_atlas_preprocessing
-from core import Modality
+from core import modality_centric_atlas_preprocessing, Modality
 
 
 def brats_style_t1c_centric_preprocessing(

@@ -17,6 +17,7 @@ class Modality:
 
 def modality_centric_atlas_preprocessing(
     primary_modality: Modality,
+    # TODO fix!
     moving_modalities: list[Modality],
     atlas_image: str = "preprocessing/atlas/t1_brats_space.nii",
     bet_mode: str = "gpu",
