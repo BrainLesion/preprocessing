@@ -1,23 +1,21 @@
 from brats import brats_style_t1_centric_preprocessing
 from utils import turbopath
 
-
-from path import Path
 import os
 import datetime
 from tqdm import tqdm
 
 
 def preprocess(inputDir):
-    inputDir = Path(os.path.abspath(inputDir))
+    inputDir = turbopath(inputDir)
     try:
         print("*** start ***")
 
         # where are the raw mr files?
-        btk_raw_dir = Path(inputDir)
+        btk_raw_dir = turbopath(inputDir)
 
         # is the exam already processed?
-        brainles_dir = Path(inputDir) + "/" + inputDir.name + "_brainles"
+        brainles_dir = turbopath(inputDir) + "/" + inputDir.name + "_brainles"
         prep_dir = brainles_dir + "/preprocessed"
 
         if not os.path.exists(prep_dir):
