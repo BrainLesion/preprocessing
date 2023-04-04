@@ -1,12 +1,10 @@
-import pathlib
-import shlex
-import datetime
-from ttictoc import Timer
-import subprocess
-import nibabel as nib
-import numpy as np
-
 from utils import turbopath
+from reg import registration_caller
+from bet import brain_extractor, apply_mask
+
+import tempfile
+import os
+import shutil
 
 
 class Modality:
@@ -17,202 +15,156 @@ class Modality:
         self.bet = bet
 
 
-def registration_caller(
-    fixed_image,
-    moving_image,
-    transformed_image,
-    matrix,
-    log_file,
-    mode,
-    backend="niftyreg",
+def modality_centric_atlas_preprocessing(
+    primary_modality: Modality,
+    moving_modalities: list[Modality],
+    atlas_image: str = "preprocessing/atlas/t1_brats_space.nii",
+    bet_mode: str = "gpu",
+    limit_cuda_visible_devices: str = None,
+    keep_coregistration: str = None,
+    keep_atlas_registration: str = None,
+    keep_brainextraction: str = None,
 ):
-    if backend == "niftyreg":
+    # CUDA devices
+    if limit_cuda_visible_devices is not None:
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
+
+    # create temporary storage
+    storage = tempfile.TemporaryDirectory()
+    temp_folder = turbopath(storage.name)
+    print(temp_folder)
+
+    # C O R E G I S T R A T I O N
+    # coregister everything to center_modality
+    # prepare directory
+    coregistration_dir = temp_folder + "/coregistration"
+    os.makedirs(coregistration_dir, exist_ok=True)
+
+    coregistered_modalities = []
+    for mm in moving_modalities:
+        reg_name = "/co__" + primary_modality.modality_name + "__" + mm.modality_name
+
+        co_registered = coregistration_dir + reg_name + ".nii.gz"
+        co_registered_log = coregistration_dir + reg_name + ".log"
+        co_registered_matrix = coregistration_dir + reg_name + ".txt"
+
         registration_caller(
-            fixed_image=fixed_image,
-            moving_image=moving_image,
-            transformed_image=transformed_image,
-            matrix=matrix,
-            log_file=log_file,
-            mode=mode,
+            fixed_image=primary_modality.input_path,
+            moving_image=primary_modality.input_path,
+            transformed_image=co_registered,
+            matrix=co_registered_matrix,
+            log_file=co_registered_log,
+            mode="registration",
+        )
+        coregistered_modalities.append(co_registered)
+
+    # also copy center_modality itself and export folder
+    if keep_coregistration is not None:
+        keep_coregistration = turbopath(keep_coregistration)
+        native_cm = (
+            coregistration_dir
+            + "/native__"
+            + primary_modality.modality_name
+            + ".nii.gz"
+        )
+
+        shutil.copyfile(primary_modality.input_path, native_cm)
+        # and copy the folder to keep it
+        shutil.copytree(coregistration_dir, keep_coregistration, dirs_exist_ok=True)
+
+    # T o   a t l a s   s p a c e !
+    # prepare directory
+    atlas_dir = temp_folder + "/atlas-space"
+    os.makedirs(atlas_dir, exist_ok=True)
+
+    # register center_modality
+    atlas_pm_matrix = atlas_dir + "/atlas__" + primary_modality.modality_name + ".txt"
+
+    atlas_pm_log = atlas_dir + "/atlas__" + primary_modality.modality_name + ".log"
+
+    atlas_pm = atlas_dir + "/atlas__" + primary_modality.modality_name + ".nii.gz"
+
+    atlas_image = turbopath(atlas_image)
+
+    registration_caller(
+        fixed_image=atlas_image,
+        moving_image=primary_modality.input_path,
+        transformed_image=atlas_pm,
+        matrix=atlas_pm_matrix,
+        log_file=atlas_pm_log,
+        mode="registration",
+    )
+
+    # transform moving modalities
+    for coreg, mm in zip(coregistered_modalities, moving_modalities):
+        atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
+        atlas_coreg_log = atlas_dir + "/atlas__" + mm.modality_name + ".log"
+
+        registration_caller(
+            fixed_image=atlas_image,
+            moving_image=coreg,
+            transformed_image=atlas_coreg,
+            matrix=atlas_pm_matrix,
+            log_file=atlas_coreg_log,
+            mode="transformation",
+        )
+
+    # copy folder to output
+    if keep_atlas_registration is not None:
+        keep_atlas_registration = turbopath(keep_atlas_registration)
+        shutil.copytree(atlas_dir, keep_atlas_registration, dirs_exist_ok=True)
+
+    # S K U L L S T R I P P I N G
+    if bet_mode is not None:
+        # prepare
+        bet_dir = temp_folder + "/brainextraction"
+        os.makedirs(bet_dir, exist_ok=True)
+
+        # skullstrip t1c and obtain mask
+        hd_bet_log = bet_dir + "/hd-bet.log"
+        atlas_bet_pm = bet_dir + "/atlas_bet_pm.nii.gz"
+        atlas_mask = atlas_bet_pm[:-7] + "_mask.nii.gz"
+
+        brain_extractor(
+            input_image=atlas_pm,
+            masked_image=atlas_bet_pm,
+            log_file=hd_bet_log,
+            mode=bet_mode,
+        )
+
+        # copy files and folders to output
+        if keep_brainextraction is not None:
+            keep_brainextraction = turbopath(keep_brainextraction)
+            shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
+
+    # O U T P U T S
+    os.makedirs(primary_modality.output_path.parent, exist_ok=True)
+    if primary_modality.bet == False:
+        shutil.copyfile(
+            atlas_pm,
+            primary_modality.output_path,
         )
     else:
-        raise NotImplementedError("no other registration backend implemented yet")
-
-
-def niftyreg_caller(
-    fixed_image,
-    moving_image,
-    transformed_image,
-    matrix,
-    log_file,
-    mode,
-):
-    """calls niftyreg for registration and transforms"""
-
-    the_shell = "/bin/bash"
-
-    if mode == "registration":
-        shell_script = "registration_scripts/rigid_reg.sh"
-    elif mode == "transformation":
-        shell_script = "registration_scripts/transform.sh"
-    else:
-        raise NotImplementedError("this mode is not implemented:", mode)
-
-    # let's try to call it
-    try:
-        starttime = str(datetime.datetime.now())
-        print("** starting: " + moving_image.name + " at: " + starttime)
-        t = Timer()  # TicToc("name")
-        t.start()
-        # your code ...
-        # first we create the output dir
-        # os.makedirs(output_dir, exist_ok=True)
-
-        # generate subprocess call
-        readableCmd = (
-            the_shell,
-            shell_script,
-            fixed_image,
-            moving_image,
-            transformed_image,
-            matrix,
+        shutil.copyfile(
+            atlas_bet_pm,
+            primary_modality.output_path,
         )
-        readableCmd = " ".join(readableCmd)
-        print(readableCmd)
-        command = shlex.split(readableCmd)
-        print(command)
 
-        cwd = pathlib.Path(__file__).resolve().parent
-        print(cwd)
+    # now mask the rest or copy the non masked images
+    for mm in moving_modalities:
+        atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
+        os.makedirs(mm.output_path.parent, exist_ok=True)
 
-        with open(log_file, "w") as outfile:
-            subprocess.run(command, stdout=outfile, stderr=outfile, cwd=cwd)
-
-        endtime = str(datetime.datetime.now().time())
-
-        elapsed = t.stop("call")
-        print(elapsed)
-
-        with open(log_file, "a") as file:
-            file.write("\n" + "************************************************" + "\n")
-            file.write("CALL: " + readableCmd + "\n")
-            file.write("************************************************" + "\n")
-            file.write("************************************************" + "\n")
-            file.write("start time: " + starttime + "\n")
-            file.write("end time: " + endtime + "\n")
-            file.write("time elapsed: " + str(int(elapsed) / 60) + " minutes" + "\n")
-            file.write("************************************************" + "\n")
-
-    except Exception as e:
-        print("error: " + str(e))
-        print("registration error for: " + moving_image.name)
-
-    endtime = str(datetime.datetime.now())
-    print("** finished: " + moving_image.name + " at: " + endtime)
+        if mm.bet == False:
+            shutil.copyfile(atlas_coreg, mm.output_path)
+        else:
+            apply_mask(
+                input_image=atlas_coreg,
+                mask_image=atlas_mask,
+                output_image=mm.output_path,
+            )
 
 
-def brain_extractor(
-    input_image,
-    masked_image,
-    log_file,
-    mode,
-    backend="HD-BET",
-):
-    if backend == "HD-BET":
-        hdbet_caller(
-            input_image=input_image,
-            masked_image=masked_image,
-            log_file=log_file,
-            mode=mode,
-        )
-    else:
-        raise NotImplementedError("no other brain extration backend implemented yet")
-
-
-def hdbet_caller(
-    input_image,
-    masked_image,
-    log_file,
-    mode,
-):
-    """skullstrips images with HD-BET generates a skullstripped file and mask"""
-    the_shell = "/bin/bash"
-
-    if mode == "gpu":
-        shell_script = "skullstripping_scripts/hd-bet_gpu.sh"
-    elif mode == "cpu":
-        shell_script = "skullstripping_scripts/hd-bet_cpu.sh"
-    elif mode == "cpu-fast":
-        shell_script = "skullstripping_scripts/hd-bet_cpu-fast.sh"
-    else:
-        raise NotImplementedError("this mode is not implemented:", mode)
-    # let's try to call it
-    try:
-        starttime = str(datetime.datetime.now())
-        print(
-            "** starting skullstripping with:",
-            mode,
-            "for:",
-            input_image.name,
-            "at:",
-            starttime,
-        )
-        t = Timer()  # TicToc("name")
-        t.start()
-
-        # generate subprocess call
-        readableCmd = (
-            the_shell,
-            shell_script,
-            input_image,
-            masked_image,
-        )
-        readableCmd = " ".join(readableCmd)
-        print(readableCmd)
-        command = shlex.split(readableCmd)
-        print(command)
-
-        cwd = pathlib.Path(__file__).resolve().parent
-        print(cwd)
-
-        with open(log_file, "w") as outfile:
-            subprocess.run(command, stdout=outfile, stderr=outfile, cwd=cwd)
-
-        endtime = str(datetime.datetime.now().time())
-
-        elapsed = t.stop("call")
-        print(elapsed)
-
-        with open(log_file, "a") as file:
-            file.write("\n" + "************************************************" + "\n")
-            file.write("CALL: " + readableCmd + "\n")
-            file.write("************************************************" + "\n")
-            file.write("************************************************" + "\n")
-            file.write("start time: " + starttime + "\n")
-            file.write("end time: " + endtime + "\n")
-            file.write("time elapsed: " + str(int(elapsed) / 60) + " minutes" + "\n")
-            file.write("************************************************" + "\n")
-
-    except Exception as e:
-        print("error: " + str(e))
-        print("skullstripping error for: " + input_image.name)
-
-    endtime = str(datetime.datetime.now())
-    print("** finished: " + input_image.name + " at: " + endtime)
-
-
-def apply_mask(
-    input_image,
-    mask_image,
-    output_image,
-):
-    """masks images with brain masks"""
-    inputnifti = nib.load(input_image)
-    mask = nib.load(mask_image)
-
-    # mask it
-    masked_file = np.multiply(inputnifti.get_fdata(), mask.get_fdata())
-    masked_file = nib.Nifti1Image(masked_file, inputnifti.affine, inputnifti.header)
-
-    # save it
-    nib.save(masked_file, output_image)
+if __name__ == "__main__":
+    pass
