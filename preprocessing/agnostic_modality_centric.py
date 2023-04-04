@@ -1,6 +1,6 @@
 from utils import turbopath
 
-from core import niftyreg_caller, skullstrip, apply_mask, Modality
+from core import registration_caller, brain_extractor, apply_mask, Modality
 
 import tempfile
 import os
@@ -41,7 +41,7 @@ def modality_centric_atlas_preprocessing(
         co_registered_log = coregistration_dir + reg_name + ".log"
         co_registered_matrix = coregistration_dir + reg_name + ".txt"
 
-        niftyreg_caller(
+        registration_caller(
             fixed_image=primary_modality.input_path,
             moving_image=primary_modality.input_path,
             transformed_image=co_registered,
@@ -79,7 +79,7 @@ def modality_centric_atlas_preprocessing(
 
     atlas_image = turbopath(atlas_image)
 
-    niftyreg_caller(
+    registration_caller(
         fixed_image=atlas_image,
         moving_image=primary_modality.input_path,
         transformed_image=atlas_pm,
@@ -93,7 +93,7 @@ def modality_centric_atlas_preprocessing(
         atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
         atlas_coreg_log = atlas_dir + "/atlas__" + mm.modality_name + ".log"
 
-        niftyreg_caller(
+        registration_caller(
             fixed_image=atlas_image,
             moving_image=coreg,
             transformed_image=atlas_coreg,
@@ -118,7 +118,7 @@ def modality_centric_atlas_preprocessing(
         atlas_bet_pm = bet_dir + "/atlas_bet_pm.nii.gz"
         atlas_mask = atlas_bet_pm[:-7] + "_mask.nii.gz"
 
-        skullstrip(
+        brain_extractor(
             input_image=atlas_pm,
             masked_image=atlas_bet_pm,
             log_file=hd_bet_log,

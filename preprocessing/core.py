@@ -17,8 +17,35 @@ class Modality:
         self.bet = bet
 
 
+def registration_caller(
+    fixed_image,
+    moving_image,
+    transformed_image,
+    matrix,
+    log_file,
+    mode,
+    backend="niftyreg",
+):
+    if backend == "niftyreg":
+        registration_caller(
+            fixed_image=fixed_image,
+            moving_image=moving_image,
+            transformed_image=transformed_image,
+            matrix=matrix,
+            log_file=log_file,
+            mode=mode,
+        )
+    else:
+        raise NotImplementedError("no other registration backend implemented yet")
+
+
 def niftyreg_caller(
-    fixed_image, moving_image, transformed_image, matrix, log_file, mode
+    fixed_image,
+    moving_image,
+    transformed_image,
+    matrix,
+    log_file,
+    mode,
 ):
     """calls niftyreg for registration and transforms"""
 
@@ -84,7 +111,30 @@ def niftyreg_caller(
     print("** finished: " + moving_image.name + " at: " + endtime)
 
 
-def skullstrip(input_image, masked_image, log_file, mode):
+def brain_extractor(
+    input_image,
+    masked_image,
+    log_file,
+    mode,
+    backend="HD-BET",
+):
+    if backend == "HD-BET":
+        hdbet_caller(
+            input_image=input_image,
+            masked_image=masked_image,
+            log_file=log_file,
+            mode=mode,
+        )
+    else:
+        raise NotImplementedError("no other brain extration backend implemented yet")
+
+
+def hdbet_caller(
+    input_image,
+    masked_image,
+    log_file,
+    mode,
+):
     """skullstrips images with HD-BET generates a skullstripped file and mask"""
     the_shell = "/bin/bash"
 
@@ -151,7 +201,11 @@ def skullstrip(input_image, masked_image, log_file, mode):
     print("** finished: " + input_image.name + " at: " + endtime)
 
 
-def apply_mask(input_image, mask_image, output_image):
+def apply_mask(
+    input_image,
+    mask_image,
+    output_image,
+):
     """masks images with brain masks"""
     inputnifti = nib.load(input_image)
     mask = nib.load(mask_image)
