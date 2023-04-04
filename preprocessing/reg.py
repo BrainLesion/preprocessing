@@ -15,7 +15,7 @@ def registration_caller(
     backend="niftyreg",
 ):
     if backend == "niftyreg":
-        registration_caller(
+        niftyreg_caller(
             fixed_image=fixed_image,
             moving_image=moving_image,
             transformed_image=transformed_image,
