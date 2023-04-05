@@ -13,7 +13,7 @@ class Modality:
         modality_name: str,
         input_path: str,
         output_path: str,
-        bet: str,
+        bet: bool,
     ) -> None:
         self.modality_name = modality_name
         self.input_path = turbopath(input_path)
