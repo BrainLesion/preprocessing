@@ -1,5 +1,5 @@
 from utils import turbopath
-from reg import registration_caller
+from preprocessing.registration import registration_caller
 from preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
