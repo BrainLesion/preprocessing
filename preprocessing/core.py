@@ -1,6 +1,6 @@
 from utils import turbopath
 from reg import registration_caller
-from bet import brain_extractor, apply_mask
+from preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
 import os
