@@ -1,7 +1,7 @@
 from niftyreg import niftyreg_caller
 
 
-def registration_caller(
+def registrator(
     fixed_image,
     moving_image,
     transformed_image,

@@ -1,5 +1,5 @@
 from utils import turbopath
-from preprocessing.registration import registration_caller
+from preprocessing.registration import registrator
 from preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
@@ -49,7 +49,7 @@ def modality_centric_atlas_preprocessing(
         co_registered_log = coregistration_dir + reg_name + ".log"
         co_registered_matrix = coregistration_dir + reg_name + ".txt"
 
-        registration_caller(
+        registrator(
             fixed_image=primary_modality.input_path,
             moving_image=primary_modality.input_path,
             transformed_image=co_registered,
@@ -87,7 +87,7 @@ def modality_centric_atlas_preprocessing(
 
     atlas_image = turbopath(atlas_image)
 
-    registration_caller(
+    registrator(
         fixed_image=atlas_image,
         moving_image=primary_modality.input_path,
         transformed_image=atlas_pm,
@@ -101,7 +101,7 @@ def modality_centric_atlas_preprocessing(
         atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
         atlas_coreg_log = atlas_dir + "/atlas__" + mm.modality_name + ".log"
 
-        registration_caller(
+        registrator(
             fixed_image=atlas_image,
             moving_image=coreg,
             transformed_image=atlas_coreg,
