@@ -1,7 +1,7 @@
 import nibabel as nib
 import numpy as np
 
-from preprocessing.hdbet import hdbet_caller
+from hdbet import hdbet_caller
 
 
 def brain_extractor(

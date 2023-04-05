@@ -1,6 +1,6 @@
 from utils import turbopath
-from preprocessing.registration import registrator
-from preprocessing.brain_extraction import brain_extractor, apply_mask
+from registration import registrator
+from brain_extraction import brain_extractor, apply_mask
 
 import tempfile
 import os
