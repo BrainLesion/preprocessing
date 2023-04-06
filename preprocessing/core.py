@@ -24,7 +24,7 @@ class Modality:
 def modality_centric_atlas_preprocessing(
     primary_modality: Modality,
     moving_modalities: list[Modality],
-    atlas_image: str = "preprocessing/atlas/t1_brats_space.nii",
+    atlas_image: str = "preprocessing/registration/atlas/t1_brats_space.nii",
     bet_mode: str = "gpu",
     limit_cuda_visible_devices: str = None,
     keep_coregistration: str = None,
@@ -122,15 +122,20 @@ def modality_centric_atlas_preprocessing(
         shutil.copytree(atlas_dir, keep_atlas_registration, dirs_exist_ok=True)
 
     # S K U L L S T R I P P I N G
+    print("-------------------------------")
     if bet_mode is not None:
         # prepare
         bet_dir = temp_folder + "/brainextraction"
         os.makedirs(bet_dir, exist_ok=True)
 
+        print("-------------------------------2")
+
         # skullstrip t1c and obtain mask
         hd_bet_log = bet_dir + "/hd-bet.log"
         atlas_bet_pm = bet_dir + "/atlas_bet_pm.nii.gz"
         atlas_mask = atlas_bet_pm[:-7] + "_mask.nii.gz"
+
+        print("-------------------------------3")
 
         brain_extractor(
             input_image=atlas_pm,
@@ -145,6 +150,7 @@ def modality_centric_atlas_preprocessing(
             shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
 
     # O U T P U T S
+    print("-------------------------------4")
     os.makedirs(primary_modality.output_path.parent, exist_ok=True)
     if primary_modality.bet == False:
         shutil.copyfile(
