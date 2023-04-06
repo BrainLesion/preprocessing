@@ -49,7 +49,7 @@ def niftyreg_caller(
         print(command)
 
         cwd = pathlib.Path(__file__).resolve().parent
-        print(cwd)
+        print("*** cwd:", cwd)
 
         with open(log_file, "w") as outfile:
             subprocess.run(command, stdout=outfile, stderr=outfile, cwd=cwd)
@@ -61,6 +61,7 @@ def niftyreg_caller(
 
         with open(log_file, "a") as file:
             file.write("\n" + "************************************************" + "\n")
+            file.write("cwd: " + str(cwd) + "\n")
             file.write("CALL: " + readableCmd + "\n")
             file.write("************************************************" + "\n")
             file.write("************************************************" + "\n")
