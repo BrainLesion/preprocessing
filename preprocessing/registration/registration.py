@@ -1,4 +1,4 @@
-from niftyreg import niftyreg_caller
+from .niftyreg import niftyreg_caller
 
 
 def registrator(
