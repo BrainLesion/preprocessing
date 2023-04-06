@@ -10,7 +10,7 @@ moving="$2"
 transformed="$3"
 matrix="$4"
 
-preprocessing/registration/niftyreg_scripts/reg_resample \
+niftyreg_scripts/reg_resample \
     -ref $fixed \
     -flo $moving \
     -trans $matrix \

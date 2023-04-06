@@ -9,7 +9,7 @@ moving="$2"
 transformed="$3"
 matrix="$4"
 
-preprocessing/registration/niftyreg_scripts/reg_aladin \
+niftyreg_scripts/reg_aladin \
     -rigOnly \
     -ref $fixed \
     -flo $moving \
