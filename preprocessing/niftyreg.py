@@ -18,9 +18,9 @@ def niftyreg_caller(
     the_shell = "/bin/bash"
 
     if mode == "registration":
-        shell_script = "registration_scripts/rigid_reg.sh"
+        shell_script = "niftyreg_scripts/rigid_reg.sh"
     elif mode == "transformation":
-        shell_script = "registration_scripts/transform.sh"
+        shell_script = "niftyreg_scripts/transform.sh"
     else:
         raise NotImplementedError("this mode is not implemented:", mode)
 

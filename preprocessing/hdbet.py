@@ -15,11 +15,11 @@ def hdbet_caller(
     the_shell = "/bin/bash"
 
     if mode == "gpu":
-        shell_script = "skullstripping_scripts/hd-bet_gpu.sh"
+        shell_script = "hdbet_scripts/hd-bet_gpu.sh"
     elif mode == "cpu":
-        shell_script = "skullstripping_scripts/hd-bet_cpu.sh"
+        shell_script = "hdbet_scripts/hd-bet_cpu.sh"
     elif mode == "cpu-fast":
-        shell_script = "skullstripping_scripts/hd-bet_cpu-fast.sh"
+        shell_script = "hdbet_scripts/hd-bet_cpu-fast.sh"
     else:
         raise NotImplementedError("this mode is not implemented:", mode)
     # let's try to call it
