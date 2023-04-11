@@ -51,7 +51,8 @@ def niftyreg_caller(
         command = shlex.split(readableCmd)
         print(command)
 
-        cwd = pathlib.Path(__file__).resolve().parent
+        # cwd = pathlib.Path(__file__).resolve().parent
+        cwd= registration_abspath
         print("*** cwd:", cwd)
 
         with open(log_file, "w") as outfile:
