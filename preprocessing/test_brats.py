@@ -1,5 +1,5 @@
-from brats import brats_style_t1_centric_preprocessing
-from utils import turbopath
+from brainles_preprocessing.brats import brats_style_t1_centric_preprocessing
+from brainles_preprocessing.utils import turbopath
 
 import os
 import datetime

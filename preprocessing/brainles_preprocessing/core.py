@@ -1,12 +1,12 @@
-from utils import turbopath
-from registration import registrator
-from brain_extraction import brain_extractor, apply_mask
+from brainles_preprocessing.utils import turbopath
+from brainles_preprocessing.registration import registrator
+from brainles_preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
 import os
 import shutil
 
-registration_abspath = os.path.dirname(os.path.abspath(__file__))
+core_abspath = os.path.dirname(os.path.abspath(__file__))
 
 class Modality:
     def __init__(
@@ -25,7 +25,7 @@ class Modality:
 def modality_centric_atlas_preprocessing(
     primary_modality: Modality,
     moving_modalities: list[Modality],
-    atlas_image: str = "preprocessing/registration/atlas/t1_brats_space.nii",
+    atlas_image: str = os.path.join(core_abspath, "registration/atlas/t1_brats_space.nii"),
     bet_mode: str = "gpu",
     limit_cuda_visible_devices: str = None,
     keep_coregistration: str = None,

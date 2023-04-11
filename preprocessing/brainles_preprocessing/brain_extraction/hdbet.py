@@ -50,7 +50,8 @@ def hdbet_caller(
         command = shlex.split(readableCmd)
         print(command)
 
-        cwd = pathlib.Path(__file__).resolve().parent
+        # cwd = pathlib.Path(__file__).resolve().parent
+        cwd = brain_extraction_abspath
         print(cwd)
 
         with open(log_file, "w") as outfile:
@@ -64,6 +65,7 @@ def hdbet_caller(
         with open(log_file, "a") as file:
             file.write("\n" + "************************************************" + "\n")
             file.write("CALL: " + readableCmd + "\n")
+            file.write("cwd: " + str(cwd) + "\n")
             file.write("************************************************" + "\n")
             file.write("************************************************" + "\n")
             file.write("start time: " + starttime + "\n")

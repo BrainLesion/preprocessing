@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=61.0"]
 
 [tool.setuptools]
 packages = ["brainles_preprocessing"]
@@ -13,7 +13,8 @@ write_to = "brainles_preprocessing/_version.py"
 
 [project]
 name = "BrainLes-preprocessing"
-dynamic = ["version"]
+# dynamic = ["version"]
+version = "0.0.1"
 authors = [
   {name="Florian Kofler", email="florian.kofler@tum.de"},
   {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
@@ -43,8 +44,7 @@ dependencies = [
     # hd-bet reqs
     'SimpleITK==2.2.1',
     'scikit-image==0.18.3',
-    torch
-    -f https://download.pytorch.org/whl/torch_stable.html
+    'torch==2.0.0',
 
     # utils
     'tqdm'

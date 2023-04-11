@@ -1,4 +1,4 @@
-from core import modality_centric_atlas_preprocessing, Modality
+from brainles_preprocessing.core import modality_centric_atlas_preprocessing, Modality
 
 
 def brats_style_t1c_centric_preprocessing(
