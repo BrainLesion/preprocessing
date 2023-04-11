@@ -16,7 +16,6 @@ name = "BrainLes-preprocessing"
 dynamic = ["version"]
 authors = [
   {name="Florian Kofler", email="florian.kofler@tum.de"},
-  {name="Christoph Berger", email="c.berger@tum.de"},
   {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
 ]
 maintainers = [
@@ -67,4 +66,4 @@ brats-preprocess = "brats_toolkit.cli:singlepreprocess"
 
 [project.urls]
 # documentation = "TODO"
-repository = "https://github.com/neuronflow/BraTS-Toolkit"
+repository = "https://github.com/neuronflow/BrainLes"
