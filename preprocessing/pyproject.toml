@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
+
+[tool.setuptools]
+packages = ["brainles_preprocessing"]
+
+[tool.setuptools.dynamic]
+#version = {attr = "my_package.VERSION"}
+readme = {file = "README.md"}
+
+[tool.setuptools_scm]
+write_to = "brainles_preprocessing/_version.py"
+
+[project]
+name = "BrainLes-preprocessing"
+dynamic = ["version"]
+authors = [
+  {name="Florian Kofler", email="florian.kofler@tum.de"},
+  {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
+]
+maintainers = [
+  {name="Florian Kofler", email="florian.kofler@tum.de"},
+  {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
+]
+description = "TODO."
+keywords = ["registration", "brain extraction"]
+readme = "README.md"
+# requires-python = "==3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+
+    # core
+    'path==16.2.0',
+    'ttictoc==0.5.6',
+    'pathlib==1.0.1',
+    'nibabel==3.2.1',
+    'numpy==1.23.0',
+
+    # hd-bet reqs
+    'SimpleITK==2.2.1',
+    'scikit-image==0.18.3',
+    torch
+    -f https://download.pytorch.org/whl/torch_stable.html
+
+    # utils
+    'tqdm'
+    ]
+
+[tool.poetry.dependencies]
+HD_BET = {path = "brainles_preprocessing/brain_extraction/HD_BET"}
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[project.scripts]
+brats-segment = "brats_toolkit.cli:segmentation"
+brats-fuse = "brats_toolkit.cli:fusion"
+brats-batch-preprocess = "brats_toolkit.cli:batchpreprocess"
+brats-preprocess = "brats_toolkit.cli:singlepreprocess"
+
+[project.urls]
+# documentation = "TODO"
+repository = "https://github.com/neuronflow/BrainLes"

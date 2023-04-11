@@ -4,6 +4,7 @@ import datetime
 from ttictoc import Timer
 import subprocess
 
+import os
 
 def hdbet_caller(
     input_image,
@@ -13,13 +14,14 @@ def hdbet_caller(
 ):
     """skullstrips images with HD-BET generates a skullstripped file and mask"""
     the_shell = "/bin/bash"
+    brain_extraction_abspath = os.path.dirname(os.path.abspath(__file__))
 
     if mode == "gpu":
-        shell_script = "hdbet_scripts/hd-bet_gpu.sh"
+        shell_script = os.path.join(brain_extraction_abspath, "hdbet_scripts", "hd-bet_gpu.sh")
     elif mode == "cpu":
-        shell_script = "hdbet_scripts/hd-bet_cpu.sh"
+        shell_script = os.path.join(brain_extraction_abspath, "hdbet_scripts", "hd-bet_cpu.sh")
     elif mode == "cpu-fast":
-        shell_script = "hdbet_scripts/hd-bet_cpu-fast.sh"
+        shell_script = os.path.join(brain_extraction_abspath, "hdbet_scripts", "hd-bet_cpu-fast.sh")
     else:
         raise NotImplementedError("this mode is not implemented:", mode)
     # let's try to call it

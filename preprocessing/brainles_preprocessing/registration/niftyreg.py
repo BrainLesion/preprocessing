@@ -2,7 +2,9 @@ import pathlib
 import shlex
 import datetime
 from ttictoc import Timer
+
 import subprocess
+import os
 
 
 def niftyreg_caller(
@@ -16,11 +18,12 @@ def niftyreg_caller(
     """calls niftyreg for registration and transforms"""
 
     the_shell = "/bin/bash"
+    registration_abspath = os.path.dirname(os.path.abspath(__file__))
 
     if mode == "registration":
-        shell_script = "niftyreg_scripts/rigid_reg.sh"
+        shell_script = os.path.join(registration_abspath, "niftyreg_scripts", "rigid_reg.sh")
     elif mode == "transformation":
-        shell_script = "niftyreg_scripts/transform.sh"
+        shell_script = os.path.join(registration_abspath, "niftyreg_scripts", "transform.sh")
     else:
         raise NotImplementedError("this mode is not implemented:", mode)
 

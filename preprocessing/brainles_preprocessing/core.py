@@ -6,6 +6,7 @@ import tempfile
 import os
 import shutil
 
+registration_abspath = os.path.dirname(os.path.abspath(__file__))
 
 class Modality:
     def __init__(
