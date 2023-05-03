@@ -14,4 +14,6 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/
 
 
 ## installation:
+```
 pip install -e "git+https://github.com/neuronflow/BrainLes.git@main#egg=HD_BET&subdirectory=preprocessing/brainles_preprocessing/brain_extraction/HD_BET"
+```
