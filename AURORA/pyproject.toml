@@ -33,9 +33,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    'torch==1.13.1',
-    'torchvision==0.14.1',
-    'monai==1.1.0',
+    'monai==1.2.0',
     'nibabel==4.0.2',
     'numpy==1.23.0',
     'click',
