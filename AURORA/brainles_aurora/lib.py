@@ -27,6 +27,7 @@ from monai.transforms import (
     EnsureChannelFirstd,
 )
 
+lib_abspath = os.path.dirname(os.path.abspath(__file__))
 
 def _turbo_path(the_path):
     turbo_path = Path(
@@ -286,9 +287,9 @@ def _get_model_and_weights(mode, model_selection):
             act="mish",
         )
         if model_selection == "best":
-            weights = _turbo_path("model_weights/t1-t1c-t1-fla/t1-t1c-t1-fla_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1-t1c-t1-fla/t1-t1c-t1-fla_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/t1-t1c-t1-fla/t1-t1c-t1-fla_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1-t1c-t1-fla/t1-t1c-t1-fla_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -305,9 +306,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path("model_weights/t1c-t1-fla/t1c-t1-fla_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1-fla/t1c-t1-fla_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/t1c-t1-fla/t1c-t1-fla_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1-fla/t1c-t1-fla_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -324,9 +325,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path("model_weights/t1c-t1/t1c-t1_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1/t1c-t1_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/t1c-t1/t1c-t1_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1/t1c-t1_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -343,9 +344,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path("model_weights/t1c-fla/t1c-fla_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-fla/t1c-fla_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/t1c-fla/t1c-fla_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-fla/t1c-fla_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -362,9 +363,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path("model_weights/t1c-o/t1c-o_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-o/t1c-o_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/t1c-o/t1c-o_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1c-o/t1c-o_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -381,9 +382,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path("model_weights/t1-o/t1-o_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1-o/t1-o_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/t1-o/t1-o_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/t1-o/t1-o_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -400,9 +401,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path("model_weights/fla-o/fla-o_best.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/fla-o/fla-o_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path("model_weights/fla-o/fla-o_last.tar")
+            weights = _turbo_path(lib_abspath + "/model_weights/fla-o/fla-o_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
