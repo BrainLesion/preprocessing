@@ -12,7 +12,7 @@ readme = {file = "README.md"}
 write_to = "brainles_preprocessing/_version.py"
 
 [project]
-name = "BrainLes-preprocessing"
+name = "BrainLes_preprocessing"
 # dynamic = ["version"]
 version = "0.0.1"
 authors = [
