@@ -27,7 +27,8 @@ from monai.transforms import (
     EnsureChannelFirstd,
 )
 
-from brainles_aurora.utils import download_model_weights
+from AURORA.brainles_aurora.download import download_model_weights
+from AURORA.brainles_aurora.aux import turbo_path
 
 lib_abspath = os.path.dirname(os.path.abspath(__file__))
 
@@ -35,16 +36,6 @@ model_weights_dir = lib_abspath + "/model_weights"
 if not os.path.exists(model_weights_dir):
     download_model_weights(target_folder=lib_abspath)
     
-
-def _turbo_path(the_path):
-    turbo_path = Path(
-        os.path.normpath(
-            os.path.abspath(
-                the_path,
-            )
-        )
-    )
-    return turbo_path
 
 
 def _create_nifti_seg(
@@ -294,11 +285,11 @@ def _get_model_and_weights(mode, model_selection):
             act="mish",
         )
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1-t1c-t2-fla/t1-t1c-t2-fla_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1-t1c-t2-fla/t1-t1c-t2-fla_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1-t1c-t2-fla/t1-t1c-t2-fla_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1-t1c-t2-fla/t1-t1c-t2-fla_last.tar")
         elif model_selection == "vanilla":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1-t1c-t2-fla/vanilla.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1-t1c-t2-fla/vanilla.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -315,9 +306,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1-fla/t1c-t1-fla_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-t1-fla/t1c-t1-fla_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1-fla/t1c-t1-fla_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-t1-fla/t1c-t1-fla_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -334,9 +325,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1/t1c-t1_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-t1/t1c-t1_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-t1/t1c-t1_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-t1/t1c-t1_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -353,9 +344,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-fla/t1c-fla_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-fla/t1c-fla_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-fla/t1c-fla_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-fla/t1c-fla_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -372,9 +363,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-o/t1c-o_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-o/t1c-o_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1c-o/t1c-o_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1c-o/t1c-o_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -391,9 +382,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1-o/t1-o_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1-o/t1-o_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/t1-o/t1-o_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/t1-o/t1-o_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -410,9 +401,9 @@ def _get_model_and_weights(mode, model_selection):
         )
 
         if model_selection == "best":
-            weights = _turbo_path(lib_abspath + "/model_weights/fla-o/fla-o_best.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/fla-o/fla-o_best.tar")
         elif model_selection == "last":
-            weights = _turbo_path(lib_abspath + "/model_weights/fla-o/fla-o_last.tar")
+            weights = turbo_path(lib_abspath + "/model_weights/fla-o/fla-o_last.tar")
         else:
             raise NotImplementedError(
                 "no checkpoint implemented for this selection strategy."
@@ -461,16 +452,16 @@ def single_inference(
     """
     # ~~<< I N P U T S >>~~
     if t1_file is not None:
-        t1_file = _turbo_path(t1_file)
+        t1_file = turbo_path(t1_file)
 
     if t1c_file is not None:
-        t1c_file = _turbo_path(t1c_file)
+        t1c_file = turbo_path(t1c_file)
 
     if t2_file is not None:
-        t2_file = _turbo_path(t2_file)
+        t2_file = turbo_path(t2_file)
 
     if fla_file is not None:
-        fla_file = _turbo_path(fla_file)
+        fla_file = turbo_path(fla_file)
 
     # ~~<< M O D E >>~~
     mode = _get_mode(
