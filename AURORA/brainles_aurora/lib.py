@@ -27,7 +27,14 @@ from monai.transforms import (
     EnsureChannelFirstd,
 )
 
+from brainles_aurora.utils import download_model_weights
+
 lib_abspath = os.path.dirname(os.path.abspath(__file__))
+
+model_weights_dir = lib_abspath + "/model_weights"
+if not os.path.exists(model_weights_dir):
+    download_model_weights(target_folder=lib_abspath)
+    
 
 def _turbo_path(the_path):
     turbo_path = Path(
