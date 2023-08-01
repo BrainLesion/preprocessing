@@ -27,8 +27,8 @@ from monai.transforms import (
     EnsureChannelFirstd,
 )
 
-from AURORA.brainles_aurora.download import download_model_weights
-from AURORA.brainles_aurora.aux import turbo_path
+from brainles_aurora.download import download_model_weights
+from brainles_aurora.aux import turbo_path
 
 lib_abspath = os.path.dirname(os.path.abspath(__file__))
 
