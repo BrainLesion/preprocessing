@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+
+[tool.setuptools]
+packages = ["brainles_hd_bet"]
+
+[tool.setuptools.dynamic]
+#version = {attr = "my_package.VERSION"}
+readme = { file = "README.md" }
+
+[tool.setuptools_scm]
+write_to = "brainles_hd_bet/_version.py"
+
+[project]
+name = "BrainLes_HD-BET"
+requires-python = ">=3.5"
+# dynamic = ["version"]
+version = "0.0.1"
+authors = [
+  { name = "Florian Kofler", email = "florian.kofler@tum.de" },
+  { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
+]
+maintainers = [
+  { name = "Florian Kofler", email = "florian.kofler@tum.de" },
+  { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
+]
+description = "TODO."
+keywords = ["Brain extraction, skull stripping"]
+readme = "README.md"
+# requires-python = "==3.10"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  # TODO check license issues
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: OS Independent",
+]
+dependencies = ['numpy', 'torch>=0.4.1', 'scikit-image', 'SimpleITK']
+
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+
+[project.urls]
+# documentation = "TODO"
+repository = "https://github.com/neuronflow/BrainLes"
