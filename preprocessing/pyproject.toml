@@ -6,57 +6,56 @@ packages = ["brainles_preprocessing"]
 
 [tool.setuptools.dynamic]
 #version = {attr = "my_package.VERSION"}
-readme = {file = "README.md"}
+readme = { file = "README.md" }
 
 [tool.setuptools_scm]
 write_to = "brainles_preprocessing/_version.py"
 
 [project]
 name = "BrainLes_preprocessing"
+requires-python = ">=3.5"
 # dynamic = ["version"]
 version = "0.0.1"
 authors = [
-  {name="Florian Kofler", email="florian.kofler@tum.de"},
-  {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
+  { name = "Florian Kofler", email = "florian.kofler@tum.de" },
+  { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
 ]
 maintainers = [
-  {name="Florian Kofler", email="florian.kofler@tum.de"},
-  {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
+  { name = "Florian Kofler", email = "florian.kofler@tum.de" },
+  { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
 ]
 description = "TODO."
 keywords = ["registration", "brain extraction"]
 readme = "README.md"
 # requires-python = "==3.10"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: OS Independent",
 ]
 dependencies = [
 
-    # core
-    'path==16.2.0',
-    'ttictoc==0.5.6',
-    'pathlib==1.0.1',
-    'nibabel==3.2.1',
-    'numpy==1.23.0',
+  # core
+  'path==16.2.0',
+  'ttictoc==0.5.6',
+  'pathlib==1.0.1',
+  'nibabel==3.2.1',
+  'numpy==1.23.0',
 
-    # hd-bet reqs
-    'SimpleITK==2.2.1',
-    'scikit-image==0.18.3',
-    'torch==2.0.0',
+  # hd-bet reqs
+  'SimpleITK==2.2.1',
+  'scikit-image==0.18.3',
+  'torch==2.0.0',
 
-    # utils
-    'tqdm'
-    ]
+  # utils
+  'tqdm',
+]
 
 [tool.poetry.dependencies]
-HD_BET = {path = "brainles_preprocessing/brain_extraction/HD_BET"}
+HD_BET = { path = "brainles_preprocessing/brain_extraction/HD_BET" }
 
 [project.optional-dependencies]
-dev = [
-  "pytest",
-]
+dev = ["pytest"]
 
 [project.scripts]
 brats-segment = "brats_toolkit.cli:segmentation"

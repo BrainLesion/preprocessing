@@ -6,48 +6,46 @@ packages = ["brainles_aurora"]
 
 [tool.setuptools.dynamic]
 #version = {attr = "my_package.VERSION"}
-readme = {file = "README.md"}
+readme = { file = "README.md" }
 
 [tool.setuptools_scm]
 write_to = "brainles_aurora/_version.py"
 
 [project]
 name = "BrainLes_AURORA"
+requires-python = ">=3.5"
 # dynamic = ["version"]
 version = "0.0.3"
 authors = [
-  {name="Florian Kofler", email="florian.kofler@tum.de"},
-  {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
+  { name = "Florian Kofler", email = "florian.kofler@tum.de" },
+  { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
 ]
 maintainers = [
-  {name="Florian Kofler", email="florian.kofler@tum.de"},
-  {name="Isra Mekki", email="isra.mekki@helmholtz-muenchen.de"},
+  { name = "Florian Kofler", email = "florian.kofler@tum.de" },
+  { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
 ]
 description = "TODO."
 keywords = ["Brain metastasis segmentation"]
 readme = "README.md"
 # requires-python = "==3.10"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: OS Independent",
 ]
 dependencies = [
-    'monai==1.2.0',
-    'nibabel==4.0.2',
-    'numpy==1.23.0',
-    'click',
-    'tqdm==4.64.1',
-    'path==16.2.0',
-    'PyGithub==1.57'
-    ]
-
+  'monai==1.2.0',
+  'nibabel==4.0.2',
+  'numpy==1.23.0',
+  'click',
+  'tqdm==4.64.1',
+  'path==16.2.0',
+  'PyGithub==1.57',
+]
 
 
 [project.optional-dependencies]
-dev = [
-  "pytest",
-]
+dev = ["pytest"]
 
 
 [project.urls]
