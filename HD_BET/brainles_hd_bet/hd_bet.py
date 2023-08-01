@@ -1,10 +1,10 @@
 import os
-from HD_BET.run import run_hd_bet
-from HD_BET.utils import maybe_mkdir_p, subfiles
-import HD_BET
+from brainles_hd_bet.run import run_hd_bet
+from brainles_hd_bet.utils import maybe_mkdir_p, subfiles
+import brainles_hd_bet
 
 
-if __name__ == "__main__":
+def main():
     # print("\n########################")
     # print("If you are using hd-bet, please cite the following paper:")
     # print("Isensee F, Schell M, Tursunova I, Brugnara G, Bonekamp D, Neuberger U, Wick A, Schlemmer HP, Heiland S, Wick W,"
@@ -107,8 +107,10 @@ if __name__ == "__main__":
     save_mask = args.save_mask
     overwrite_existing = args.overwrite_existing
 
-    params_file = os.path.join(HD_BET.__path__[0], "model_final.py")
-    config_file = os.path.join(HD_BET.__path__[0], "config.py")
+    file_abspath = os.path.dirname(os.path.abspath(__file__))
+
+    params_file = os.path.join(file_abspath, "model_final.py")
+    config_file = os.path.join(file_abspath, "config.py")
 
     assert os.path.abspath(input_file_or_dir) != os.path.abspath(
         output_file_or_dir
@@ -182,3 +184,7 @@ if __name__ == "__main__":
         save_mask,
         overwrite_existing,
     )
+
+
+if __name__ == "__main__":
+    main()

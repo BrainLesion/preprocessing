@@ -36,6 +36,8 @@ classifiers = [
 ]
 dependencies = ['numpy', 'torch>=0.4.1', 'scikit-image', 'SimpleITK']
 
+[project.scripts]
+hd-bet = "brainles_hd_bet:hd_bet.main"
 
 [project.optional-dependencies]
 dev = ["pytest"]

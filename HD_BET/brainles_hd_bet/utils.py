@@ -4,7 +4,9 @@ from torch import nn
 import numpy as np
 from skimage.morphology import label
 import os
-from brainles_hd_bet.paths import folder_with_parameter_files
+
+file_abspath = os.path.dirname(os.path.abspath(__file__))
+folder_with_parameter_files = os.path.join(file_abspath, "model_weights")
 
 
 def get_params_fname(fold):
@@ -33,7 +35,7 @@ def maybe_download_parameters(fold=0, force_overwrite=False):
         url = "https://zenodo.org/record/2540695/files/%d.model?download=1" % fold
         print("Downloading", url, "...")
         data = urlopen(url).read()
-        with open(out_filename, 'wb') as f:
+        with open(out_filename, "wb") as f:
             f.write(data)
 
 
@@ -58,12 +60,20 @@ class SetNetworkToVal(object):
         self.use_dropout_sampling = use_dropout_sampling
 
     def __call__(self, module):
-        if isinstance(module, nn.Dropout3d) or isinstance(module, nn.Dropout2d) or isinstance(module, nn.Dropout):
+        if (
+            isinstance(module, nn.Dropout3d)
+            or isinstance(module, nn.Dropout2d)
+            or isinstance(module, nn.Dropout)
+        ):
             module.train(self.use_dropout_sampling)
-        elif isinstance(module, nn.InstanceNorm3d) or isinstance(module, nn.InstanceNorm2d) or \
-                isinstance(module, nn.InstanceNorm1d) \
-                or isinstance(module, nn.BatchNorm2d) or isinstance(module, nn.BatchNorm3d) or \
-                isinstance(module, nn.BatchNorm1d):
+        elif (
+            isinstance(module, nn.InstanceNorm3d)
+            or isinstance(module, nn.InstanceNorm2d)
+            or isinstance(module, nn.InstanceNorm1d)
+            or isinstance(module, nn.BatchNorm2d)
+            or isinstance(module, nn.BatchNorm3d)
+            or isinstance(module, nn.BatchNorm1d)
+        ):
             module.train(not self.norm_use_average)
 
 
@@ -83,9 +93,13 @@ def subdirs(folder, join=True, prefix=None, suffix=None, sort=True):
         l = os.path.join
     else:
         l = lambda x, y: y
-    res = [l(folder, i) for i in os.listdir(folder) if os.path.isdir(os.path.join(folder, i))
-           and (prefix is None or i.startswith(prefix))
-           and (suffix is None or i.endswith(suffix))]
+    res = [
+        l(folder, i)
+        for i in os.listdir(folder)
+        if os.path.isdir(os.path.join(folder, i))
+        and (prefix is None or i.startswith(prefix))
+        and (suffix is None or i.endswith(suffix))
+    ]
     if sort:
         res.sort()
     return res
@@ -96,9 +110,13 @@ def subfiles(folder, join=True, prefix=None, suffix=None, sort=True):
         l = os.path.join
     else:
         l = lambda x, y: y
-    res = [l(folder, i) for i in os.listdir(folder) if os.path.isfile(os.path.join(folder, i))
-           and (prefix is None or i.startswith(prefix))
-           and (suffix is None or i.endswith(suffix))]
+    res = [
+        l(folder, i)
+        for i in os.listdir(folder)
+        if os.path.isfile(os.path.join(folder, i))
+        and (prefix is None or i.startswith(prefix))
+        and (suffix is None or i.endswith(suffix))
+    ]
     if sort:
         res.sort()
     return res
@@ -110,5 +128,5 @@ subfolders = subdirs  # I am tired of confusing those
 def maybe_mkdir_p(directory):
     splits = directory.split("/")[1:]
     for i in range(0, len(splits)):
-        if not os.path.isdir(os.path.join("/", *splits[:i+1])):
-            os.mkdir(os.path.join("/", *splits[:i+1]))
+        if not os.path.isdir(os.path.join("/", *splits[: i + 1])):
+            os.mkdir(os.path.join("/", *splits[: i + 1]))

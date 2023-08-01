@@ -4,9 +4,15 @@ import SimpleITK as sitk
 from brainles_hd_bet.data_loading import load_and_preprocess, save_segmentation_nifti
 from brainles_hd_bet.predict_case import predict_case_3D_net
 import imp
-from brainles_hd_bet.utils import postprocess_prediction, SetNetworkToVal, get_params_fname, maybe_download_parameters
+from brainles_hd_bet.utils import (
+    postprocess_prediction,
+    SetNetworkToVal,
+    get_params_fname,
+    maybe_download_parameters,
+)
 import os
-import HD_BET
+
+file_abspath = os.path.dirname(os.path.abspath(__file__))
 
 
 def apply_bet(img, bet, out_fname):
@@ -19,8 +25,17 @@ def apply_bet(img, bet, out_fname):
     sitk.WriteImage(out, out_fname)
 
 
-def run_hd_bet(mri_fnames, output_fnames, mode="accurate", config_file=os.path.join(HD_BET.__path__[0], "config.py"), device=0,
-               postprocess=False, do_tta=True, keep_mask=True, overwrite=True):
+def run_hd_bet(
+    mri_fnames,
+    output_fnames,
+    mode="accurate",
+    config_file=os.path.join(file_abspath, "config.py"),
+    device=0,
+    postprocess=False,
+    do_tta=True,
+    keep_mask=True,
+    overwrite=True,
+):
     """
 
     :param mri_fnames: str or list/tuple of str
@@ -37,23 +52,27 @@ def run_hd_bet(mri_fnames, output_fnames, mode="accurate", config_file=os.path.j
 
     list_of_param_files = []
 
-    if mode == 'fast':
+    if mode == "fast":
         params_file = get_params_fname(0)
         maybe_download_parameters(0)
 
         list_of_param_files.append(params_file)
-    elif mode == 'accurate':
+    elif mode == "accurate":
         for i in range(5):
             params_file = get_params_fname(i)
             maybe_download_parameters(i)
 
             list_of_param_files.append(params_file)
     else:
-        raise ValueError("Unknown value for mode: %s. Expected: fast or accurate" % mode)
+        raise ValueError(
+            "Unknown value for mode: %s. Expected: fast or accurate" % mode
+        )
 
-    assert all([os.path.isfile(i) for i in list_of_param_files]), "Could not find parameter files"
+    assert all(
+        [os.path.isfile(i) for i in list_of_param_files]
+    ), "Could not find parameter files"
 
-    cf = imp.load_source('cf', config_file)
+    cf = imp.load_source("cf", config_file)
     cf = cf.config()
 
     net, _ = cf.get_network(cf.val_use_train_mode, None)
@@ -68,7 +87,9 @@ def run_hd_bet(mri_fnames, output_fnames, mode="accurate", config_file=os.path.j
     if not isinstance(output_fnames, (list, tuple)):
         output_fnames = [output_fnames]
 
-    assert len(mri_fnames) == len(output_fnames), "mri_fnames and output_fnames must have the same length"
+    assert len(mri_fnames) == len(
+        output_fnames
+    ), "mri_fnames and output_fnames must have the same length"
 
     params = []
     for p in list_of_param_files:
@@ -76,7 +97,10 @@ def run_hd_bet(mri_fnames, output_fnames, mode="accurate", config_file=os.path.j
 
     for in_fname, out_fname in zip(mri_fnames, output_fnames):
         mask_fname = out_fname[:-7] + "_mask.nii.gz"
-        if overwrite or (not (os.path.isfile(mask_fname) and keep_mask) or not os.path.isfile(out_fname)):
+        if overwrite or (
+            not (os.path.isfile(mask_fname) and keep_mask)
+            or not os.path.isfile(out_fname)
+        ):
             print("File:", in_fname)
             print("preprocessing...")
             try:
@@ -96,9 +120,17 @@ def run_hd_bet(mri_fnames, output_fnames, mode="accurate", config_file=os.path.j
                 net.load_state_dict(p)
                 net.eval()
                 net.apply(SetNetworkToVal(False, False))
-                _, _, softmax_pred, _ = predict_case_3D_net(net, data, do_tta, cf.val_num_repeats,
-                                                            cf.val_batch_size, cf.net_input_must_be_divisible_by,
-                                                            cf.val_min_size, device, cf.da_mirror_axes)
+                _, _, softmax_pred, _ = predict_case_3D_net(
+                    net,
+                    data,
+                    do_tta,
+                    cf.val_num_repeats,
+                    cf.val_batch_size,
+                    cf.net_input_must_be_divisible_by,
+                    cf.val_min_size,
+                    device,
+                    cf.da_mirror_axes,
+                )
                 softmax_preds.append(softmax_pred[None])
 
             seg = np.argmax(np.vstack(softmax_preds).mean(0), 0)
