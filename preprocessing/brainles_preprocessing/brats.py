@@ -1,7 +1,7 @@
 from brainles_preprocessing.core import preprocess_modality_centric_to_atlas, Modality
 
 
-# TODO how to make this code more DRY
+# TODO make this code more DRY
 def preprocess_brats_style_t1c_centric(
     input_t1c: str,
     output_t1c: str,

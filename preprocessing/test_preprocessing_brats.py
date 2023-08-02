@@ -1,4 +1,4 @@
-from brainles_preprocessing.brats import brats_style_t1_centric_preprocessing
+from brainles_preprocessing.brats import preprocess_brats_style_t1_centric
 from brainles_preprocessing.utils import turbopath
 
 import os
@@ -36,7 +36,7 @@ def preprocess(inputDir):
                 flaFile = flair_file[0]
 
                 # execute it
-                brats_style_t1_centric_preprocessing(
+                preprocess_brats_style_t1_centric(
                     input_t1=t1File,
                     output_t1=prep_dir + "/" + inputDir.name + "_t1.nii.gz",
                     input_t1c=t1cFile,
