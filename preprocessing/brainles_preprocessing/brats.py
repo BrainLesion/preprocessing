@@ -1,4 +1,4 @@
-from brainles_preprocessing.core import modality_centric_atlas_preprocessing, Modality
+from brainles_preprocessing.core import preprocess_modality_centric_to_atlas, Modality
 
 
 def brats_style_t1c_centric_preprocessing(
@@ -44,7 +44,7 @@ def brats_style_t1c_centric_preprocessing(
         ),
     ]
 
-    modality_centric_atlas_preprocessing(
+    preprocess_modality_centric_to_atlas(
         primary_modality=primary,
         moving_modalities=moving_modalities,
         bet_mode=bet_mode,
@@ -98,7 +98,7 @@ def brats_style_t1_centric_preprocessing(
         ),
     ]
 
-    modality_centric_atlas_preprocessing(
+    preprocess_modality_centric_to_atlas(
         primary_modality=primary,
         moving_modalities=moving_modalities,
         bet_mode=bet_mode,
