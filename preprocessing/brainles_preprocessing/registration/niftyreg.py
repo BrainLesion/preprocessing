@@ -6,6 +6,40 @@ from ttictoc import Timer
 import subprocess
 import os
 
+from preprocessing.brainles_preprocessing.registration import Registrator
+
+
+class NiftyRegRegistrator(Registrator):
+    def register(
+        self,
+        fixed_image,
+        moving_image,
+        transformed_image,
+        matrix,
+        log_file,
+        mode,
+    ):
+        niftyreg_caller(
+            fixed_image=fixed_image,
+            moving_image=moving_image,
+            transformed_image=transformed_image,
+            matrix=matrix,
+            log_file=log_file,
+            mode=mode,
+        )
+        # TODO
+
+    def transform(
+        self,
+        fixed_image,
+        moving_image,
+        transformed_image,
+        matrix,
+        log_file,
+    ):
+        # TODO
+        pass
+
 
 def niftyreg_caller(
     fixed_image,
@@ -21,9 +55,13 @@ def niftyreg_caller(
     registration_abspath = os.path.dirname(os.path.abspath(__file__))
 
     if mode == "registration":
-        shell_script = os.path.join(registration_abspath, "niftyreg_scripts", "rigid_reg.sh")
+        shell_script = os.path.join(
+            registration_abspath, "niftyreg_scripts", "rigid_reg.sh"
+        )
     elif mode == "transformation":
-        shell_script = os.path.join(registration_abspath, "niftyreg_scripts", "transform.sh")
+        shell_script = os.path.join(
+            registration_abspath, "niftyreg_scripts", "transform.sh"
+        )
     else:
         raise NotImplementedError("this mode is not implemented:", mode)
 
@@ -52,7 +90,7 @@ def niftyreg_caller(
         print(command)
 
         # cwd = pathlib.Path(__file__).resolve().parent
-        cwd= registration_abspath
+        cwd = registration_abspath
         print("*** cwd:", cwd)
 
         with open(log_file, "w") as outfile:
