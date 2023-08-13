@@ -15,7 +15,7 @@ write_to = "brainles_hd_bet/_version.py"
 name = "BrainLes_HD-BET"
 requires-python = ">=3.5"
 # dynamic = ["version"]
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name = "Florian Kofler", email = "florian.kofler@tum.de" },
   { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
