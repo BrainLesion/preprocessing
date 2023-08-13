@@ -1,6 +1,7 @@
 import nibabel as nib
 import numpy as np
 
+from .bashhdbet import bash_hdbet_caller
 from .hdbet import hdbet_caller
 
 
@@ -18,6 +19,14 @@ def brain_extractor(
             log_file=log_file,
             mode=mode,
         )
+    elif backend == "bashHD-BET":
+        bash_hdbet_caller(
+            input_image=input_image,
+            masked_image=masked_image,
+            log_file=log_file,
+            mode=mode,
+        )
+
     else:
         raise NotImplementedError("no other brain extration backend implemented yet")
 
