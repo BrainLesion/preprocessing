@@ -1,1 +1,1 @@
-from .registration import registrator
+from .registration import register
