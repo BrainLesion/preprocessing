@@ -41,6 +41,10 @@ class NiftyRegRegistrator(Registrator):
         pass
 
 
+def run_bash_script_in_subprocess_and_log():
+    pass
+
+
 def niftyreg_caller(
     fixed_image,
     moving_image,
