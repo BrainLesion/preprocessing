@@ -26,3 +26,5 @@ def name_extractor(input_path):
     file_name = input_path.name
     parts = file_name.split(".")
     return parts[0]
+
+
