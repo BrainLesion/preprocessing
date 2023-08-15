@@ -23,7 +23,7 @@ class Modality:
         self.bet = bet
 
 
-def preprocess_modality_centric_to_atlas(
+def preprocess_modality_centric_to_atlas_space(
     primary_modality: Modality,
     moving_modalities: list[Modality],
     atlas_image: str = os.path.join(
