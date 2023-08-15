@@ -7,6 +7,7 @@ import subprocess
 import os
 
 from preprocessing.brainles_preprocessing.registration import Registrator
+from preprocessing.brainles_preprocessing.runscript import ScriptRunner
 
 
 class NiftyRegRegistrator(Registrator):
@@ -17,17 +18,18 @@ class NiftyRegRegistrator(Registrator):
         transformed_image,
         matrix,
         log_file,
-        mode,
     ):
-        niftyreg_caller(
-            fixed_image=fixed_image,
-            moving_image=moving_image,
-            transformed_image=transformed_image,
-            matrix=matrix,
-            log_file=log_file,
-            mode=mode,
+        runner = ScriptRunner(
+            script_path="niftyreg_scripts/rigid_reg.sh", log_path=log_file
         )
-        # TODO
+
+        input_params = [fixed_image, moving_image, transformed_image, matrix]
+        # Call the run method to execute the script and capture the output in the log file
+        success, error = runner.run(input_params)
+        # if success:
+        #     print("Script executed successfully. Check the log file for details.")
+        # else:
+        #     print("Script execution failed:", error)
 
     def transform(
         self,
@@ -37,8 +39,13 @@ class NiftyRegRegistrator(Registrator):
         matrix,
         log_file,
     ):
-        # TODO
-        pass
+        runner = ScriptRunner(
+            script_path="niftyreg_scripts/transform.sh", log_path=log_file
+        )
+
+        input_params = [fixed_image, moving_image, transformed_image, matrix]
+        # Call the run method to execute the script and capture the output in the log file
+        success, error = runner.run(input_params)
 
 
 def run_bash_script_in_subprocess_and_log():
