@@ -1,5 +1,8 @@
 from brainles_preprocessing.utils import turbopath
-from preprocessing.brainles_preprocessing.registration.functional import register
+from preprocessing.brainles_preprocessing.registration.functional import (
+    register,
+    transform,
+)
 from brainles_preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
@@ -65,7 +68,6 @@ def preprocess_modality_centric_to_atlas_space(
             transformed_image=co_registered,
             matrix=co_registered_matrix,
             log_file=co_registered_log,
-            mode="registration",
         )
         coregistered_modalities.append(co_registered)
 
@@ -103,7 +105,6 @@ def preprocess_modality_centric_to_atlas_space(
         transformed_image=atlas_pm,
         matrix=atlas_pm_matrix,
         log_file=atlas_pm_log,
-        mode="registration",
     )
 
     # transform moving modalities
@@ -111,13 +112,12 @@ def preprocess_modality_centric_to_atlas_space(
         atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
         atlas_coreg_log = atlas_dir + "/atlas__" + mm.modality_name + ".log"
 
-        register(
+        transform(
             fixed_image=atlas_image,
             moving_image=coreg,
             transformed_image=atlas_coreg,
             matrix=atlas_pm_matrix,
             log_file=atlas_coreg_log,
-            mode="transformation",
         )
 
     # copy folder to output
