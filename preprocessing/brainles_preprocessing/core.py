@@ -1,5 +1,5 @@
 from brainles_preprocessing.utils import turbopath
-from brainles_preprocessing.registration.registration_functional import register
+from preprocessing.brainles_preprocessing.registration.functional import register
 from brainles_preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
