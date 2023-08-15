@@ -2,6 +2,7 @@ import subprocess
 import platform
 import datetime
 import time
+import os
 
 
 class ScriptRunner:
@@ -31,7 +32,8 @@ class ScriptRunner:
     """
 
     def __init__(self, script_path, log_path):
-        self.script_path = script_path
+        self.runner_path = os.path.dirname(os.path.abspath(__file__))
+        self.script_path = os.path.abspath(script_path)
         self.log_path = log_path
         self.platform_command = "cmd /c" if platform.system() == "Windows" else "bash"
 
