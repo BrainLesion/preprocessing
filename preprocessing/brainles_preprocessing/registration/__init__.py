@@ -1,2 +1,2 @@
-from .registration import register
-from .registration import Registrator
+from .reg import register
+from .reg import Registrator

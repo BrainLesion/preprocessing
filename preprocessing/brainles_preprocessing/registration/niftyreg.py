@@ -6,11 +6,19 @@ from ttictoc import Timer
 import subprocess
 import os
 
-from preprocessing.brainles_preprocessing.registration import Registrator
-from preprocessing.brainles_preprocessing.runscript import ScriptRunner
+from brainles_preprocessing.registration import Registrator
+from brainles_preprocessing.runscript import ScriptRunner
 
 
 class NiftyRegRegistrator(Registrator):
+    def __init__(
+        self,
+        registration_script="niftyreg_scripts/rigid_reg.sh",
+        transformation_script="niftyreg_scripts/transform.sh",
+    ):
+        self.registration_script = registration_script
+        self.transformation_script = transformation_script
+
     def register(
         self,
         fixed_image,
@@ -20,7 +28,8 @@ class NiftyRegRegistrator(Registrator):
         log_file,
     ):
         runner = ScriptRunner(
-            script_path="niftyreg_scripts/rigid_reg.sh", log_path=log_file
+            script_path=self.registration_script,
+            log_path=log_file,
         )
 
         input_params = [fixed_image, moving_image, transformed_image, matrix]
@@ -40,7 +49,8 @@ class NiftyRegRegistrator(Registrator):
         log_file,
     ):
         runner = ScriptRunner(
-            script_path="niftyreg_scripts/transform.sh", log_path=log_file
+            script_path=self.transformation_script,
+            log_path=log_file,
         )
 
         input_params = [fixed_image, moving_image, transformed_image, matrix]
