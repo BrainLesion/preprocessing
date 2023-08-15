@@ -6,18 +6,32 @@ from ttictoc import Timer
 import subprocess
 import os
 
-from brainles_preprocessing.registration import Registrator
+from brainles_preprocessing.registration.reg import Registrator
 from brainles_preprocessing.runscript import ScriptRunner
 
 
 class NiftyRegRegistrator(Registrator):
     def __init__(
         self,
-        registration_script="niftyreg_scripts/rigid_reg.sh",
-        transformation_script="niftyreg_scripts/transform.sh",
+        registration_abspath=os.path.dirname(os.path.abspath(__file__)),
+        registration_script=None,
+        transformation_script=None,
     ):
-        self.registration_script = registration_script
-        self.transformation_script = transformation_script
+        # set default registration script
+        if registration_script == None:
+            self.registration_script = os.path.join(
+                registration_abspath, "niftyreg_scripts", "rigid_reg.sh"
+            )
+        else:
+            self.registration_script = registration_script
+
+        # set default transformation script
+        if transformation_script == None:
+            self.transformation_script = os.path.join(
+                registration_abspath, "niftyreg_scripts", "transform.sh"
+            )
+        else:
+            self.transformation_script = transformation_script
 
     def register(
         self,
