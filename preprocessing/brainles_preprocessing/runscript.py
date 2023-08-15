@@ -57,8 +57,9 @@ class ScriptRunner:
             start_time = time.time()
             with open(self.log_path, "a") as log_file:
                 script_name = self.script_path.split("/")[-1]
-                log_file.write(f"\n{'=' * 40}\n")
+                log_file.write(f"\n{'=' * 80}\n")
                 log_file.write(f"--- Executing {script_name} ---\n")
+                log_file.write(f"\n{'=' * 80}\n")
 
                 if input_params:
                     log_file.write(f"Input Parameters: {input_params}\n")
@@ -85,10 +86,11 @@ class ScriptRunner:
 
                 end_time = time.time()
                 total_duration = end_time - start_time
-                log_file.write(f"{'=' * 40}\n")
+                log_file.write(f"{'=' * 80}\n")
                 log_file.write(
                     f"--- Finished {script_name} in {total_duration:.2f} seconds ---\n"
                 )
+                log_file.write(f"\n{'=' * 80}\n")
 
             return True, ""
         except subprocess.CalledProcessError as e:
