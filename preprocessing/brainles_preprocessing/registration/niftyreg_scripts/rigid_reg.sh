@@ -9,10 +9,11 @@ moving="$2"
 transformed="$3"
 matrix="$4"
 
-niftyreg_scripts/reg_aladin \
+# niftyreg_scripts/reg_aladin \
+brainles_preprocessing/registration/niftyreg_scripts/reg_aladin \
     -rigOnly \
     -ref $fixed \
     -flo $moving \
     -res $transformed \
-    -aff $matrix \
-    -pad 0
+    -aff $matrix
+    # -pad 0
