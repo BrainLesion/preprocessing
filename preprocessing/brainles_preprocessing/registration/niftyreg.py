@@ -76,6 +76,7 @@ def run_bash_script_in_subprocess_and_log():
     pass
 
 
+# TODO consider removing this legacy function
 def niftyreg_caller(
     fixed_image,
     moving_image,
