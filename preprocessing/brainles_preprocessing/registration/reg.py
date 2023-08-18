@@ -1,9 +1,15 @@
-class Registrator:
-    def __init__(self, backend):
-        self.backend = backend
+from abc import ABC, abstractmethod, abstractproperty
 
+
+class Registrator(ABC):
+    @abstractproperty
+    def backend(self):
+        pass
+
+    @abstractmethod
     def register(self, fixed_image, moving_image, transformed_image, matrix, log_file):
-        raise NotImplementedError("Subclasses must implement the register method")
+        pass
 
+    @abstractmethod
     def transform(self, fixed_image, moving_image, transformed_image, matrix, log_file):
-        raise NotImplementedError("Subclasses must implement the transform method")
+        pass
