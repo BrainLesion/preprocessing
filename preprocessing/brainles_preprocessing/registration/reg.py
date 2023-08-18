@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 
 class Registrator(ABC):
-    @abstractproperty
-    def backend(self):
-        pass
+    def __init__(self, backend):
+        self.backend = backend
 
     @abstractmethod
     def register(self, fixed_image, moving_image, transformed_image, matrix, log_file):
