@@ -1,4 +1,7 @@
+#Comment Mahyar: I feel the name suggests a test file rather than running an example
+
 from brainles_preprocessing.brats import preprocess_brats_style_t1_centric
+
 from brainles_preprocessing.utils import turbopath
 
 import os
