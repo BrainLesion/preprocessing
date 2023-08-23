@@ -1,1 +1,1 @@
-from brainles_hd_bet.run import run_hd_bet
+from brainles_hd_bet import run_hd_bet

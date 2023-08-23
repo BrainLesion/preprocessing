@@ -1,5 +1,7 @@
-#Comment: I feel the name suggests a test file rather than running an example
-from brainles_preprocessing.brats import brats_style_t1_centric_preprocessing
+#Comment Mahyar: I feel the name suggests a test file rather than running an example
+
+from brainles_preprocessing.brats import preprocess_brats_style_t1_centric
+
 from brainles_preprocessing.utils import turbopath
 
 import os
@@ -37,7 +39,7 @@ def preprocess(inputDir):
                 flaFile = flair_file[0]
 
                 # execute it
-                brats_style_t1_centric_preprocessing(
+                preprocess_brats_style_t1_centric(
                     input_t1=t1File,
                     output_t1=prep_dir + "/" + inputDir.name + "_t1.nii.gz",
                     input_t1c=t1cFile,
@@ -47,7 +49,7 @@ def preprocess(inputDir):
                     input_flair=flaFile,
                     output_flair=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
                     bet_mode="gpu",
-                    limit_cuda_visible_devices="4",
+                    limit_cuda_visible_devices="0",
                     keep_coregistration=brainles_dir + "/co-registration",
                     keep_atlas_registration=brainles_dir + "/atlas-registration",
                     keep_brainextraction=brainles_dir + "/brain-extraction",

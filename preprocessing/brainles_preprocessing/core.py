@@ -8,6 +8,7 @@ import shutil
 
 core_abspath = os.path.dirname(os.path.abspath(__file__))
 
+
 class Modality:
     def __init__(
         self,
@@ -22,10 +23,12 @@ class Modality:
         self.bet = bet
 
 
-def modality_centric_atlas_preprocessing(
+def preprocess_modality_centric_to_atlas(
     primary_modality: Modality,
     moving_modalities: list[Modality],
-    atlas_image: str = os.path.join(core_abspath, "registration/atlas/t1_brats_space.nii"),
+    atlas_image: str = os.path.join(
+        core_abspath, "registration/atlas/t1_brats_space.nii"
+    ),
     bet_mode: str = "gpu",
     limit_cuda_visible_devices: str = None,
     keep_coregistration: str = None,
