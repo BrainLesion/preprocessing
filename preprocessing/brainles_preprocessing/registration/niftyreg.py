@@ -6,7 +6,77 @@ from ttictoc import Timer
 import subprocess
 import os
 
+from brainles_preprocessing.registration.reg import Registrator
+from brainles_preprocessing.runscript import ScriptRunner
 
+
+class NiftyRegRegistrator(Registrator):
+    def __init__(
+        self,
+        registration_abspath=os.path.dirname(os.path.abspath(__file__)),
+        registration_script=None,
+        transformation_script=None,
+    ):
+        # set default registration script
+        if registration_script == None:
+            self.registration_script = os.path.join(
+                registration_abspath, "niftyreg_scripts", "rigid_reg.sh"
+            )
+        else:
+            self.registration_script = registration_script
+
+        # set default transformation script
+        if transformation_script == None:
+            self.transformation_script = os.path.join(
+                registration_abspath, "niftyreg_scripts", "transform.sh"
+            )
+        else:
+            self.transformation_script = transformation_script
+
+    def register(
+        self,
+        fixed_image,
+        moving_image,
+        transformed_image,
+        matrix,
+        log_file,
+    ):
+        runner = ScriptRunner(
+            script_path=self.registration_script,
+            log_path=log_file,
+        )
+
+        input_params = [fixed_image, moving_image, transformed_image, matrix]
+        # Call the run method to execute the script and capture the output in the log file
+        success, error = runner.run(input_params)
+        # if success:
+        #     print("Script executed successfully. Check the log file for details.")
+        # else:
+        #     print("Script execution failed:", error)
+
+    def transform(
+        self,
+        fixed_image,
+        moving_image,
+        transformed_image,
+        matrix,
+        log_file,
+    ):
+        runner = ScriptRunner(
+            script_path=self.transformation_script,
+            log_path=log_file,
+        )
+
+        input_params = [fixed_image, moving_image, transformed_image, matrix]
+        # Call the run method to execute the script and capture the output in the log file
+        success, error = runner.run(input_params)
+
+
+def run_bash_script_in_subprocess_and_log():
+    pass
+
+
+# TODO consider removing this legacy function
 def niftyreg_caller(
     fixed_image,
     moving_image,
@@ -21,9 +91,13 @@ def niftyreg_caller(
     registration_abspath = os.path.dirname(os.path.abspath(__file__))
 
     if mode == "registration":
-        shell_script = os.path.join(registration_abspath, "niftyreg_scripts", "rigid_reg.sh")
+        shell_script = os.path.join(
+            registration_abspath, "niftyreg_scripts", "rigid_reg.sh"
+        )
     elif mode == "transformation":
-        shell_script = os.path.join(registration_abspath, "niftyreg_scripts", "transform.sh")
+        shell_script = os.path.join(
+            registration_abspath, "niftyreg_scripts", "transform.sh"
+        )
     else:
         raise NotImplementedError("this mode is not implemented:", mode)
 
@@ -52,7 +126,7 @@ def niftyreg_caller(
         print(command)
 
         # cwd = pathlib.Path(__file__).resolve().parent
-        cwd= registration_abspath
+        cwd = registration_abspath
         print("*** cwd:", cwd)
 
         with open(log_file, "w") as outfile:

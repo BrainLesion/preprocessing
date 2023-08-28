@@ -10,10 +10,11 @@ moving="$2"
 transformed="$3"
 matrix="$4"
 
-niftyreg_scripts/reg_resample \
+# niftyreg_scripts/reg_resample \
+brainles_preprocessing/registration/niftyreg_scripts/reg_resample \
     -ref $fixed \
     -flo $moving \
     -trans $matrix \
     -res $transformed \
-    -inter 3 \
-    -pad 0
+    -inter 3
+    # -pad 0

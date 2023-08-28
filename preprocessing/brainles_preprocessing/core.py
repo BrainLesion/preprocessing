@@ -1,5 +1,8 @@
 from brainles_preprocessing.utils import turbopath
-from brainles_preprocessing.registration import registrator
+from preprocessing.brainles_preprocessing.registration.functional import (
+    register,
+    transform,
+)
 from brainles_preprocessing.brain_extraction import brain_extractor, apply_mask
 
 import tempfile
@@ -23,7 +26,7 @@ class Modality:
         self.bet = bet
 
 
-def preprocess_modality_centric_to_atlas(
+def preprocess_modality_centric_to_atlas_space(
     primary_modality: Modality,
     moving_modalities: list[Modality],
     atlas_image: str = os.path.join(
@@ -59,13 +62,12 @@ def preprocess_modality_centric_to_atlas(
         co_registered_log = coregistration_dir + reg_name + ".log"
         co_registered_matrix = coregistration_dir + reg_name + ".txt"
 
-        registrator(
+        register(
             fixed_image=primary_modality.input_path,
             moving_image=primary_modality.input_path,
             transformed_image=co_registered,
             matrix=co_registered_matrix,
             log_file=co_registered_log,
-            mode="registration",
         )
         coregistered_modalities.append(co_registered)
 
@@ -97,13 +99,12 @@ def preprocess_modality_centric_to_atlas(
 
     atlas_image = turbopath(atlas_image)
 
-    registrator(
+    register(
         fixed_image=atlas_image,
         moving_image=primary_modality.input_path,
         transformed_image=atlas_pm,
         matrix=atlas_pm_matrix,
         log_file=atlas_pm_log,
-        mode="registration",
     )
 
     # transform moving modalities
@@ -111,13 +112,12 @@ def preprocess_modality_centric_to_atlas(
         atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
         atlas_coreg_log = atlas_dir + "/atlas__" + mm.modality_name + ".log"
 
-        registrator(
+        transform(
             fixed_image=atlas_image,
             moving_image=coreg,
             transformed_image=atlas_coreg,
             matrix=atlas_pm_matrix,
             log_file=atlas_coreg_log,
-            mode="transformation",
         )
 
     # copy folder to output
