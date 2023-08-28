@@ -49,6 +49,7 @@ dependencies = [
 
   # utils
   'tqdm',
+  'auxiliary',
 ]
 
 [tool.poetry.dependencies]
