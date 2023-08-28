@@ -1,4 +1,4 @@
-import pathlib
+import os
 import shlex
 import datetime
 from ttictoc import Timer
@@ -9,6 +9,8 @@ import os
 from brainles_preprocessing.registration.reg import Registrator
 from auxiliary.runscript import ScriptRunner
 
+import 
+
 
 class NiftyRegRegistrator(Registrator):
     def __init__(
@@ -17,16 +19,24 @@ class NiftyRegRegistrator(Registrator):
         registration_script=None,
         transformation_script=None,
     ):
-        # set default registration script
-        if registration_script == None:
+        """
+        Initialize the NiftyRegRegistrator.
+
+        Args:
+            registration_abspath (str): Absolute path to the registration directory.
+            registration_script (str, optional): Path to the registration script. If None, a default script will be used.
+            transformation_script (str, optional): Path to the transformation script. If None, a default script will be used.
+        """
+        # Set default registration script
+        if registration_script is None:
             self.registration_script = os.path.join(
                 registration_abspath, "niftyreg_scripts", "rigid_reg.sh"
             )
         else:
             self.registration_script = registration_script
 
-        # set default transformation script
-        if transformation_script == None:
+        # Set default transformation script
+        if transformation_script is None:
             self.transformation_script = os.path.join(
                 registration_abspath, "niftyreg_scripts", "transform.sh"
             )
@@ -41,6 +51,16 @@ class NiftyRegRegistrator(Registrator):
         matrix,
         log_file,
     ):
+        """
+        Register images using NiftyReg.
+
+        Args:
+            fixed_image (str): Path to the fixed image.
+            moving_image (str): Path to the moving image.
+            transformed_image (str): Path to the transformed image (output).
+            matrix (str): Path to the transformation matrix (output).
+            log_file (str): Path to the log file.
+        """
         runner = ScriptRunner(
             script_path=self.registration_script,
             log_path=log_file,
@@ -62,6 +82,16 @@ class NiftyRegRegistrator(Registrator):
         matrix,
         log_file,
     ):
+        """
+        Apply a transformation using NiftyReg.
+
+        Args:
+            fixed_image (str): Path to the fixed image.
+            moving_image (str): Path to the moving image.
+            transformed_image (str): Path to the transformed image (output).
+            matrix (str): Path to the transformation matrix.
+            log_file (str): Path to the log file.
+        """
         runner = ScriptRunner(
             script_path=self.transformation_script,
             log_path=log_file,
