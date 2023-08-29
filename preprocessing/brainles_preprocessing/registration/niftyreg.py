@@ -7,9 +7,10 @@ import subprocess
 import os
 
 from brainles_preprocessing.registration.reg import Registrator
+
 from auxiliary.runscript import ScriptRunner
 
-import 
+# from auxiliary import ScriptRunner
 
 
 class NiftyRegRegistrator(Registrator):
