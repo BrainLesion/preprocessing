@@ -51,7 +51,7 @@ def preprocess_brats_style_t1_centric(
     ]
 
     preprocess_modality_centric_to_atlas_space(
-        primary_modality=primary,
+        center_modality=primary,
         moving_modalities=moving_modalities,
         bet_mode=bet_mode,
         limit_cuda_visible_devices=limit_cuda_visible_devices,

@@ -27,7 +27,7 @@ class Modality:
 
 
 def preprocess_modality_centric_to_atlas_space(
-    primary_modality: Modality,
+    center_modality: Modality,
     moving_modalities: list[Modality],
     atlas_image: str = os.path.join(
         core_abspath, "registration/atlas/t1_brats_space.nii"
@@ -56,15 +56,15 @@ def preprocess_modality_centric_to_atlas_space(
 
     coregistered_modalities = []
     for mm in moving_modalities:
-        reg_name = "/co__" + primary_modality.modality_name + "__" + mm.modality_name
+        reg_name = "/co__" + center_modality.modality_name + "__" + mm.modality_name
 
         co_registered = coregistration_dir + reg_name + ".nii.gz"
         co_registered_log = coregistration_dir + reg_name + ".log"
         co_registered_matrix = coregistration_dir + reg_name + ".txt"
 
         register(
-            fixed_image=primary_modality.input_path,
-            moving_image=primary_modality.input_path,
+            fixed_image=center_modality.input_path,
+            moving_image=center_modality.input_path,
             transformed_image=co_registered,
             matrix=co_registered_matrix,
             log_file=co_registered_log,
@@ -75,13 +75,10 @@ def preprocess_modality_centric_to_atlas_space(
     if keep_coregistration is not None:
         keep_coregistration = turbopath(keep_coregistration)
         native_cm = (
-            coregistration_dir
-            + "/native__"
-            + primary_modality.modality_name
-            + ".nii.gz"
+            coregistration_dir + "/native__" + center_modality.modality_name + ".nii.gz"
         )
 
-        shutil.copyfile(primary_modality.input_path, native_cm)
+        shutil.copyfile(center_modality.input_path, native_cm)
         # and copy the folder to keep it
         shutil.copytree(coregistration_dir, keep_coregistration, dirs_exist_ok=True)
 
@@ -91,17 +88,17 @@ def preprocess_modality_centric_to_atlas_space(
     os.makedirs(atlas_dir, exist_ok=True)
 
     # register center_modality
-    atlas_pm_matrix = atlas_dir + "/atlas__" + primary_modality.modality_name + ".txt"
+    atlas_pm_matrix = atlas_dir + "/atlas__" + center_modality.modality_name + ".txt"
 
-    atlas_pm_log = atlas_dir + "/atlas__" + primary_modality.modality_name + ".log"
+    atlas_pm_log = atlas_dir + "/atlas__" + center_modality.modality_name + ".log"
 
-    atlas_pm = atlas_dir + "/atlas__" + primary_modality.modality_name + ".nii.gz"
+    atlas_pm = atlas_dir + "/atlas__" + center_modality.modality_name + ".nii.gz"
 
     atlas_image = turbopath(atlas_image)
 
     register(
         fixed_image=atlas_image,
-        moving_image=primary_modality.input_path,
+        moving_image=center_modality.input_path,
         transformed_image=atlas_pm,
         matrix=atlas_pm_matrix,
         log_file=atlas_pm_log,
@@ -149,16 +146,16 @@ def preprocess_modality_centric_to_atlas_space(
             shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
 
     # O U T P U T S
-    os.makedirs(primary_modality.output_path.parent, exist_ok=True)
-    if primary_modality.bet == False:
+    os.makedirs(center_modality.output_path.parent, exist_ok=True)
+    if center_modality.bet == False:
         shutil.copyfile(
             atlas_pm,
-            primary_modality.output_path,
+            center_modality.output_path,
         )
     else:
         shutil.copyfile(
             atlas_bet_pm,
-            primary_modality.output_path,
+            center_modality.output_path,
         )
 
     # now mask the rest or copy the non masked images
