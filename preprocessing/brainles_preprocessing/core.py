@@ -175,6 +175,8 @@ def preprocess_modality_centric_to_atlas_space(
                 output_image=mm.output_path,
             )
 
+        # TODO introduce channel-wise normalization
+
 
 if __name__ == "__main__":
     pass
