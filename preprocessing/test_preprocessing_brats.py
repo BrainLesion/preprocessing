@@ -2,7 +2,8 @@
 
 from brainles_preprocessing.brats import preprocess_brats_style_t1_centric
 
-from auxiliary import turbopath
+from auxiliary.path import turbopath
+
 
 import os
 import datetime
