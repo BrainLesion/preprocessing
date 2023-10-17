@@ -36,16 +36,16 @@ classifiers = [
 dependencies = [
 
   # core
-  'path==16.2.0',
-  'ttictoc==0.5.6',
-  'pathlib==1.0.1',
-  'nibabel==3.2.1',
-  'numpy==1.23.0',
+  'path>=16.2.0',
+  'ttictoc>=0.5.6',
+  'pathlib>=1.0.1',
+  'nibabel>=3.2.1',
+  'numpy>=1.23.0',
 
   # hd-bet reqs
-  'SimpleITK==2.2.1',
-  'scikit-image==0.18.3',
-  'torch==2.0.0',
+  'SimpleITK>=2.2.1',
+  'scikit-image>=0.18.3',
+  'torch>=2.0.0',
 
   # utils
   'tqdm',
@@ -67,3 +67,4 @@ brats-preprocess = "brats_toolkit.cli:singlepreprocess"
 [project.urls]
 # documentation = "TODO"
 repository = "https://github.com/neuronflow/BrainLes"
+# TODO migrate towards poetry
