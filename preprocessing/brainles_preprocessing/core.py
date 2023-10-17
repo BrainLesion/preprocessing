@@ -48,13 +48,13 @@ def preprocess_modality_centric_to_atlas_space(
     temp_folder = turbopath(storage.name)
     print(temp_folder)
 
-    # C O R E G I S T R A T I O N
+    # COREGISTRATION # TODO think about moving this to a sub-function - think about being back-end agnostic
     # coregister everything to center_modality
     # prepare directory
     coregistration_dir = temp_folder + "/coregistration"
     os.makedirs(coregistration_dir, exist_ok=True)
 
-    coregistered_modalities = []
+    coregistered_modalities = []  # TODO think about saving this to the mm instead
     for mm in moving_modalities:
         reg_name = "/co__" + center_modality.modality_name + "__" + mm.modality_name
 
@@ -82,7 +82,7 @@ def preprocess_modality_centric_to_atlas_space(
         # and copy the folder to keep it
         shutil.copytree(coregistration_dir, keep_coregistration, dirs_exist_ok=True)
 
-    # T o   a t l a s   s p a c e !
+    # TO ATLAS SPACE # TODO again this should probably be a function - think about being back-end agnostic
     # prepare directory
     atlas_dir = temp_folder + "/atlas-space"
     os.makedirs(atlas_dir, exist_ok=True)
@@ -92,14 +92,14 @@ def preprocess_modality_centric_to_atlas_space(
 
     atlas_pm_log = atlas_dir + "/atlas__" + center_modality.modality_name + ".log"
 
-    atlas_pm = atlas_dir + "/atlas__" + center_modality.modality_name + ".nii.gz"
+    atlas_cm = atlas_dir + "/atlas__" + center_modality.modality_name + ".nii.gz"
 
     atlas_image = turbopath(atlas_image)
 
     register(
         fixed_image=atlas_image,
         moving_image=center_modality.input_path,
-        transformed_image=atlas_pm,
+        transformed_image=atlas_cm,
         matrix=atlas_pm_matrix,
         log_file=atlas_pm_log,
     )
@@ -122,7 +122,8 @@ def preprocess_modality_centric_to_atlas_space(
         keep_atlas_registration = turbopath(keep_atlas_registration)
         shutil.copytree(atlas_dir, keep_atlas_registration, dirs_exist_ok=True)
 
-    # S K U L L S T R I P P I N G
+    # o p t i o n a l  s t e p s
+    # BRAINEXTRACTION # TODO make this a function - think about being back-end agnostic
     if bet_mode is not None:
         # prepare
         bet_dir = temp_folder + "/brainextraction"
