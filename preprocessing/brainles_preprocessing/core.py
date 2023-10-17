@@ -1,4 +1,4 @@
-from auxiliary import turbopath
+from auxiliary.turbopath import turbopath
 from preprocessing.brainles_preprocessing.registration.functional import (
     register,
     transform,
