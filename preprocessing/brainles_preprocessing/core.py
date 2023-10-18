@@ -1,6 +1,6 @@
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
-from preprocessing.brainles_preprocessing.registration.functional import (
+from brainles_preprocessing.registration.functional import (
     register,
     transform,
 )
