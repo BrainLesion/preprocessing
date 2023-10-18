@@ -153,12 +153,12 @@ def preprocess_modality_centric_to_atlas_space(
     os.makedirs(center_modality.output_path.parent, exist_ok=True)
     if center_modality.bet == False:
         shutil.copyfile(
-            atlas_pm,
+            atlas_cm,
             center_modality.output_path,
         )
     else:
         shutil.copyfile(
-            atlas_bet_pm,
+            atlas_bet_cm,
             center_modality.output_path,
         )
 
