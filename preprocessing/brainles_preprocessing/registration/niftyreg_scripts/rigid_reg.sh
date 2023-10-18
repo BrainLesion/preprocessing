@@ -10,7 +10,7 @@ transformed="$3"
 matrix="$4"
 
 # niftyreg_scripts/reg_aladin \
-brainles_preprocessing/registration/niftyreg_scripts/reg_aladin \
+preprocessing/brainles_preprocessing/registration/niftyreg_scripts/reg_aladin \
     -rigOnly \
     -ref $fixed \
     -flo $moving \
