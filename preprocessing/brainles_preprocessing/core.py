@@ -169,10 +169,16 @@ def preprocess_modality_centric_to_atlas_space(
             apply_mask(
                 input_image=atlas_coreg,
                 mask_image=atlas_mask,
-                output_image=mm.output_path,
+                output_image=mm.brain_masked,
             )
+            mm.current = mm.brain_masked
 
-        # TODO introduce channel-wise normalization
+    # copy files and folders to output
+    if keep_brainextraction is not None:
+        keep_brainextraction = turbopath(keep_brainextraction)
+        shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
+
+    # TODO introduce channel-wise normalization
 
     # FINAL OUTPUTS
     os.makedirs(cm.output_path.parent, exist_ok=True)
