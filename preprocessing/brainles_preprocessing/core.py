@@ -178,6 +178,20 @@ def preprocess_modality_centric_to_atlas_space(
 
         # TODO introduce channel-wise normalization
 
+    # OUTPUTS
+    os.makedirs(center_modality.output_path.parent, exist_ok=True)
+    shutil.copyfile(
+        center_modality.current,
+        center_modality.output_path,
+    )
+
+    for mm in moving_modalities:
+        os.makedirs(mm.output_path.parent, exist_ok=True)
+        shutil.copyfile(
+            mm.current,
+            mm.output_path,
+        )
+
 
 if __name__ == "__main__":
     pass
