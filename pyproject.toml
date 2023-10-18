@@ -13,9 +13,9 @@ write_to = "brainles_preprocessing/_version.py"
 
 [project]
 name = "BrainLes_preprocessing"
-requires-python = ">=3.5"
+requires-python = ">=3.10"
 # dynamic = ["version"]
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name = "Florian Kofler", email = "florian.kofler@tum.de" },
   { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
@@ -27,7 +27,7 @@ maintainers = [
 description = "TODO."
 keywords = ["registration", "brain extraction"]
 readme = "README.md"
-# requires-python = "==3.10"
+
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: GNU Affero General Public License v3",
