@@ -133,14 +133,14 @@ def preprocess_modality_centric_to_atlas_space(
         os.makedirs(bet_dir, exist_ok=True)
 
         # skullstrip t1c and obtain mask
-        hd_bet_log = bet_dir + "/hd-bet.log"
+        bet_log = bet_dir + "/bet.log"
         atlas_bet_cm = bet_dir + "/atlas_bet_pm.nii.gz"
         atlas_mask = atlas_bet_cm[:-7] + "_mask.nii.gz"
 
         brain_extractor(
             input_image=atlas_cm,
             masked_image=atlas_bet_cm,
-            log_file=hd_bet_log,
+            log_file=bet_log,
             mode=bet_mode,
         )
 
