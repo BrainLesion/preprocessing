@@ -68,7 +68,7 @@ def preprocess(inputDir):
 
 ### *** GOGOGO *** ###
 if __name__ == "__main__":
-    EXAMPLE_DATA_DIR = turbopath("preprocessing/example_data")
+    EXAMPLE_DATA_DIR = turbopath("example_data")
 
     exams = EXAMPLE_DATA_DIR.dirs()
 

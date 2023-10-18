@@ -1,5 +1,3 @@
-# BrainLes: A brain imaging toolkit beyond BraTS and lesion segmentation.
-
 # niftyreg_preprocessor
 does the following
 * co-registration
@@ -12,8 +10,10 @@ does the following
 ## atlas
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/
 
-
 ## installation:
 ```
 pip install -e "git+https://github.com/neuronflow/BrainLes.git@main#egg=HD_BET&subdirectory=preprocessing/brainles_preprocessing/brain_extraction/HD_BET"
 ```
+
+
+/home/florian/flow/BrainLesion/BrainLes/preprocessing

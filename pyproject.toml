@@ -15,7 +15,7 @@ write_to = "brainles_preprocessing/_version.py"
 name = "BrainLes_preprocessing"
 requires-python = ">=3.5"
 # dynamic = ["version"]
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name = "Florian Kofler", email = "florian.kofler@tum.de" },
   { name = "Isra Mekki", email = "isra.mekki@helmholtz-muenchen.de" },
