@@ -129,7 +129,7 @@ def preprocess_modality_centric_to_atlas_space(
     # BRAINEXTRACTION # TODO make this a function - think about being back-end agnostic
     if bet_mode is not None:
         # prepare
-        bet_dir = temp_folder + "/brainextraction"
+        bet_dir = temp_folder + "/brain-extraction"
         os.makedirs(bet_dir, exist_ok=True)
 
         # skullstrip t1c and obtain mask
