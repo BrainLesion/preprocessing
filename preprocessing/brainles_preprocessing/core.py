@@ -160,9 +160,9 @@ def preprocess_modality_centric_to_atlas_space(
     for mm in moving_modalities:
         atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
 
-        if mm.bet == False:
+        if not mm.bet:
             mm.current = atlas_coreg
-        else:
+        elif mm.bet:
             mm.brain_masked = (
                 brain_masked_dir + "/brain_masked__" + mm.modality_name + ".nii.gz"
             )
