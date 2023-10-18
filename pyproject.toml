@@ -43,9 +43,8 @@ dependencies = [
   'numpy>=1.23.0',
 
   # hd-bet reqs
-  'SimpleITK>=2.2.1',
-  'scikit-image>=0.18.3',
-  'torch>=2.0.0',
+  'BrainLes-HD-BET>=0.0.4',
+
 
   # utils
   'tqdm',
