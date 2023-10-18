@@ -11,7 +11,8 @@ transformed="$3"
 matrix="$4"
 
 # niftyreg_scripts/reg_resample \
-brainles_preprocessing/registration/niftyreg_scripts/reg_resample \
+# TODO this path will be an issue for packaging
+preprocessing/brainles_preprocessing/registration/niftyreg_scripts/reg_resample \
     -ref $fixed \
     -flo $moving \
     -trans $matrix \

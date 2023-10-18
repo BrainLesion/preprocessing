@@ -10,6 +10,7 @@ transformed="$3"
 matrix="$4"
 
 # niftyreg_scripts/reg_aladin \
+# TODO this path will be an issue for packaging
 preprocessing/brainles_preprocessing/registration/niftyreg_scripts/reg_aladin \
     -rigOnly \
     -ref $fixed \
