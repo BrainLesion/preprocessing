@@ -138,7 +138,9 @@ def preprocess_modality_centric_to_atlas_space(
         # skullstrip cm and obtain mask
         bet_log = bet_dir + "/brain-extraction.log"
         atlas_bet_cm = bet_dir + "/atlas_bet_" + cm.modality_name + ".nii.gz"
-        atlas_mask = atlas_bet_cm[:-7] + "_brain-mask.nii.gz"
+        atlas_mask = (
+            atlas_bet_cm[:-7] + "_mask.nii.gz"
+        )  # TODO change this, the skullstripper should define here
 
         brain_extractor(
             input_image=atlas_cm,
@@ -179,7 +181,7 @@ def preprocess_modality_centric_to_atlas_space(
         keep_brainextraction = turbopath(keep_brainextraction)
         shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
 
-    # TODO introduce channel-wise normalization
+        # TODO introduce channel-wise normalization
 
     # FINAL OUTPUTS
     for mod in all_modalities:
