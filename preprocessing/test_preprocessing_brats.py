@@ -22,7 +22,8 @@ def preprocess(inputDir):
         brainles_dir = turbopath(inputDir) + "/" + inputDir.name + "_brainles"
         prep_dir = brainles_dir + "/preprocessed"
 
-        if not os.path.exists(prep_dir):
+        # if not os.path.exists(prep_dir):
+        if os.path.exists(prep_dir):
             t1_file = btk_raw_dir.files("*t1.nii.gz")
             t1c_file = btk_raw_dir.files("*t1c.nii.gz")
             t2_file = btk_raw_dir.files("*t2.nii.gz")
