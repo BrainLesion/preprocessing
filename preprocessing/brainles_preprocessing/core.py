@@ -42,6 +42,7 @@ def preprocess_modality_centric_to_atlas_space(
     keep_brainextraction: str = None,
 ):
     cm = center_modality
+    all_modalities = [cm] + moving_modalities
 
     # CUDA devices
     if limit_cuda_visible_devices is not None:
@@ -181,17 +182,11 @@ def preprocess_modality_centric_to_atlas_space(
     # TODO introduce channel-wise normalization
 
     # FINAL OUTPUTS
-    os.makedirs(cm.output_path.parent, exist_ok=True)
-    shutil.copyfile(
-        cm.current,
-        cm.output_path,
-    )
-
-    for mm in moving_modalities:
-        os.makedirs(mm.output_path.parent, exist_ok=True)
+    for mod in all_modalities:
+        os.makedirs(mod.output_path.parent, exist_ok=True)
         shutil.copyfile(
-            mm.current,
-            mm.output_path,
+            mod.current,
+            mod.output_path,
         )
 
 
