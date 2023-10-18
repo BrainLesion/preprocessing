@@ -43,12 +43,12 @@ dependencies = [
   'numpy>=1.23.0',
 
   # hd-bet reqs
-  'BrainLes-HD-BET>=0.0.4',
+  'BrainLes-HD-BET>=0.0.5',
 
 
   # utils
   'tqdm',
-  'auxiliary',
+  'auxiliary>=0.0.35',
 ]
 
 [tool.poetry.dependencies]
