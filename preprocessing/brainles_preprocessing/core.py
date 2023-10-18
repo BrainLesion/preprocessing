@@ -41,6 +41,8 @@ def preprocess_modality_centric_to_atlas_space(
     keep_atlas_registration: str = None,
     keep_brainextraction: str = None,
 ):
+    cm = center_modality
+
     # CUDA devices
     if limit_cuda_visible_devices is not None:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -59,15 +61,15 @@ def preprocess_modality_centric_to_atlas_space(
 
     coregistered_modalities = []  # TODO think about saving this to the mm instead
     for mm in moving_modalities:
-        reg_name = "/co__" + center_modality.modality_name + "__" + mm.modality_name
+        reg_name = "/co__" + cm.modality_name + "__" + mm.modality_name
 
         co_registered = coregistration_dir + reg_name + ".nii.gz"
         co_registered_log = coregistration_dir + reg_name + ".log"
         co_registered_matrix = coregistration_dir + reg_name + ".txt"
 
         register(
-            fixed_image=center_modality.input_path,
-            moving_image=center_modality.input_path,
+            fixed_image=cm.input_path,
+            moving_image=cm.input_path,
             transformed_image=co_registered,
             matrix=co_registered_matrix,
             log_file=co_registered_log,
@@ -77,11 +79,9 @@ def preprocess_modality_centric_to_atlas_space(
     # also copy center_modality itself and export folder
     if keep_coregistration is not None:
         keep_coregistration = turbopath(keep_coregistration)
-        native_cm = (
-            coregistration_dir + "/native__" + center_modality.modality_name + ".nii.gz"
-        )
+        native_cm = coregistration_dir + "/native__" + cm.modality_name + ".nii.gz"
 
-        shutil.copyfile(center_modality.input_path, native_cm)
+        shutil.copyfile(cm.input_path, native_cm)
         # and copy the folder to keep it
         shutil.copytree(coregistration_dir, keep_coregistration, dirs_exist_ok=True)
 
@@ -91,21 +91,22 @@ def preprocess_modality_centric_to_atlas_space(
     os.makedirs(atlas_dir, exist_ok=True)
 
     # register center_modality
-    atlas_pm_matrix = atlas_dir + "/atlas__" + center_modality.modality_name + ".txt"
+    atlas_cm_matrix = atlas_dir + "/atlas__" + cm.modality_name + ".txt"
 
-    atlas_pm_log = atlas_dir + "/atlas__" + center_modality.modality_name + ".log"
+    atlas_cm_log = atlas_dir + "/atlas__" + cm.modality_name + ".log"
 
-    atlas_cm = atlas_dir + "/atlas__" + center_modality.modality_name + ".nii.gz"
+    atlas_cm = atlas_dir + "/atlas__" + cm.modality_name + ".nii.gz"
 
     atlas_image = turbopath(atlas_image)
 
     register(
         fixed_image=atlas_image,
-        moving_image=center_modality.input_path,
+        moving_image=cm.input_path,
         transformed_image=atlas_cm,
-        matrix=atlas_pm_matrix,
-        log_file=atlas_pm_log,
+        matrix=atlas_cm_matrix,
+        log_file=atlas_cm_log,
     )
+    cm.current = atlas_cm
 
     # transform moving modalities
     for coreg, mm in zip(coregistered_modalities, moving_modalities):
@@ -116,9 +117,10 @@ def preprocess_modality_centric_to_atlas_space(
             fixed_image=atlas_image,
             moving_image=coreg,
             transformed_image=atlas_coreg,
-            matrix=atlas_pm_matrix,
+            matrix=atlas_cm_matrix,
             log_file=atlas_coreg_log,
         )
+        mm.current = atlas_coreg
 
     # copy folder to output
     if keep_atlas_registration is not None:
@@ -132,9 +134,9 @@ def preprocess_modality_centric_to_atlas_space(
         bet_dir = temp_folder + "/brain-extraction"
         os.makedirs(bet_dir, exist_ok=True)
 
-        # skullstrip t1c and obtain mask
+        # skullstrip cm and obtain mask
         bet_log = bet_dir + "/bet.log"
-        atlas_bet_cm = bet_dir + "/atlas_bet_pm.nii.gz"
+        atlas_bet_cm = bet_dir + "/atlas_bet_cm.nii.gz"
         atlas_mask = atlas_bet_cm[:-7] + "_mask.nii.gz"
 
         brain_extractor(
@@ -144,32 +146,26 @@ def preprocess_modality_centric_to_atlas_space(
             mode=bet_mode,
         )
 
-        # copy files and folders to output
-        if keep_brainextraction is not None:
-            keep_brainextraction = turbopath(keep_brainextraction)
-            shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
-
-    # O U T P U T S
-    os.makedirs(center_modality.output_path.parent, exist_ok=True)
-    if center_modality.bet == False:
-        shutil.copyfile(
-            atlas_cm,
-            center_modality.output_path,
-        )
-    else:
-        shutil.copyfile(
-            atlas_bet_cm,
-            center_modality.output_path,
-        )
+    # masking
+    os.makedirs(cm.output_path.parent, exist_ok=True)
+    if not cm.bet:
+        cm.current = atlas_cm
+    elif cm.bet:
+        cm.current = atlas_bet_cm
 
     # now mask the rest or copy the non masked images
+    brain_masked_dir = bet_dir + "/brain_masked"
+    os.makedirs(brain_masked_dir, exist_ok=True)
+
     for mm in moving_modalities:
         atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
-        os.makedirs(mm.output_path.parent, exist_ok=True)
 
         if mm.bet == False:
-            shutil.copyfile(atlas_coreg, mm.output_path)
+            mm.current = atlas_coreg
         else:
+            mm.brain_masked = (
+                brain_masked_dir + "/brain_masked__" + mm.modality_name + ".nii.gz"
+            )
             apply_mask(
                 input_image=atlas_coreg,
                 mask_image=atlas_mask,
@@ -178,11 +174,11 @@ def preprocess_modality_centric_to_atlas_space(
 
         # TODO introduce channel-wise normalization
 
-    # OUTPUTS
-    os.makedirs(center_modality.output_path.parent, exist_ok=True)
+    # FINAL OUTPUTS
+    os.makedirs(cm.output_path.parent, exist_ok=True)
     shutil.copyfile(
-        center_modality.current,
-        center_modality.output_path,
+        cm.current,
+        cm.output_path,
     )
 
     for mm in moving_modalities:
