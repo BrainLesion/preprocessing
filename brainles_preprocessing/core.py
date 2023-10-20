@@ -71,7 +71,7 @@ def preprocess_modality_centric_to_atlas_space(
 
         register(
             fixed_image=cm.input_path,
-            moving_image=cm.input_path,
+            moving_image=mm.input_path,
             transformed_image=co_registered,
             matrix=co_registered_matrix,
             log_file=co_registered_log,
