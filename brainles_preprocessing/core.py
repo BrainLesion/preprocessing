@@ -29,6 +29,7 @@ class Modality:
         self.normalizer = normalizer
 
 
+# TODO citation reminder decorator here
 def preprocess_modality_centric_to_atlas_space(
     center_modality: Modality,
     moving_modalities: list[Modality],
