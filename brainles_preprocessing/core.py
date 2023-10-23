@@ -47,7 +47,7 @@ class Modality:
         input_path: str,
         output_path: str,
         bet: bool,
-        normalizer: Normalizer = None,
+        normalizer: Normalizer | None = None,
     ) -> None:
         self.modality_name = modality_name
         self.input_path = turbopath(input_path)
@@ -65,6 +65,7 @@ def preprocess_modality_centric_to_atlas_space(
     ),
     bet_mode: str = "gpu",
     limit_cuda_visible_devices: str = None,
+    temporary_directory: str = None,
     keep_coregistration: str = None,
     keep_atlas_registration: str = None,
     keep_brainextraction: str = None,
@@ -78,8 +79,15 @@ def preprocess_modality_centric_to_atlas_space(
         os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
 
     # create temporary storage
-    storage = tempfile.TemporaryDirectory()
-    temp_folder = turbopath(storage.name)
+    if temporary_directory is None:
+        storage = tempfile.TemporaryDirectory()
+    # custom temporary storage for debugging etc
+    elif temporary_directory is not None:
+        os.makedirs(temporary_directory, exist_ok=True)
+        storage = temporary_directory
+
+    storage = turbopath(storage)
+    temp_folder = storage.name
     print(temp_folder)
 
     # COREGISTRATION # TODO think about moving this to a sub-function - think about being back-end agnostic
