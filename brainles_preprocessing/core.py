@@ -81,14 +81,13 @@ def preprocess_modality_centric_to_atlas_space(
     # create temporary storage
     if temporary_directory is None:
         storage = tempfile.TemporaryDirectory()
+        temp_folder = turbopath(storage.name)
     # custom temporary storage for debugging etc
     elif temporary_directory is not None:
         os.makedirs(temporary_directory, exist_ok=True)
-        storage = temporary_directory
+        temp_folder = turbopath(temporary_directory)
 
-    storage = turbopath(storage)
-    temp_folder = storage.name
-    print(temp_folder)
+    print(f"temporary_folder: {temp_folder}")
 
     # COREGISTRATION # TODO think about moving this to a sub-function - think about being back-end agnostic
     # coregister everything to center_modality
