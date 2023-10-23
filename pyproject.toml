@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "brainles_preprocessing"
-version = "0.0.5"
+version = "0.0.6"
 description = "TODO."
 authors = [
   "Florian Kofler <florian.kofler@tum.de>",
