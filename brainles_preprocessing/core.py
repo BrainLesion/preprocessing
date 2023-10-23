@@ -1,3 +1,7 @@
+import tempfile
+import os
+import shutil
+
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
 from brainles_preprocessing.registration.functional import (
@@ -6,9 +10,6 @@ from brainles_preprocessing.registration.functional import (
 )
 from brainles_preprocessing.brain_extraction import brain_extractor, apply_mask
 
-import tempfile
-import os
-import shutil
 
 core_abspath = os.path.dirname(os.path.abspath(__file__))
 
