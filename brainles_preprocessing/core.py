@@ -15,6 +15,32 @@ core_abspath = os.path.dirname(os.path.abspath(__file__))
 
 
 class Modality:
+    """
+    Represents a medical image modality with associated preprocessing information.
+
+    Args:
+        modality_name (str): Name of the modality, e.g., "T1", "T2", "FLAIR".
+        input_path (str): Path to the input modality data.
+        output_path (str): Path to save the preprocessed modality data.
+        bet (bool): Indicates whether brain extraction should be performed (True) or not (False).
+        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+
+    Attributes:
+        modality_name (str): Name of the modality.
+        input_path (str): Path to the input modality data.
+        output_path (str): Path to save the preprocessed modality data.
+        bet (bool): Indicates whether brain extraction is enabled.
+        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+
+    Example:
+        >>> t1_modality = Modality(
+        ...     modality_name="T1",
+        ...     input_path="/path/to/input_t1.nii",
+        ...     output_path="/path/to/preprocessed_t1.nii",
+        ...     bet=True
+        ... )
+    """
+
     def __init__(
         self,
         modality_name: str,
