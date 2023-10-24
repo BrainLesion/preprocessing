@@ -4,6 +4,7 @@ import shutil
 
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
+from auxiliary.nifti.io import read_nifti, write_nifti
 from brainles_preprocessing.registration.functional import (
     register,
     transform,
@@ -54,6 +55,17 @@ class Modality:
         self.output_path = turbopath(output_path)
         self.bet = bet
         self.normalizer = normalizer
+        self.current = ""
+
+    def normalize(self):
+        if self.normalizer is not None:
+            image = read_nifti(self.current)
+            normalized_image = self.normalizer.normalize(image=image)
+            write_nifti(
+                input_array=normalized_image,
+                output_nifti_path=self.current,
+                reference_nifti_path=self.current,
+            )
 
 
 # TODO citation reminder decorator here
@@ -69,6 +81,7 @@ def preprocess_modality_centric_to_atlas_space(
     keep_coregistration: str = None,
     keep_atlas_registration: str = None,
     keep_brainextraction: str = None,
+    keep_unnormalized: str = None,
 ):
     cm = center_modality
     all_modalities = [cm] + moving_modalities
@@ -216,7 +229,35 @@ def preprocess_modality_centric_to_atlas_space(
             keep_brainextraction = turbopath(keep_brainextraction)
             shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
 
-        # TODO introduce channel-wise normalization
+    # NORMALIZATION
+    # keep unnormalized files
+    if keep_unnormalized is not None:
+        os.makedirs(keep_unnormalized, exist_ok=True)
+        for mod in all_modalities:
+            shutil.copyfile(
+                src=mod.current,
+                dst=keep_unnormalized
+                + "/unnormalized__"
+                + mod.modality_name
+                + ".nii.gz",
+            )
+
+    # also keep in debug folder
+    if temporary_directory is not None:
+        unnormalized_dir = temp_folder + "/unnormalized"
+        os.makedirs(unnormalized_dir, exist_ok=True)
+        for mod in all_modalities:
+            shutil.copyfile(
+                src=mod.current,
+                dst=unnormalized_dir
+                + "/unnormalized__"
+                + mod.modality_name
+                + ".nii.gz",
+            )
+
+    # finally we can normalize
+    for mod in all_modalities:
+        mod.normalize()
 
     # FINAL OUTPUTS
     for mod in all_modalities:
