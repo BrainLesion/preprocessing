@@ -184,37 +184,37 @@ def preprocess_modality_centric_to_atlas_space(
             mode=bet_mode,
         )
 
-    # masking
-    os.makedirs(cm.output_path.parent, exist_ok=True)
-    if not cm.bet:
-        cm.current = atlas_cm
-    elif cm.bet:
-        cm.current = atlas_bet_cm
+        # masking
+        os.makedirs(cm.output_path.parent, exist_ok=True)
+        if not cm.bet:
+            cm.current = atlas_cm
+        elif cm.bet:
+            cm.current = atlas_bet_cm
 
-    # now mask the rest or copy the non masked images
-    brain_masked_dir = bet_dir + "/brain_masked"
-    os.makedirs(brain_masked_dir, exist_ok=True)
+        # now mask the rest or copy the non masked images
+        brain_masked_dir = bet_dir + "/brain_masked"
+        os.makedirs(brain_masked_dir, exist_ok=True)
 
-    for mm in moving_modalities:
-        atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
+        for mm in moving_modalities:
+            atlas_coreg = atlas_dir + "/atlas__" + mm.modality_name + ".nii.gz"
 
-        if not mm.bet:
-            mm.current = atlas_coreg
-        elif mm.bet:
-            mm.brain_masked = (
-                brain_masked_dir + "/brain_masked__" + mm.modality_name + ".nii.gz"
-            )
-            apply_mask(
-                input_image=atlas_coreg,
-                mask_image=atlas_mask,
-                output_image=mm.brain_masked,
-            )
-            mm.current = mm.brain_masked
+            if not mm.bet:
+                mm.current = atlas_coreg
+            elif mm.bet:
+                mm.brain_masked = (
+                    brain_masked_dir + "/brain_masked__" + mm.modality_name + ".nii.gz"
+                )
+                apply_mask(
+                    input_image=atlas_coreg,
+                    mask_image=atlas_mask,
+                    output_image=mm.brain_masked,
+                )
+                mm.current = mm.brain_masked
 
-    # copy files and folders to output
-    if keep_brainextraction is not None:
-        keep_brainextraction = turbopath(keep_brainextraction)
-        shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
+        # copy files and folders to output
+        if keep_brainextraction is not None:
+            keep_brainextraction = turbopath(keep_brainextraction)
+            shutil.copytree(bet_dir, keep_brainextraction, dirs_exist_ok=True)
 
         # TODO introduce channel-wise normalization
 
