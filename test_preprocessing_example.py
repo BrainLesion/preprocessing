@@ -51,6 +51,7 @@ def preprocess(inputDir):
                 lower_limit=0,
                 upper_limit=1,
             )
+
             # define modalities
             center = Modality(
                 modality_name="t1c",
@@ -79,7 +80,7 @@ def preprocess(inputDir):
                     modality_name="fla",
                     input_path=flaFile,
                     output_path=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
-                    bet=False,
+                    bet=True,
                     normalizer=percentile_normalizer,
                 ),
             ]
