@@ -1,7 +1,8 @@
 # TODO move this to tutorial
 import datetime
-from tqdm import tqdm
+
 from auxiliary.turbopath import turbopath
+from tqdm import tqdm
 
 from brainles_preprocessing.brats import preprocess_brats_style_t1_centric
 

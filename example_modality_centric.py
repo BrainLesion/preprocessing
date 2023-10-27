@@ -1,14 +1,13 @@
 # TODO move this to tutorial
 import datetime
-from tqdm import tqdm
-from auxiliary.turbopath import turbopath
 
 from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
-
+from auxiliary.turbopath import turbopath
+from tqdm import tqdm
 
 from brainles_preprocessing.core import (
-    preprocess_modality_centric_to_atlas_space,
     Modality,
+    preprocess_modality_centric_to_atlas_space,
 )
 
 # from brainles_preprocessing.brats import preprocess_brats_style_t1_centric
