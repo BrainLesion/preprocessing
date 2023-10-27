@@ -1,16 +1,13 @@
-import tempfile
 import os
 import shutil
+import tempfile
 
+from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
-from auxiliary.nifti.io import read_nifti, write_nifti
-from brainles_preprocessing.registration.functional import (
-    register,
-    transform,
-)
-from brainles_preprocessing.brain_extraction import brain_extractor, apply_mask
 
+from brainles_preprocessing.brain_extraction import apply_mask, brain_extractor
+from brainles_preprocessing.registration.functional import register, transform
 
 core_abspath = os.path.dirname(os.path.abspath(__file__))
 

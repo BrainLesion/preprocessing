@@ -1,10 +1,9 @@
-import shlex
 import datetime
-from ttictoc import Timer
+import os
+import shlex
 import subprocess
 
-
-import os
+from ttictoc import Timer
 
 
 def bash_hdbet_caller(

@@ -1,6 +1,6 @@
 from brainles_preprocessing.core import (
-    preprocess_modality_centric_to_atlas_space,
     Modality,
+    preprocess_modality_centric_to_atlas_space,
 )
 
 
