@@ -48,7 +48,7 @@ def preprocess(inputDir):
                 output_flair=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
                 bet_mode="gpu",
                 limit_cuda_visible_devices="0",
-                # temporary_directory="tempo/" + inputDir.name,
+                temporary_directory="tempo/" + inputDir.name,
                 keep_coregistration=brainles_dir + "/co-registration",
                 keep_atlas_registration=brainles_dir + "/atlas-registration",
                 keep_brainextraction=brainles_dir + "/brain-extraction",
