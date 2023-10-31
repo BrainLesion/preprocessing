@@ -1,29 +1,56 @@
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
 [tool.poetry]
 name = "brainles_preprocessing"
-version = "0.0.9"
+version = "0.0.0" # will be overwritten by poetry-dynamic-versioning but needs to be set
 description = "TODO."
+license = "AGPL-3.0"
+
 authors = [
   "Florian Kofler <florian.kofler@tum.de>",
   "Isra Mekki <isra.mekki@helmholtz-muenchen.de>",
+  "Marcel Rosier <marcel.rosier@tum.de>",
 ]
-license = "AGPL-3.0"
+
+maintainers = [
+  "Florian Kofler <florian.kofler@tum.de>",
+  "Isra Mekki <isra.mekki@helmholtz-muenchen.de>",
+  "Marcel Rosier <marcel.rosier@tum.de>",
+]
+
+readme = "README.md"
+repository = "https://github.com/BrainLesion/preprocessing"
+#documentation = ""
+
+keywords = ["brain tumor", "glioma", "BraTS", "skullstripping", "brain extraction"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+]
+
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = "^3.10"
 # core
-path = ">=16.2.0"
-ttictoc = ">=0.5.6"
-pathlib = ">=1.0.1"
-nibabel = ">=3.2.1"
-numpy = ">=1.23.0"
+path = "^16.2.0"
+ttictoc = "^0.5.6"
+pathlib = "^1.0.1"
+nibabel = "^3.2.1"
+numpy = "^1.23.0"
 
 # hd-bet reqs
 BrainLes-HD-BET = ">=0.0.5"
 
 # utils
-tqdm = ">=4.64.1"
-auxiliary = ">=0.0.35"
-# TODO add citation dependency
+tqdm = "^4.64.1"
+auxiliary = "^0.0.35"
+rich = "^13.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
