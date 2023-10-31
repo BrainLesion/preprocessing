@@ -3,87 +3,75 @@ import shlex
 import datetime
 from ttictoc import Timer
 import subprocess
-
-
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
-def bash_hdbet_caller(
-    input_image,
-    masked_image,
-    log_file,
-    mode,
-):
-    """skullstrips images with HD-BET generates a skullstripped file and mask"""
-    the_shell = "/bin/bash"
+def bash_hdbet_caller(input_image, masked_image, log_file, mode):
+    """Skull-strips images with HD-BET.
+
+    Parameters:
+    - input_image: Path to the input image
+    - masked_image: Path to the output masked image
+    - log_file: Path to the log file
+    - mode: Mode of operation (gpu/cpu/cpu-fast)
+
+    Returns:
+    None
+    """
+
     brain_extraction_abspath = os.path.dirname(os.path.abspath(__file__))
 
-    if mode == "gpu":
-        shell_script = os.path.join(
-            brain_extraction_abspath, "hdbet_scripts", "hd-bet_gpu.sh"
-        )
-    elif mode == "cpu":
-        shell_script = os.path.join(
-            brain_extraction_abspath, "hdbet_scripts", "hd-bet_cpu.sh"
-        )
-    elif mode == "cpu-fast":
-        shell_script = os.path.join(
-            brain_extraction_abspath, "hdbet_scripts", "hd-bet_cpu-fast.sh"
-        )
-    else:
-        raise NotImplementedError("this mode is not implemented:", mode)
-    # let's try to call it
+    # Shell script selection using a dictionary
+    modes_to_scripts = {
+        "gpu": "hd-bet_gpu.sh",
+        "cpu": "hd-bet_cpu.sh",
+        "cpu-fast": "hd-bet_cpu-fast.sh",
+    }
+    if mode not in modes_to_scripts:
+        raise NotImplementedError(f"This mode is not implemented: {mode}")
+
+    shell_script = os.path.join(
+        brain_extraction_abspath, "hdbet_scripts", modes_to_scripts[mode]
+    )
+
+    # Using default shell
+    the_shell = os.getenv("SHELL", "/bin/bash")
+
+    # Forming the command
+    readableCmd = (the_shell, shell_script, input_image, masked_image)
+    readableCmd = " ".join(readableCmd)
+    command = shlex.split(readableCmd)
+
+    cwd = brain_extraction_abspath
+
+    # Execute command
     try:
-        starttime = str(datetime.datetime.now())
-        print(
-            "** starting skullstripping with:",
-            mode,
-            "for:",
-            input_image.name,
-            "at:",
-            starttime,
-        )
-        t = Timer()  # TicToc("name")
-        t.start()
-
-        # generate subprocess call
-        readableCmd = (
-            the_shell,
-            shell_script,
-            input_image,
-            masked_image,
-        )
-        readableCmd = " ".join(readableCmd)
-        print(readableCmd)
-        command = shlex.split(readableCmd)
-        print(command)
-
-        # cwd = pathlib.Path(__file__).resolve().parent
-        cwd = brain_extraction_abspath
-        print(cwd)
+        logging.info(f"Starting skullstripping with {mode} for {input_image.name}")
+        timer = Timer()
+        timer.start()
 
         with open(log_file, "w") as outfile:
             subprocess.run(command, stdout=outfile, stderr=outfile, cwd=cwd)
 
-        endtime = str(datetime.datetime.now().time())
-
-        elapsed = t.stop("call")
-        print(elapsed)
-
-        with open(log_file, "a") as file:
-            file.write("\n" + "************************************************" + "\n")
-            file.write("CALL: " + readableCmd + "\n")
-            file.write("cwd: " + str(cwd) + "\n")
-            file.write("************************************************" + "\n")
-            file.write("************************************************" + "\n")
-            file.write("start time: " + starttime + "\n")
-            file.write("end time: " + endtime + "\n")
-            file.write("time elapsed: " + str(int(elapsed) / 60) + " minutes" + "\n")
-            file.write("************************************************" + "\n")
+        elapsed_time = timer.stop("call")
+        _write_log(log_file, readableCmd, cwd, elapsed_time)
 
     except Exception as e:
-        print("error: " + str(e))
-        print("skullstripping error for: " + input_image.name)
+        logging.error(f"Error: {str(e)}")
+        logging.error(f"Skullstripping error for: {input_image.name}")
 
-    endtime = str(datetime.datetime.now())
-    print("** finished: " + input_image.name + " at: " + endtime)
+    logging.info(f"Finished: {input_image.name}")
+
+
+def _write_log(log_file, command, cwd, elapsed):
+    with open(log_file, "a") as file:
+        file.write("\n" + "*" * 50 + "\n")
+        file.write(f"CALL: {command}\n")
+        file.write(f"cwd: {str(cwd)}\n")
+        file.write(f"Start time: {str(datetime.datetime.now())}\n")
+        file.write(f"End time: {str(datetime.datetime.now().time())}\n")
+        file.write(f"Time elapsed: {str(int(elapsed) / 60)} minutes\n")
+        file.write("*" * 50 + "\n")

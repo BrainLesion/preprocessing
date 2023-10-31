@@ -3,34 +3,23 @@ import numpy as np
 
 from .bashhdbet import bash_hdbet_caller
 from .hdbet import hdbet_caller
+from .hdbet_implementation import HDBetExtractor, BashHDBetExtractor
 
+# Can be moved to core
+def brain_extractor(input_image, masked_image, log_file, mode, backend="hdbet"):
+    """Skull-strips images using the specified backend."""
 
-def brain_extractor(
-    input_image,
-    masked_image,
-    log_file,
-    mode,
-    backend="HD-BET",
-):
-    if backend == "HD-BET":
-        hdbet_caller(
-            input_image=input_image,
-            masked_image=masked_image,
-            log_file=log_file,
-            mode=mode,
-        )
-    elif backend == "bashHD-BET":
-        bash_hdbet_caller(
-            input_image=input_image,
-            masked_image=masked_image,
-            log_file=log_file,
-            mode=mode,
-        )
-
+    if backend == "hdbet":
+        extractor = HDBetExtractor()
+    elif backend == "bashhdbet":
+        extractor = BashHDBetExtractor()
     else:
-        raise NotImplementedError("no other brain extration backend implemented yet")
+        raise NotImplementedError(f"Unsupported brain extraction backend: {backend}")
+
+    extractor.extract(input_image, masked_image, log_file, mode)
 
 
+# Is this the best place to put it?
 def apply_mask(
     input_image,
     mask_image,
