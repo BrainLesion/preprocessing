@@ -12,57 +12,6 @@ from brainles_preprocessing.registration.functional import register, transform
 core_abspath = os.path.dirname(os.path.abspath(__file__))
 
 
-class Modality:
-    """
-    Represents a medical image modality with associated preprocessing information.
-
-    Args:
-        modality_name (str): Name of the modality, e.g., "T1", "T2", "FLAIR".
-        input_path (str): Path to the input modality data.
-        output_path (str): Path to save the preprocessed modality data.
-        bet (bool): Indicates whether brain extraction should be performed (True) or not (False).
-        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
-
-    Attributes:
-        modality_name (str): Name of the modality.
-        input_path (str): Path to the input modality data.
-        output_path (str): Path to save the preprocessed modality data.
-        bet (bool): Indicates whether brain extraction is enabled.
-        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
-
-    Example:
-        >>> t1_modality = Modality(
-        ...     modality_name="T1",
-        ...     input_path="/path/to/input_t1.nii",
-        ...     output_path="/path/to/preprocessed_t1.nii",
-        ...     bet=True
-        ... )
-    """
-
-    def __init__(
-        self,
-        modality_name: str,
-        input_path: str,
-        output_path: str,
-        bet: bool,
-        normalizer: Normalizer | None = None,
-    ) -> None:
-        self.modality_name = modality_name
-        self.input_path = turbopath(input_path)
-        self.output_path = turbopath(output_path)
-        self.bet = bet
-        self.normalizer = normalizer
-        self.current = ""
-
-    def normalize(self):
-        if self.normalizer is not None:
-            image = read_nifti(self.current)
-            normalized_image = self.normalizer.normalize(image=image)
-            write_nifti(
-                input_array=normalized_image,
-                output_nifti_path=self.current,
-                reference_nifti_path=self.current,
-            )
 
 
 # TODO citation reminder decorator here
@@ -72,6 +21,7 @@ def preprocess_modality_centric_to_atlas_space(
     atlas_image: str = os.path.join(
         core_abspath, "registration/atlas/t1_brats_space.nii"
     ),
+    # TODO: Why "gpu" shouldn't it be "fast" or "accurate"?
     bet_mode: str = "gpu",
     limit_cuda_visible_devices: str = None,
     temporary_directory: str = None,
