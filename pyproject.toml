@@ -7,7 +7,7 @@ enable = true
 
 [tool.poetry]
 name = "brainles_preprocessing"
-version = "0.0.0" # will be overwritten by poetry-dynamic-versioning but needs to be set
+version = "0.0.0"               # will be overwritten by poetry-dynamic-versioning but needs to be set
 description = "TODO."
 license = "AGPL-3.0"
 
@@ -27,11 +27,17 @@ readme = "README.md"
 repository = "https://github.com/BrainLesion/preprocessing"
 #documentation = ""
 
-keywords = ["brain tumor", "glioma", "BraTS", "skullstripping", "brain extraction"]
+keywords = [
+  "brain tumor",
+  "glioma",
+  "BraTS",
+  "skullstripping",
+  "brain extraction",
+]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: OS Independent",
 ]
 
 
@@ -49,7 +55,7 @@ BrainLes-HD-BET = ">=0.0.5"
 
 # utils
 tqdm = "^4.64.1"
-auxiliary = "^0.0.35"
+auxiliary = "^0.0.37"
 rich = "^13.6.0"
 
 [tool.poetry.dev-dependencies]
