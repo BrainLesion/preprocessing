@@ -2,7 +2,7 @@
 
 # Function to check if a file exists
 file_exists() {
-    if [ -f "$2" ]; then
+    if [ -f "$1" ]; then
         return 0
     else
         return 1
