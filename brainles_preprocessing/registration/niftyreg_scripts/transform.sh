@@ -38,7 +38,8 @@ if ! file_exists "$transformation_matrix"; then
 fi
 
 # NiftyReg configuration
-niftyreg_path="brainles_preprocessing/registration/niftyreg_scripts/reg_resample"
+niftyreg_executable="brainles_preprocessing/registration/niftyreg_scripts/reg_resample"
+niftyreg_path=$(readlink -f "$niftyreg_executable")  # Convert to absolute path
 interpolation_method="3"  # Choose the appropriate interpolation method (e.g., 0, 1, 3)
 
 # Perform resampling with NiftyReg

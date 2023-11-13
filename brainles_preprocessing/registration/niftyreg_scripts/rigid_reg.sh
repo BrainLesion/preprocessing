@@ -33,7 +33,8 @@ if ! file_exists "$moving_image"; then
 fi
 
 # NiftyReg configuration
-niftyreg_path="brainles_preprocessing/registration/niftyreg_scripts/reg_aladin"
+niftyreg_executable="brainles_preprocessing/registration/niftyreg_scripts/reg_aladin"
+niftyreg_path=$(readlink -f "$niftyreg_executable")  # Convert to absolute path
 registration_options=(
     "-rigOnly"     # Perform rigid-only registration
     "-ref" "$fixed_image"
