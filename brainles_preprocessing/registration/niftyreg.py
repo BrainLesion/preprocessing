@@ -1,14 +1,13 @@
+import datetime
 import os
 import shlex
-import datetime
-from ttictoc import Timer
-
 import subprocess
-import os
-
-from brainles_preprocessing.registration.reg import Registrator
 
 from auxiliary.runscript import ScriptRunner
+from auxiliary.turbopath import turbopath
+from ttictoc import Timer
+
+from brainles_preprocessing.registration.reg import Registrator
 
 # from auxiliary import ScriptRunner
 
@@ -67,7 +66,17 @@ class NiftyRegRegistrator(Registrator):
             log_path=log_file,
         )
 
-        input_params = [fixed_image, moving_image, transformed_image, matrix]
+        niftyreg_executable = (
+            turbopath(__file__).parent + "niftyreg_scripts/reg_aladin",
+        )
+
+        input_params = [
+            niftyreg_executable,
+            fixed_image,
+            moving_image,
+            transformed_image,
+            matrix,
+        ]
         # Call the run method to execute the script and capture the output in the log file
         success, error = runner.run(input_params)
         # if success:
@@ -98,7 +107,17 @@ class NiftyRegRegistrator(Registrator):
             log_path=log_file,
         )
 
-        input_params = [fixed_image, moving_image, transformed_image, matrix]
+        niftyreg_executable = (
+            turbopath(__file__).parent + "niftyreg_scripts/reg_resample",
+        )
+
+        input_params = [
+            niftyreg_executable,
+            fixed_image,
+            moving_image,
+            transformed_image,
+            matrix,
+        ]
         # Call the run method to execute the script and capture the output in the log file
         success, error = runner.run(input_params)
 
