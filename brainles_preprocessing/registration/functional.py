@@ -1,4 +1,3 @@
-from .niftyreg import niftyreg_caller
 from .niftyreg import NiftyRegRegistrator
 
 
