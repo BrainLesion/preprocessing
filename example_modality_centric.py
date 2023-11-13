@@ -33,10 +33,10 @@ def preprocess(inputDir):
         flair_file = btk_raw_dir.files("*fla.nii.gz")
 
         if len(t1_file) == len(t1c_file) == len(t2_file) == len(flair_file) == 1:
-            print(t1_file)
-            print(t1c_file)
-            print(t2_file)
-            print(flair_file)
+            # print(t1_file)
+            # print(t1c_file)
+            # print(t2_file)
+            # print(flair_file)
 
             t1File = t1_file[0]
             t1cFile = t1c_file[0]
@@ -107,5 +107,5 @@ if __name__ == "__main__":
     exams = EXAMPLE_DATA_DIR.dirs()
 
     for exam in tqdm(exams):
-        print(exam)
+        print("processing:", exam)
         preprocess(exam)
