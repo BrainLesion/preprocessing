@@ -66,17 +66,22 @@ class NiftyRegRegistrator(Registrator):
             log_path=log_file,
         )
 
-        niftyreg_executable = (
-            turbopath(__file__).parent + "niftyreg_scripts/reg_aladin",
+        niftyreg_executable = str(
+            turbopath(__file__).parent + "/niftyreg_scripts/reg_aladin",
         )
 
+        print("niftyreg_executable:", niftyreg_executable)
+
         input_params = [
-            niftyreg_executable,
-            fixed_image,
-            moving_image,
-            transformed_image,
-            matrix,
+            turbopath(niftyreg_executable),
+            turbopath(fixed_image),
+            turbopath(moving_image),
+            turbopath(transformed_image),
+            turbopath(matrix),
         ]
+
+        print("Input Params:", input_params)
+
         # Call the run method to execute the script and capture the output in the log file
         success, error = runner.run(input_params)
         # if success:
@@ -107,17 +112,21 @@ class NiftyRegRegistrator(Registrator):
             log_path=log_file,
         )
 
-        niftyreg_executable = (
-            turbopath(__file__).parent + "niftyreg_scripts/reg_resample",
+        niftyreg_executable = str(
+            turbopath(__file__).parent + "/niftyreg_scripts/reg_resample",
         )
 
+        # print("niftyreg_executable:", niftyreg_executable)
+
         input_params = [
-            niftyreg_executable,
-            fixed_image,
-            moving_image,
-            transformed_image,
-            matrix,
+            turbopath(niftyreg_executable),
+            turbopath(fixed_image),
+            turbopath(moving_image),
+            turbopath(transformed_image),
+            turbopath(matrix),
         ]
+        print("Input Params:", input_params)
+
         # Call the run method to execute the script and capture the output in the log file
         success, error = runner.run(input_params)
 
@@ -180,7 +189,12 @@ def niftyreg_caller(
         print("*** cwd:", cwd)
 
         with open(log_file, "w") as outfile:
-            subprocess.run(command, stdout=outfile, stderr=outfile, cwd=cwd)
+            subprocess.run(
+                command,
+                stdout=outfile,
+                stderr=outfile,
+                cwd=cwd,
+            )
 
         endtime = str(datetime.datetime.now().time())
 
