@@ -1,10 +1,10 @@
 import os
 import shutil
-import tempfile
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
+
 
 class Modality:
     """
@@ -39,7 +39,6 @@ class Modality:
         input_path: str,
         output_path: str,
         bet: bool,
-        temporary_directory: str,
         normalizer: Normalizer | None = None,
     ) -> None:
         self.modality_name = modality_name
@@ -49,7 +48,7 @@ class Modality:
         self.normalizer = normalizer
         self.current = self.input_path
 
-    def normalize(self, store_unnormalized=None):
+    def normalize(self, temporary_directory, store_unnormalized=None):
         # Backup the unnormalized file
         if store_unnormalized is not None:
             os.makedirs(store_unnormalized, exist_ok=True)
@@ -76,7 +75,6 @@ class Modality:
                 reference_nifti_path=self.current,
             )
 
-
     def register(self, registrator, image_path, registration_dir, registration_name):
         registered = os.path.join(registration_dir, f"{registration_name}.nii.gz")
         registered_matrix = os.path.join(registration_dir, f"{registration_name}.txt")
@@ -91,16 +89,22 @@ class Modality:
         )
         self.current = registered
 
-
-    def apply_maks(self, brain_extractor):
-        pass
+    def apply_mak(self, brain_extractor, brain_masked_dir, atlas_mask):
+        if self.bet:
+            brain_masked = os.path.join(
+                brain_masked_dir,
+                f"brain_masked__{self.modality_name}.nii.gz",
+            )
+            brain_extractor.apply_mask(
+                input_image=self.current,
+                mask_image=atlas_mask,
+                output_image=brain_masked,
+            )
+            self.current = brain_masked
 
     def transform(self, registrator, image_path, registration_dir, registration_name):
-        transformed = os.path.join(
-            registration_dir, f"{registration_name}.nii.gz"
-        )
-        transformed_log = os.path.join(
-            registration_dir, f"{registration_name}.log")
+        transformed = os.path.join(registration_dir, f"{registration_name}.nii.gz")
+        transformed_log = os.path.join(registration_dir, f"{registration_name}.log")
         transformed_matrix = os.path.join(registration_dir, f"{registration_name}.txt")
 
         registrator.transform(
@@ -112,5 +116,20 @@ class Modality:
         )
         self.current = transformed
 
-    def extract_brain_region(self, brain_extractor):
-        pass
+    def extract_brain_region(self, brain_extractor, bet_dir, atlas_mask, bet_mode):
+        bet_log = os.path.join(bet_dir, "brain-extraction.log")
+        atlas_bet_cm = os.path.join(bet_dir, f"atlas_bet_{self.modality_name}.nii.gz")
+        atlas_mask = os.path.join(
+            bet_dir, f"atlas_bet_{self.modality_name}_mask.nii.gz"
+        )
+
+        brain_extractor(
+            input_image=self.current,
+            masked_image=atlas_bet_cm,
+            log_file=bet_log,
+            mode=bet_mode,
+        )
+        # Is this check necessary?
+        if self.bet:
+            self.current = atlas_bet_cm
+        return atlas_mask
