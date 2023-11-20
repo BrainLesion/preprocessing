@@ -75,13 +75,19 @@ class Modality:
                 reference_nifti_path=self.current,
             )
 
-    def register(self, registrator, image_path, registration_dir, registration_name):
-        registered = os.path.join(registration_dir, f"{registration_name}.nii.gz")
-        registered_matrix = os.path.join(registration_dir, f"{registration_name}.txt")
-        registered_log = os.path.join(registration_dir, f"{registration_name}.log")
+    def register(
+        self,
+        registrator,
+        fixed_image_path,
+        registration_dir,
+        moving_image_name,
+    ):
+        registered = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
+        registered_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
+        registered_log = os.path.join(registration_dir, f"{moving_image_name}.log")
 
         registrator.register(
-            fixed_image=image_path,
+            fixed_image=fixed_image_path,
             moving_image=self.current,
             transformed_image=registered,
             matrix=registered_matrix,
@@ -89,7 +95,7 @@ class Modality:
         )
         self.current = registered
 
-    def apply_mak(self, brain_extractor, brain_masked_dir, atlas_mask):
+    def apply_mask(self, brain_extractor, brain_masked_dir, atlas_mask):
         if self.bet:
             brain_masked = os.path.join(
                 brain_masked_dir,
@@ -102,13 +108,19 @@ class Modality:
             )
             self.current = brain_masked
 
-    def transform(self, registrator, image_path, registration_dir, registration_name):
-        transformed = os.path.join(registration_dir, f"{registration_name}.nii.gz")
-        transformed_log = os.path.join(registration_dir, f"{registration_name}.log")
-        transformed_matrix = os.path.join(registration_dir, f"{registration_name}.txt")
+    def transform(
+        self,
+        registrator,
+        fixed_image_path,
+        registration_dir,
+        moving_image_name,
+    ):
+        transformed = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
+        transformed_log = os.path.join(registration_dir, f"{moving_image_name}.log")
+        transformed_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
 
         registrator.transform(
-            fixed_image=image_path,
+            fixed_image=fixed_image_path,
             moving_image=self.current,
             transformed_image=transformed,
             matrix=transformed_matrix,
@@ -116,7 +128,7 @@ class Modality:
         )
         self.current = transformed
 
-    def extract_brain_region(self, brain_extractor, bet_dir, atlas_mask, bet_mode):
+    def extract_brain_region(self, brain_extractor, bet_dir, atlas_mask):
         bet_log = os.path.join(bet_dir, "brain-extraction.log")
         atlas_bet_cm = os.path.join(bet_dir, f"atlas_bet_{self.modality_name}.nii.gz")
         atlas_mask = os.path.join(
@@ -127,9 +139,6 @@ class Modality:
             input_image=self.current,
             masked_image=atlas_bet_cm,
             log_file=bet_log,
-            mode=bet_mode,
         )
-        # Is this check necessary?
-        if self.bet:
-            self.current = atlas_bet_cm
+        self.current = atlas_bet_cm
         return atlas_mask
