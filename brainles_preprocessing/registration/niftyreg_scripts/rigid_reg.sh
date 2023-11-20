@@ -10,16 +10,17 @@ file_exists() {
 }
 
 # Check if the correct number of arguments is provided
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 <fixed_image> <moving_image> <transformed_image> <transformation_matrix>"
+if [ "$#" -ne 5 ]; then
+    echo "Usage: $0 <niftyreg_executable> <fixed_image> <moving_image> <transformed_image> <transformation_matrix>"
     exit 1
 fi
 
 # Assign arguments to meaningful variable names
-fixed_image="$1"
-moving_image="$2"
-transformed_image="$3"
-transformation_matrix="$4"
+niftyreg_executable="$1"
+fixed_image="$2"
+moving_image="$3"
+transformed_image="$4"
+transformation_matrix="$5"
 
 # Validate the existence of input files
 if ! file_exists "$fixed_image"; then
@@ -33,7 +34,7 @@ if ! file_exists "$moving_image"; then
 fi
 
 # NiftyReg configuration
-niftyreg_path="brainles_preprocessing/registration/niftyreg_scripts/reg_aladin"
+niftyreg_path=$niftyreg_executable
 registration_options=(
     "-rigOnly"     # Perform rigid-only registration
     "-ref" "$fixed_image"
