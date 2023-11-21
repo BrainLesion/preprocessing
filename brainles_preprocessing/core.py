@@ -12,8 +12,6 @@ from brainles_preprocessing.registration.functional import register, transform
 core_abspath = os.path.dirname(os.path.abspath(__file__))
 
 
-
-
 # TODO citation reminder decorator here
 def preprocess_modality_centric_to_atlas_space(
     center_modality: Modality,
