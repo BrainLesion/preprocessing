@@ -4,7 +4,7 @@ from auxiliary.runscript import ScriptRunner
 from auxiliary.turbopath import turbopath
 from ttictoc import Timer
 
-from brainles_preprocessing.registration.reg import Registrator
+from brainles_preprocessing.registration.registrator import Registrator
 
 # from auxiliary import ScriptRunner
 

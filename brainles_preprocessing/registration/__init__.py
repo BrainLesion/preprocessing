@@ -1,0 +1,1 @@
+from .niftyreg import NiftyRegRegistrator
