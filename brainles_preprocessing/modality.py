@@ -48,7 +48,11 @@ class Modality:
         self.normalizer = normalizer
         self.current = self.input_path
 
-    def normalize(self, temporary_directory, store_unnormalized=None):
+    def normalize(
+        self,
+        temporary_directory,
+        store_unnormalized=None,
+    ):
         # Backup the unnormalized file
         if store_unnormalized is not None:
             os.makedirs(store_unnormalized, exist_ok=True)
@@ -94,8 +98,14 @@ class Modality:
             log_file=registered_log,
         )
         self.current = registered
+        return registered_matrix
 
-    def apply_mask(self, brain_extractor, brain_masked_dir, atlas_mask):
+    def apply_mask(
+        self,
+        brain_extractor,
+        brain_masked_dir,
+        atlas_mask,
+    ):
         if self.bet:
             brain_masked = os.path.join(
                 brain_masked_dir,
@@ -114,28 +124,32 @@ class Modality:
         fixed_image_path,
         registration_dir,
         moving_image_name,
+        transformation_matrix,
     ):
         transformed = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
         transformed_log = os.path.join(registration_dir, f"{moving_image_name}.log")
-        transformed_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
 
         registrator.transform(
             fixed_image=fixed_image_path,
             moving_image=self.current,
             transformed_image=transformed,
-            matrix=transformed_matrix,
+            matrix=transformation_matrix,
             log_file=transformed_log,
         )
         self.current = transformed
 
-    def extract_brain_region(self, brain_extractor, bet_dir, atlas_mask):
+    def extract_brain_region(
+        self,
+        brain_extractor,
+        bet_dir,
+    ):
         bet_log = os.path.join(bet_dir, "brain-extraction.log")
         atlas_bet_cm = os.path.join(bet_dir, f"atlas_bet_{self.modality_name}.nii.gz")
         atlas_mask = os.path.join(
             bet_dir, f"atlas_bet_{self.modality_name}_mask.nii.gz"
         )
 
-        brain_extractor(
+        brain_extractor.extract(
             input_image=self.current,
             masked_image=atlas_bet_cm,
             log_file=bet_log,

@@ -89,7 +89,8 @@ def preprocess(inputDir):
                 moving_modalities=moving_modalities,
                 registrator=registrator,
                 brain_extractor=brain_extractor,
-                atlas_image_path="registration/atlas/t1_brats_space.nii",  # TODO: check path correctness
+                temp_folder="tempo",
+                limit_cuda_visible_devices="1",
             )
 
             preprocessor.run(
