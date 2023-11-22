@@ -118,6 +118,17 @@ class Preprocessor:
                     store_unnormalized=save_dir_unnormalized,
                 )
 
+        for modality in self.all_modalities:
+            os.makedirs(modality.output_path.parent, exist_ok=True)
+            shutil.copyfile(
+                modality.current,
+                modality.output_path,
+            )
+
+    @property
+    def all_modalities(self):
+        return [self.center_modality] + self.moving_modalities
+
     def _save_output(
         self,
         src,

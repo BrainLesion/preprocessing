@@ -96,6 +96,10 @@ def preprocess(inputDir):
             preprocessor.run(
                 brain_extraction=True,
                 normalization=True,
+                save_dir_coregistration=brainles_dir + "/co-registration",
+                save_dir_atlas_registration=brainles_dir + "/atlas-registration",
+                save_dir_brain_extraction=brainles_dir + "/brain-extraction",
+                save_dir_unnormalized=brainles_dir + "/unnormalized",
             )
 
     except Exception as e:
