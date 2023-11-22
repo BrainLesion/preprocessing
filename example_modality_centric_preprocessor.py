@@ -81,14 +81,12 @@ def preprocess(inputDir):
                     normalizer=percentile_normalizer,
                 ),
             ]
-            registrator = NiftyRegRegistrator()
-            brain_extractor = HDBetExtractor()
 
             preprocessor = PreprocessorGPU(
                 center_modality=center,
                 moving_modalities=moving_modalities,
-                registrator=registrator,
-                brain_extractor=brain_extractor,
+                registrator=NiftyRegRegistrator(),
+                brain_extractor=HDBetExtractor(),
                 temp_folder="tempo",
                 limit_cuda_visible_devices="1",
             )
