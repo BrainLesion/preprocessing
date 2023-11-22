@@ -43,8 +43,8 @@ def preprocess(inputDir):
 
             # normalizer
             percentile_normalizer = PercentileNormalizer(
-                lower_percentile=0.5,
-                upper_percentile=99.5,
+                lower_percentile=0.1,
+                upper_percentile=99.9,
                 lower_limit=0,
                 upper_limit=1,
             )
@@ -63,18 +63,18 @@ def preprocess(inputDir):
                     modality_name="t1",
                     input_path=t1File,
                     output_path=prep_dir + "/" + inputDir.name + "_t1.nii.gz",
-                    bet=False,
+                    bet=True,
                     normalizer=percentile_normalizer,
                 ),
                 Modality(
                     modality_name="t2",
                     input_path=t2File,
                     output_path=prep_dir + "/" + inputDir.name + "_t2.nii.gz",
-                    bet=False,
+                    bet=True,
                     normalizer=percentile_normalizer,
                 ),
                 Modality(
-                    modality_name="fla",
+                    modality_name="flair",
                     input_path=flaFile,
                     output_path=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
                     bet=True,
