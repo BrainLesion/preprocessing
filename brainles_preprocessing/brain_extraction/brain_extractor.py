@@ -7,9 +7,6 @@ from brainles_hd_bet import run_hd_bet
 
 
 class BrainExtractor:
-    def __init__(self, backend):
-        self.backend = backend
-
     @abstractmethod
     def extract(self, input_image, output_image, log_file, mode):
         pass
@@ -33,9 +30,6 @@ class BrainExtractor:
 
 
 class HDBetExtractor(BrainExtractor):
-    def __init__(self):
-        super().__init__(backend="hdbet")
-
     def extract(self, input_image, output_image, log_file, mode):
         run_hd_bet(
             mri_fnames=[input_image],

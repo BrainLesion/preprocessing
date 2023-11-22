@@ -14,8 +14,8 @@ class Preprocessor:
         moving_modalities: list[Modality],
         registrator,
         brain_extractor,
-        temp_folder,
         atlas_image_path,
+        temp_folder=None,
     ):
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
