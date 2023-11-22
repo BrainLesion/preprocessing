@@ -1,14 +1,15 @@
 # TODO move this to tutorial
+# TODO polish this
 import datetime
 
 from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
 from auxiliary.turbopath import turbopath
 from tqdm import tqdm
 
+from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
 from brainles_preprocessing.preprocessor import Preprocessor, PreprocessorGPU
 from brainles_preprocessing.registration import NiftyRegRegistrator
-from brainles_preprocessing.brain_extraction import HDBetExtractor
 
 
 def preprocess(inputDir):

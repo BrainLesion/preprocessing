@@ -12,29 +12,12 @@ The outcome of this processing sequence is a set of 4 NIFTI images, skull-stripp
 
 ## Atlas Reference
 
-The atlas employed in our workflow is based on the following publication:
-[Link to the Atlas Article](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/)
+We use the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/)
 
 
 ## Installation
+With a Python 3.10+ environment you can install directly from  [pypi.org](https://pypi.org/project/brainles-preprocessing/):
 
-
-1. **Directly from the GitHub Repository**:
-   Using pip, you can directly install the preprocessing tool:
-   
-   ```bash
-   pip install git+https://github.com/BrainLesion/preprocessing.git
-   ```
-
-2. **Clone and Install Locally**:
-   For a local installation, you can clone the repository and then install it:
-   
-   ```bash
-   git clone https://github.com/BrainLesion/preprocessing.git
-   cd preprocessing
-   pip install .
-   ```
-
-## Directory Reference
-
-`/home/florian/flow/BrainLesion/BrainLes/preprocessing`
+```
+pip install brainles-preprocessing
+```

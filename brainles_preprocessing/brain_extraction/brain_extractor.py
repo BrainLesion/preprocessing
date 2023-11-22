@@ -1,8 +1,8 @@
+# TODO add typing and docs
 from abc import abstractmethod
 
 import nibabel as nib
 import numpy as np
-
 from brainles_hd_bet import run_hd_bet
 
 

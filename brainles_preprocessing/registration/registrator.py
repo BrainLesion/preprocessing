@@ -1,3 +1,4 @@
+# TODO add typing and docs
 from abc import ABC, abstractmethod
 
 

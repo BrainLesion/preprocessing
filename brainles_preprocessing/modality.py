@@ -1,9 +1,12 @@
+# todo add typing and docs
 import os
 import shutil
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
+
+from brainles_preprocessing.registration.registrator import Registrator
 
 
 class Modality:
@@ -82,9 +85,9 @@ class Modality:
     def register(
         self,
         registrator,
-        fixed_image_path,
-        registration_dir,
-        moving_image_name,
+        fixed_image_path: str,
+        registration_dir: str,
+        moving_image_name: str,
     ):
         registered = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
         registered_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
@@ -120,7 +123,7 @@ class Modality:
 
     def transform(
         self,
-        registrator,
+        registrator: Registrator,
         fixed_image_path,
         registration_dir,
         moving_image_name,
