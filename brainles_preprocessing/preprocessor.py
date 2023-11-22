@@ -1,11 +1,12 @@
+# TODO add typing and documentation
 import os
 import shutil
 import tempfile
 
 from auxiliary.turbopath import turbopath
 
-from .modality import Modality
 from .brain_extraction.brain_extractor import BrainExtractor
+from .modality import Modality
 from .registration.registrator import Registrator
 
 
@@ -14,9 +15,9 @@ class Preprocessor:
         self,
         center_modality: Modality,
         moving_modalities: list[Modality],
-        registrator,
-        brain_extractor,
-        atlas_image_path=turbopath(__file__).parent
+        registrator: Registrator,
+        brain_extractor: BrainExtractor,
+        atlas_image_path: str = turbopath(__file__).parent
         + "/registration/atlas/t1_brats_space.nii",
         temp_folder=None,
     ):
@@ -170,9 +171,9 @@ class PreprocessorGPU(Preprocessor):
         self,
         center_modality: Modality,
         moving_modalities: list[Modality],
-        registrator,
-        brain_extractor,
-        atlas_image_path=turbopath(__file__).parent
+        registrator: Registrator,
+        brain_extractor: BrainExtractor,
+        atlas_image_path: str = turbopath(__file__).parent
         + "/registration/atlas/t1_brats_space.nii",
         temp_folder=None,
         limit_cuda_visible_devices: str = None,
