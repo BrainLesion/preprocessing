@@ -11,7 +11,7 @@ class BrainExtractor:
     def extract(
         self,
         input_image,
-        output_image,
+        masked_image,
         log_file,
         mode,
     ):
