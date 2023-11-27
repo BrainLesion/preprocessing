@@ -115,9 +115,9 @@ class Modality:
                 f"brain_masked__{self.modality_name}.nii.gz",
             )
             brain_extractor.apply_mask(
-                input_image=self.current,
-                mask_image=atlas_mask,
-                output_image=brain_masked,
+                input_image_path=self.current,
+                mask_image_path=atlas_mask,
+                masked_image_path=brain_masked,
             )
             self.current = brain_masked
 
@@ -153,9 +153,10 @@ class Modality:
         )
 
         brain_extractor.extract(
-            input_image=self.current,
-            masked_image=atlas_bet_cm,
-            log_file=bet_log,
+            input_image_path=self.current,
+            masked_image_path=atlas_bet_cm,
+            brain_mask_path=atlas_mask,
+            log_file_path=bet_log,
         )
         self.current = atlas_bet_cm
         return atlas_mask
