@@ -1,5 +1,0 @@
-Sphinx
-sphinx-copybutton
-sphinx-rtd-theme
-myst-parser
-panoptica
