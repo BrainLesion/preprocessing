@@ -55,7 +55,7 @@ BrainLes-HD-BET = ">=0.0.5"
 
 # utils
 tqdm = "^4.64.1"
-auxiliary = "^0.0.37"
+auxiliary = "^0.0.38"
 rich = "^13.6.0"
 
 [tool.poetry.dev-dependencies]
