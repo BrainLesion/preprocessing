@@ -1,42 +1,43 @@
 import os
+import shutil
 import unittest
 
 from brainles_preprocessing.brain_extraction import HDBetExtractor
-from auxiliary import turbopath
+from auxiliary.turbopath import turbopath
 
 
 class TestHDBetExtractor(unittest.TestCase):
     def setUp(self):
-        inputDir = (
-            turbopath(__file__).parent.parent + "example_data/OtherEXampleFromTCIA"
-        )
+        test_data_dir = turbopath(__file__).parent + "/test_data"
+        input_dir = test_data_dir + "/input"
+        self.output_dir = test_data_dir + "/temp_output"
+        os.makedirs(self.output_dir)
+
         self.brain_extractor = HDBetExtractor()
-        self.input_image = inputDir.files("*t1c.nii.gz")[0]
-        self.output_image = ...
-        self.mask_image = ...
-        self.masked_image = ...
+        self.input_image_path = input_dir + "/tcia_example_t1c.nii.gz"
+        self.masked_image_path = self.output_dir + "/bet_tcia_example_t1c.nii.gz"
+        self.brain_mask_path = self.output_dir + "/bet_tcia_example_t1c_masked.nii.gz"
+
+        print(self.input_image_path)
+        print(self.masked_image_path)
 
     def tearDown(self):
         # Clean up created files if they exist
-        for file_path in [
-            self.input_image,
-            self.output_image,
-            self.mask_image,
-            self.masked_image,
-        ]:
-            if os.path.exists(file_path):
-                os.remove(file_path)
+        shutil.rmtree(self.output_dir)
 
     def test_extract_creates_output_files(self):
         self.brain_extractor.extract(
-            input_image=self.input_image, output_image=self.output_image, log_file=None
+            input_image_path=self.input_image_path,
+            masked_image_path=self.masked_image_path,
+            brain_mask_path=self.brain_mask_path,
         )
 
         self.assertTrue(
-            os.path.exists(self.output_image), "Output image file was not created."
+            os.path.exists(self.masked_image_path), "Masked image file was not created."
         )
         self.assertTrue(
-            os.path.exists(self.mask_image), "Mask image file was not created."
+            os.path.exists(self.brain_mask_path),
+            "Brain mask image file was not created.",
         )
 
     def test_apply_mask_creates_output_file(self):
@@ -47,3 +48,4 @@ class TestHDBetExtractor(unittest.TestCase):
         #     os.path.exists(self.output_image_path),
         #     "Output image file was not created in apply_mask.",
         # )
+        ...

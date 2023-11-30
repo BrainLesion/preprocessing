@@ -89,7 +89,7 @@ class HDBetExtractor(BrainExtractor):
             masked_image_path.parent
             + "/"
             + name_extractor(masked_image_path)
-            + "_masked.nii.gz"
+            + "_mask.nii.gz"
         )
 
         copyfile(
