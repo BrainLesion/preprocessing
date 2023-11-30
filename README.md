@@ -1,3 +1,6 @@
+[![PyPI version panoptica](https://badge.fury.io/py/brainles-preprocessing.svg)](https://pypi.python.org/pypi/brainles-preprocessing/)
+[![Documentation Status](https://readthedocs.org/projects/brainles-preprocessing/badge/?version=latest)](http://brainles-preprocessing.readthedocs.io/?badge=latest)
+
 # BrainLes-Preprocessing
 
 `BrainLes-Preprocessing` is a comprehensive tool tailored for preprocessing tasks in medical imaging, with a current focus on brain MRIs. Here's what it can currently do:
@@ -14,9 +17,9 @@ The outcome of this processing sequence is a set of 4 NIFTI images, skull-stripp
 
 We use the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/)
 
-
 ## Installation
-With a Python 3.10+ environment you can install directly from  [pypi.org](https://pypi.org/project/brainles-preprocessing/):
+
+With a Python 3.10+ environment you can install directly from [pypi.org](https://pypi.org/project/brainles-preprocessing/):
 
 ```
 pip install brainles-preprocessing
