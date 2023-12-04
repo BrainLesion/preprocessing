@@ -27,6 +27,7 @@ class TestHDBetExtractor(unittest.TestCase):
         shutil.rmtree(self.output_dir)
 
     def test_extract_creates_output_files(self):
+        # we try to run the fastest possible skullstripping on GPU
         self.brain_extractor.extract(
             input_image_path=self.input_image_path,
             masked_image_path=self.masked_image_path,
