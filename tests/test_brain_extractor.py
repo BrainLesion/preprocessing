@@ -28,9 +28,8 @@ class TestHDBetExtractor(unittest.TestCase):
 
     def tearDown(self):
         # Clean up created files if they exist
-        #shutil.rmtree(self.output_dir)
-        ...
-        
+        shutil.rmtree(self.output_dir)
+
 
     def test_extract_creates_output_files(self):
         # we try to run the fastest possible skullstripping on GPU
