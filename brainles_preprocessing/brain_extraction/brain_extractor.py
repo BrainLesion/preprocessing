@@ -1,16 +1,10 @@
 # TODO add typing and docs
 from abc import abstractmethod
-import os
-
-import nibabel as nib
-import numpy as np
-from brainles_hd_bet import run_hd_bet
+from shutil import copyfile
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.turbopath import name_extractor
-
-
-from shutil import copyfile
+from brainles_hd_bet import run_hd_bet
 
 
 class BrainExtractor:
@@ -68,6 +62,8 @@ class HDBetExtractor(BrainExtractor):
         log_file_path: str = None,
         # TODO convert mode to enum
         mode: str = "accurate",
+        device: int | str = 0,
+        do_tta: bool = True,
     ) -> None:
         # GPU + accurate + TTA
         """skullstrips images with HD-BET generates a skullstripped file and mask"""
@@ -78,9 +74,9 @@ class HDBetExtractor(BrainExtractor):
             # TODO consider postprocessing
             # postprocess=False,
             mode=mode,
-            device=0,
+            device=device,
             postprocess=False,
-            do_tta=True,
+            do_tta=do_tta,
             keep_mask=True,
             overwrite=True,
         )
@@ -89,7 +85,7 @@ class HDBetExtractor(BrainExtractor):
             masked_image_path.parent
             + "/"
             + name_extractor(masked_image_path)
-            + "_masked.nii.gz"
+            + "_mask.nii.gz"
         )
 
         copyfile(
