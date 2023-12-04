@@ -16,8 +16,12 @@ class TestHDBetExtractor(unittest.TestCase):
 
         self.brain_extractor = HDBetExtractor()
         self.input_image_path = input_dir + "/tcia_example_t1c.nii.gz"
+        self.input_brain_mask_path = input_dir + "/bet_tcia_example_t1c_mask.nii.gz"
         self.masked_image_path = self.output_dir + "/bet_tcia_example_t1c.nii.gz"
-        self.brain_mask_path = self.output_dir + "/bet_tcia_example_t1c_masked.nii.gz"
+        self.brain_mask_path = self.output_dir + "/bet_tcia_example_t1c_mask.nii.gz"
+        self.masked_again_image_path = (
+            self.output_dir + "/bet_tcia_example_t1c_masked2.nii.gz"
+        )
 
         print(self.input_image_path)
         print(self.masked_image_path)
@@ -25,6 +29,7 @@ class TestHDBetExtractor(unittest.TestCase):
     def tearDown(self):
         # Clean up created files if they exist
         shutil.rmtree(self.output_dir)
+
 
     def test_extract_creates_output_files(self):
         # we try to run the fastest possible skullstripping on GPU
@@ -47,11 +52,12 @@ class TestHDBetExtractor(unittest.TestCase):
         )
 
     def test_apply_mask_creates_output_file(self):
-        # self.brain_extractor.apply_mask(
-        #     self.input_image, self.mask_image, self.output_image
-        # )
-        # self.assertTrue(
-        #     os.path.exists(self.output_image_path),
-        #     "Output image file was not created in apply_mask.",
-        # )
-        ...
+        self.brain_extractor.apply_mask(
+            input_image_path=self.input_image_path,
+            mask_image_path=self.input_brain_mask_path,
+            masked_image_path=self.masked_again_image_path,
+        )
+        self.assertTrue(
+            os.path.exists(self.masked_again_image_path),
+            "Output image file was not created in apply_mask.",
+        )
