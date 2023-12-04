@@ -12,7 +12,7 @@ class TestHDBetExtractor(unittest.TestCase):
         test_data_dir = turbopath(__file__).parent + "/test_data"
         input_dir = test_data_dir + "/input"
         self.output_dir = test_data_dir + "/temp_output"
-        os.makedirs(self.output_dir)
+        os.makedirs(self.output_dir, exist_ok=True)
 
         self.brain_extractor = HDBetExtractor()
         self.input_image_path = input_dir + "/tcia_example_t1c.nii.gz"
@@ -31,6 +31,9 @@ class TestHDBetExtractor(unittest.TestCase):
             input_image_path=self.input_image_path,
             masked_image_path=self.masked_image_path,
             brain_mask_path=self.brain_mask_path,
+            mode="fast",
+            device="cpu",
+            do_tta=False,
             # TODO generate and also test for presence of log file
         )
 

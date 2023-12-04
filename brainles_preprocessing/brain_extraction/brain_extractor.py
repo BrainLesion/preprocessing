@@ -62,6 +62,8 @@ class HDBetExtractor(BrainExtractor):
         log_file_path: str = None,
         # TODO convert mode to enum
         mode: str = "accurate",
+        device: int | str = 0,
+        do_tta: bool = True,
     ) -> None:
         # GPU + accurate + TTA
         """skullstrips images with HD-BET generates a skullstripped file and mask"""
@@ -72,9 +74,9 @@ class HDBetExtractor(BrainExtractor):
             # TODO consider postprocessing
             # postprocess=False,
             mode=mode,
-            device=0,
+            device=device,
             postprocess=False,
-            do_tta=True,
+            do_tta=do_tta,
             keep_mask=True,
             overwrite=True,
         )
