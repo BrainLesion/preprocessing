@@ -2,8 +2,9 @@ import os
 import shutil
 import unittest
 
-from brainles_preprocessing.brain_extraction import HDBetExtractor
 from auxiliary.turbopath import turbopath
+
+from brainles_preprocessing.brain_extraction import HDBetExtractor
 
 
 class TestHDBetExtractor(unittest.TestCase):
@@ -30,6 +31,7 @@ class TestHDBetExtractor(unittest.TestCase):
             input_image_path=self.input_image_path,
             masked_image_path=self.masked_image_path,
             brain_mask_path=self.brain_mask_path,
+            # TODO generate and also test for presence of log file
         )
 
         self.assertTrue(
