@@ -1,6 +1,7 @@
-[![test](https://github.com/BrainLesion/preprocessing/actions/workflows/python-package.yml/badge.svg)](https://github.com/BrainLesion/preprocessing/actions/workflows/python-package.yml)
 [![PyPI version preprocessing](https://badge.fury.io/py/brainles-preprocessing.svg)](https://pypi.python.org/pypi/brainles-preprocessing/)
 [![Documentation Status](https://readthedocs.org/projects/brainles-preprocessing/badge/?version=latest)](http://brainles-preprocessing.readthedocs.io/?badge=latest)
+[![test](https://github.com/BrainLesion/preprocessing/actions/workflows/test.yml/badge.svg)](https://github.com/BrainLesion/preprocessing/actions/workflows/test.yml)
+
 
 # BrainLes-Preprocessing
 
