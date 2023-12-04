@@ -88,7 +88,8 @@ class HDBetExtractor(BrainExtractor):
             + "_mask.nii.gz"
         )
 
-        copyfile(
-            src=hdbet_mask_path,
-            dst=brain_mask_path,
-        )
+        if hdbet_mask_path != brain_mask_path:
+            copyfile(
+                src=hdbet_mask_path,
+                dst=brain_mask_path,
+            )
