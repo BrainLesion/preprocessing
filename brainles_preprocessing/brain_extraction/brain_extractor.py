@@ -1,16 +1,10 @@
 # TODO add typing and docs
 from abc import abstractmethod
-import os
-
-import nibabel as nib
-import numpy as np
-from brainles_hd_bet import run_hd_bet
+from shutil import copyfile
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.turbopath import name_extractor
-
-
-from shutil import copyfile
+from brainles_hd_bet import run_hd_bet
 
 
 class BrainExtractor:
