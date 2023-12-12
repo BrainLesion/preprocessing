@@ -1,4 +1,3 @@
-# todo add typing and docs
 import os
 import shutil
 
@@ -35,6 +34,7 @@ class Modality:
         ...     output_path="/path/to/preprocessed_t1.nii",
         ...     bet=True
         ... )
+
     """
 
     def __init__(
@@ -54,10 +54,19 @@ class Modality:
 
     def normalize(
         self,
-        temporary_directory,
-        store_unnormalized=None,
-    ):
-        # TODO we need docstrings
+        temporary_directory: str,
+        store_unnormalized: str | None = None,
+    ) -> None:
+        """
+        Normalize the image using the specified normalizer.
+
+        Args:
+            temporary_directory (str): Path to the temporary directory.
+            store_unnormalized (str, optional): Path to store unnormalized images.
+
+        Returns:
+            None
+        """
         # Backup the unnormalized file
         if store_unnormalized is not None:
             os.makedirs(store_unnormalized, exist_ok=True)
@@ -86,11 +95,23 @@ class Modality:
 
     def register(
         self,
-        registrator,
+        registrator: Registrator,
         fixed_image_path: str,
         registration_dir: str,
         moving_image_name: str,
-    ):
+    ) -> str:
+        """
+        Register the current modality to a fixed image using the specified registrator.
+
+        Args:
+            registrator (Registrator): The registrator object.
+            fixed_image_path (str): Path to the fixed image.
+            registration_dir (str): Directory to store registration results.
+            moving_image_name (str): Name of the moving image.
+
+        Returns:
+            str: Path to the registration matrix.
+        """
         registered = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
         registered_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
         registered_log = os.path.join(registration_dir, f"{moving_image_name}.log")
@@ -110,7 +131,18 @@ class Modality:
         brain_extractor: BrainExtractor,
         brain_masked_dir_path: str,
         atlas_mask_path: str,
-    ):
+    ) -> None:
+        """
+        Apply a brain mask to the current modality using the specified brain extractor.
+
+        Args:
+            brain_extractor (BrainExtractor): The brain extractor object.
+            brain_masked_dir_path (str): Directory to store masked images.
+            atlas_mask_path (str): Path to the brain mask.
+
+        Returns:
+            None
+        """
         if self.bet:
             brain_masked = os.path.join(
                 brain_masked_dir_path,
@@ -130,7 +162,20 @@ class Modality:
         registration_dir_path: str,
         moving_image_name: str,
         transformation_matrix_path: str,
-    ):
+    ) -> None:
+        """
+        Transform the current modality using the specified registrator and transformation matrix.
+
+        Args:
+            registrator (Registrator): The registrator object.
+            fixed_image_path (str): Path to the fixed image.
+            registration_dir_path (str): Directory to store transformation results.
+            moving_image_name (str): Name of the moving image.
+            transformation_matrix_path (str): Path to the transformation matrix.
+
+        Returns:
+            None
+        """
         transformed = os.path.join(registration_dir_path, f"{moving_image_name}.nii.gz")
         transformed_log = os.path.join(
             registration_dir_path, f"{moving_image_name}.log"
@@ -150,6 +195,16 @@ class Modality:
         brain_extractor: BrainExtractor,
         bet_dir_path: str,
     ) -> str:
+        """
+        Extract the brain region using the specified brain extractor.
+
+        Args:
+            brain_extractor (BrainExtractor): The brain extractor object.
+            bet_dir_path (str): Directory to store brain extraction results.
+
+        Returns:
+            str: Path to the extracted brain mask.
+        """
         bet_log = os.path.join(bet_dir_path, "brain-extraction.log")
         atlas_bet_cm = os.path.join(
             bet_dir_path, f"atlas_bet_{self.modality_name}.nii.gz"
