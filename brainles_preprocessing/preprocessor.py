@@ -1,7 +1,7 @@
-# TODO add typing and documentation
 import os
 import shutil
 import tempfile
+from typing import List, Optional
 
 from auxiliary.turbopath import turbopath
 
@@ -11,15 +11,28 @@ from .registration.registrator import Registrator
 
 
 class Preprocessor:
+    """
+    Preprocesses medical image modalities using coregistration, normalization, brain extraction, and more.
+
+    Args:
+        center_modality (Modality): The central modality for coregistration.
+        moving_modalities (List[Modality]): List of modalities to be coregistered to the central modality.
+        registrator (Registrator): The registrator object for coregistration and registration to the atlas.
+        brain_extractor (BrainExtractor): The brain extractor object for brain extraction.
+        atlas_image_path (str, optional): Path to the atlas image for registration (default is the T1 atlas).
+        temp_folder (str, optional): Path to a temporary folder for storing intermediate results.
+
+    """
+
     def __init__(
         self,
         center_modality: Modality,
-        moving_modalities: list[Modality],
+        moving_modalities: List[Modality],
         registrator: Registrator,
         brain_extractor: BrainExtractor,
         atlas_image_path: str = turbopath(__file__).parent
         + "/registration/atlas/t1_brats_space.nii",
-        temp_folder=None,
+        temp_folder: Optional[str] = None,
     ):
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
@@ -27,11 +40,10 @@ class Preprocessor:
         self.registrator = registrator
         self.brain_extractor = brain_extractor
 
-        # create temporary storage
+        # Create temporary storage
         if temp_folder:
             os.makedirs(temp_folder, exist_ok=True)
             self.temp_folder = turbopath(temp_folder)
-        # custom temporary storage for debugging etc
         else:
             storage = tempfile.TemporaryDirectory()
             self.temp_folder = turbopath(storage.name)
@@ -43,11 +55,22 @@ class Preprocessor:
         self,
         brain_extraction: bool,
         normalization: bool,
-        save_dir_coregistration: str = None,
-        save_dir_atlas_registration: str = None,
-        save_dir_brain_extraction: str = None,
-        save_dir_unnormalized: str = None,
+        save_dir_coregistration: Optional[str] = None,
+        save_dir_atlas_registration: Optional[str] = None,
+        save_dir_brain_extraction: Optional[str] = None,
+        save_dir_unnormalized: Optional[str] = None,
     ):
+        """
+        Run the preprocessing pipeline.
+
+        Args:
+            brain_extraction (bool): Whether to perform brain extraction.
+            normalization (bool): Whether to perform intensity normalization.
+            save_dir_coregistration (str, optional): Directory to save coregistration results.
+            save_dir_atlas_registration (str, optional): Directory to save atlas registration results.
+            save_dir_brain_extraction (str, optional): Directory to save brain extraction results.
+            save_dir_unnormalized (str, optional): Directory to save unnormalized images.
+        """
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
         os.makedirs(coregistration_dir, exist_ok=True)
@@ -132,8 +155,8 @@ class Preprocessor:
 
     def _save_output(
         self,
-        src,
-        save_dir,
+        src: str,
+        save_dir: Optional[str],
     ):
         if save_dir:
             save_dir = turbopath(save_dir)
@@ -145,8 +168,8 @@ class Preprocessor:
 
     def _save_coregistration(
         self,
-        coregistration_dir,
-        save_dir_coregistration,
+        coregistration_dir: str,
+        save_dir_coregistration: Optional[str],
     ):
         if save_dir_coregistration:
             save_dir_coregistration = turbopath(save_dir_coregistration)
@@ -167,16 +190,30 @@ class Preprocessor:
 
 
 class PreprocessorGPU(Preprocessor):
+    """
+    Preprocesses medical image modalities using GPU acceleration.
+
+    Args:
+        center_modality (Modality): The central modality for coregistration.
+        moving_modalities (List[Modality]): List of modalities to be coregistered to the central modality.
+        registrator (Registrator): The registrator object for coregistration and registration to the atlas.
+        brain_extractor (BrainExtractor): The brain extractor object for brain extraction.
+        atlas_image_path (str, optional): Path to the atlas image for registration (default is the T1 atlas).
+        temp_folder (str, optional): Path to a temporary folder for storing intermediate results.
+        limit_cuda_visible_devices (str, optional): Limit CUDA visible devices for GPU acceleration.
+
+    """
+
     def __init__(
         self,
         center_modality: Modality,
-        moving_modalities: list[Modality],
+        moving_modalities: List[Modality],
         registrator: Registrator,
         brain_extractor: BrainExtractor,
         atlas_image_path: str = turbopath(__file__).parent
         + "/registration/atlas/t1_brats_space.nii",
-        temp_folder=None,
-        limit_cuda_visible_devices: str = None,
+        temp_folder: Optional[str] = None,
+        limit_cuda_visible_devices: Optional[str] = None,
     ):
         super().__init__(
             center_modality,
@@ -192,8 +229,15 @@ class PreprocessorGPU(Preprocessor):
 
     def set_cuda_devices(
         self,
-        limit_cuda_visible_devices: str = None,
+        limit_cuda_visible_devices: Optional[str] = None,
     ):
+        """
+        Set CUDA devices for GPU acceleration.
+
+        Args:
+            limit_cuda_visible_devices (str, optional): Limit CUDA visible devices for GPU acceleration.
+
+        """
         if limit_cuda_visible_devices:
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
             os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
