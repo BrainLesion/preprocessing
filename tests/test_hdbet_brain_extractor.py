@@ -11,12 +11,14 @@ class TestHDBetExtractor(unittest.TestCase):
     def setUp(self):
         test_data_dir = turbopath(__file__).parent + "/test_data"
         input_dir = test_data_dir + "/input"
-        self.output_dir = test_data_dir + "/temp_output"
+        self.output_dir = test_data_dir + "/temp_output_hdbet"
         os.makedirs(self.output_dir, exist_ok=True)
 
         self.brain_extractor = HDBetExtractor()
+
         self.input_image_path = input_dir + "/tcia_example_t1c.nii.gz"
         self.input_brain_mask_path = input_dir + "/bet_tcia_example_t1c_mask.nii.gz"
+
         self.masked_image_path = self.output_dir + "/bet_tcia_example_t1c.nii.gz"
         self.brain_mask_path = self.output_dir + "/bet_tcia_example_t1c_mask.nii.gz"
         self.masked_again_image_path = (
@@ -30,9 +32,8 @@ class TestHDBetExtractor(unittest.TestCase):
         # Clean up created files if they exist
         shutil.rmtree(self.output_dir)
 
-
     def test_extract_creates_output_files(self):
-        # we try to run the fastest possible skullstripping on GPU
+        # we try to run the fastest possible skullstripping on CPU
         self.brain_extractor.extract(
             input_image_path=self.input_image_path,
             masked_image_path=self.masked_image_path,

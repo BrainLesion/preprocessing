@@ -1,29 +1,56 @@
-# TODO add typing and docs
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class Registrator(ABC):
-    def __init__(self, backend):
-        self.backend = backend
+    # TODO probably the init here should be removed?
+    # def __init__(self, backend):
+    #     self.backend = backend
 
     @abstractmethod
     def register(
         self,
-        fixed_image,
-        moving_image,
-        transformed_image,
-        matrix,
-        log_file,
-    ):
+        fixed_image_path: Any,
+        moving_image_path: Any,
+        transformed_image_path: Any,
+        matrix_path: Any,
+        log_file_path: str,
+    ) -> None:
+        """
+        Abstract method for registering images.
+
+        Args:
+            fixed_image_path (Any): The fixed image for registration.
+            moving_image_path (Any): The moving image to be registered.
+            transformed_image_path (Any): The resulting transformed image after registration.
+            matrix_path (Any): The transformation matrix applied during registration.
+            log_file_path (str): The path to the log file for recording registration details.
+
+        Returns:
+            None
+        """
         pass
 
     @abstractmethod
     def transform(
         self,
-        fixed_image,
-        moving_image,
-        transformed_image,
-        matrix,
-        log_file,
-    ):
+        fixed_image_path: Any,
+        moving_image_path: Any,
+        transformed_image_path: Any,
+        matrix: Any,
+        log_file: str,
+    ) -> None:
+        """
+        Abstract method for transforming images.
+
+        Args:
+            fixed_image_path (Any): The fixed image to be transformed.
+            moving_image_path (Any): The moving image to be transformed.
+            transformed_image_path (Any): The resulting transformed image.
+            matrix_path (Any): The transformation matrix applied during transformation.
+            log_file_path (str): The path to the log file for recording transformation details.
+
+        Returns:
+            None
+        """
         pass
