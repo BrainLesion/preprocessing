@@ -6,6 +6,7 @@ from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
 
+from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.registration.registrator import Registrator
 
 
@@ -106,18 +107,18 @@ class Modality:
 
     def apply_mask(
         self,
-        brain_extractor,
-        brain_masked_dir,
-        atlas_mask,
+        brain_extractor: BrainExtractor,
+        brain_masked_dir_path: str,
+        atlas_mask_path: str,
     ):
         if self.bet:
             brain_masked = os.path.join(
-                brain_masked_dir,
+                brain_masked_dir_path,
                 f"brain_masked__{self.modality_name}.nii.gz",
             )
             brain_extractor.apply_mask(
                 input_image_path=self.current,
-                mask_image_path=atlas_mask,
+                mask_image_path=atlas_mask_path,
                 masked_image_path=brain_masked,
             )
             self.current = brain_masked
@@ -125,39 +126,43 @@ class Modality:
     def transform(
         self,
         registrator: Registrator,
-        fixed_image_path,
-        registration_dir,
-        moving_image_name,
-        transformation_matrix,
+        fixed_image_path: str,
+        registration_dir_path: str,
+        moving_image_name: str,
+        transformation_matrix_path: str,
     ):
-        transformed = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
-        transformed_log = os.path.join(registration_dir, f"{moving_image_name}.log")
+        transformed = os.path.join(registration_dir_path, f"{moving_image_name}.nii.gz")
+        transformed_log = os.path.join(
+            registration_dir_path, f"{moving_image_name}.log"
+        )
 
         registrator.transform(
             fixed_image_path=fixed_image_path,
             moving_image_path=self.current,
             transformed_image_path=transformed,
-            matrix_path=transformation_matrix,
+            matrix_path=transformation_matrix_path,
             log_file_path=transformed_log,
         )
         self.current = transformed
 
     def extract_brain_region(
         self,
-        brain_extractor,
-        bet_dir,
-    ):
-        bet_log = os.path.join(bet_dir, "brain-extraction.log")
-        atlas_bet_cm = os.path.join(bet_dir, f"atlas_bet_{self.modality_name}.nii.gz")
-        atlas_mask = os.path.join(
-            bet_dir, f"atlas_bet_{self.modality_name}_mask.nii.gz"
+        brain_extractor: BrainExtractor,
+        bet_dir_path: str,
+    ) -> str:
+        bet_log = os.path.join(bet_dir_path, "brain-extraction.log")
+        atlas_bet_cm = os.path.join(
+            bet_dir_path, f"atlas_bet_{self.modality_name}.nii.gz"
+        )
+        atlas_mask_path = os.path.join(
+            bet_dir_path, f"atlas_bet_{self.modality_name}_mask.nii.gz"
         )
 
         brain_extractor.extract(
             input_image_path=self.current,
             masked_image_path=atlas_bet_cm,
-            brain_mask_path=atlas_mask,
+            brain_mask_path=atlas_mask_path,
             log_file_path=bet_log,
         )
         self.current = atlas_bet_cm
-        return atlas_mask
+        return atlas_mask_path
