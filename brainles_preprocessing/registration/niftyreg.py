@@ -42,25 +42,25 @@ class NiftyRegRegistrator(Registrator):
 
     def register(
         self,
-        fixed_image: str,
-        moving_image: str,
-        transformed_image: str,
-        matrix: str,
-        log_file: str,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: str,
+        log_file_path: str,
     ):
         """
         Register images using NiftyReg.
 
         Args:
-            fixed_image (str): Path to the fixed image.
-            moving_image (str): Path to the moving image.
-            transformed_image (str): Path to the transformed image (output).
-            matrix (str): Path to the transformation matrix (output).
-            log_file (str): Path to the log file.
+            fixed_image_path (str): Path to the fixed image.
+            moving_image_path (str): Path to the moving image.
+            transformed_image_path (str): Path to the transformed image (output).
+            matrix_path (str): Path to the transformation matrix (output).
+            log_file_path (str): Path to the log file.
         """
         runner = ScriptRunner(
             script_path=self.registration_script,
-            log_path=log_file,
+            log_path=log_file_path,
         )
 
         niftyreg_executable = str(
@@ -69,10 +69,10 @@ class NiftyRegRegistrator(Registrator):
 
         input_params = [
             turbopath(niftyreg_executable),
-            turbopath(fixed_image),
-            turbopath(moving_image),
-            turbopath(transformed_image),
-            turbopath(matrix),
+            turbopath(fixed_image_path),
+            turbopath(moving_image_path),
+            turbopath(transformed_image_path),
+            turbopath(matrix_path),
         ]
 
         # Call the run method to execute the script and capture the output in the log file
@@ -85,25 +85,25 @@ class NiftyRegRegistrator(Registrator):
 
     def transform(
         self,
-        fixed_image: str,
-        moving_image: str,
-        transformed_image: str,
-        matrix: str,
-        log_file: str,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: str,
+        log_file_path: str,
     ):
         """
         Apply a transformation using NiftyReg.
 
         Args:
-            fixed_image (str): Path to the fixed image.
-            moving_image (str): Path to the moving image.
-            transformed_image (str): Path to the transformed image (output).
-            matrix (str): Path to the transformation matrix.
-            log_file (str): Path to the log file.
+            fixed_image_path (str): Path to the fixed image.
+            moving_image_path (str): Path to the moving image.
+            transformed_image_path (str): Path to the transformed image (output).
+            matrix_path (str): Path to the transformation matrix.
+            log_file_path (str): Path to the log file.
         """
         runner = ScriptRunner(
             script_path=self.transformation_script,
-            log_path=log_file,
+            log_path=log_file_path,
         )
 
         niftyreg_executable = str(
@@ -112,10 +112,10 @@ class NiftyRegRegistrator(Registrator):
 
         input_params = [
             turbopath(niftyreg_executable),
-            turbopath(fixed_image),
-            turbopath(moving_image),
-            turbopath(transformed_image),
-            turbopath(matrix),
+            turbopath(fixed_image_path),
+            turbopath(moving_image_path),
+            turbopath(transformed_image_path),
+            turbopath(matrix_path),
         ]
 
         # Call the run method to execute the script and capture the output in the log file

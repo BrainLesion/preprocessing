@@ -94,11 +94,11 @@ class Modality:
         registered_log = os.path.join(registration_dir, f"{moving_image_name}.log")
 
         registrator.register(
-            fixed_image=fixed_image_path,
-            moving_image=self.current,
+            fixed_image_path=fixed_image_path,
+            moving_image_path=self.current,
             transformed_image=registered,
-            matrix=registered_matrix,
-            log_file=registered_log,
+            matrix_path=registered_matrix,
+            log_file_path=registered_log,
         )
         self.current = registered
         return registered_matrix
@@ -133,11 +133,11 @@ class Modality:
         transformed_log = os.path.join(registration_dir, f"{moving_image_name}.log")
 
         registrator.transform(
-            fixed_image=fixed_image_path,
-            moving_image=self.current,
-            transformed_image=transformed,
-            matrix=transformation_matrix,
-            log_file=transformed_log,
+            fixed_image_path=fixed_image_path,
+            moving_image_path=self.current,
+            transformed_image_path=transformed,
+            matrix_path=transformation_matrix,
+            log_file_path=transformed_log,
         )
         self.current = transformed
 

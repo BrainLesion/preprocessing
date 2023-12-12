@@ -10,21 +10,21 @@ class Registrator(ABC):
     @abstractmethod
     def register(
         self,
-        fixed_image: Any,
-        moving_image: Any,
-        transformed_image: Any,
-        matrix: Any,
-        log_file: str,
+        fixed_image_path: Any,
+        moving_image_path: Any,
+        transformed_image_path: Any,
+        matrix_path: Any,
+        log_file_path: str,
     ) -> None:
         """
         Abstract method for registering images.
 
         Args:
-            fixed_image (Any): The fixed image for registration.
-            moving_image (Any): The moving image to be registered.
-            transformed_image (Any): The resulting transformed image after registration.
-            matrix (Any): The transformation matrix applied during registration.
-            log_file (str): The path to the log file for recording registration details.
+            fixed_image_path (Any): The fixed image for registration.
+            moving_image_path (Any): The moving image to be registered.
+            transformed_image_path (Any): The resulting transformed image after registration.
+            matrix_path (Any): The transformation matrix applied during registration.
+            log_file_path (str): The path to the log file for recording registration details.
 
         Returns:
             None
@@ -34,9 +34,9 @@ class Registrator(ABC):
     @abstractmethod
     def transform(
         self,
-        fixed_image: Any,
-        moving_image: Any,
-        transformed_image: Any,
+        fixed_image_path: Any,
+        moving_image_path: Any,
+        transformed_image_path: Any,
         matrix: Any,
         log_file: str,
     ) -> None:
@@ -44,11 +44,11 @@ class Registrator(ABC):
         Abstract method for transforming images.
 
         Args:
-            fixed_image (Any): The fixed image to be transformed.
-            moving_image (Any): The moving image to be transformed.
-            transformed_image (Any): The resulting transformed image.
-            matrix (Any): The transformation matrix applied during transformation.
-            log_file (str): The path to the log file for recording transformation details.
+            fixed_image_path (Any): The fixed image to be transformed.
+            moving_image_path (Any): The moving image to be transformed.
+            transformed_image_path (Any): The resulting transformed image.
+            matrix_path (Any): The transformation matrix applied during transformation.
+            log_file_path (str): The path to the log file for recording transformation details.
 
         Returns:
             None
