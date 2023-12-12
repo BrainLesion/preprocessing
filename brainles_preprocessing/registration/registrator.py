@@ -3,8 +3,9 @@ from abc import ABC, abstractmethod
 
 
 class Registrator(ABC):
-    def __init__(self, backend):
-        self.backend = backend
+    # TODO probably the init here should be removed?
+    # def __init__(self, backend):
+    #     self.backend = backend
 
     @abstractmethod
     def register(
