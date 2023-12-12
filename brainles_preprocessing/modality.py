@@ -56,6 +56,7 @@ class Modality:
         temporary_directory,
         store_unnormalized=None,
     ):
+        # TODO we need docstrings
         # Backup the unnormalized file
         if store_unnormalized is not None:
             os.makedirs(store_unnormalized, exist_ok=True)
