@@ -42,11 +42,11 @@ class NiftyRegRegistrator(Registrator):
 
     def register(
         self,
-        fixed_image,
-        moving_image,
-        transformed_image,
-        matrix,
-        log_file,
+        fixed_image: str,
+        moving_image: str,
+        transformed_image: str,
+        matrix: str,
+        log_file: str,
     ):
         """
         Register images using NiftyReg.
@@ -85,11 +85,11 @@ class NiftyRegRegistrator(Registrator):
 
     def transform(
         self,
-        fixed_image,
-        moving_image,
-        transformed_image,
-        matrix,
-        log_file,
+        fixed_image: str,
+        moving_image: str,
+        transformed_image: str,
+        matrix: str,
+        log_file: str,
     ):
         """
         Apply a transformation using NiftyReg.
