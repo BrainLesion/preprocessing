@@ -11,7 +11,7 @@ class TestHDBetExtractor(unittest.TestCase):
     def setUp(self):
         test_data_dir = turbopath(__file__).parent + "/test_data"
         input_dir = test_data_dir + "/input"
-        self.output_dir = test_data_dir + "/temp_output"
+        self.output_dir = test_data_dir + "/temp_output_hdbet"
         os.makedirs(self.output_dir, exist_ok=True)
 
         self.brain_extractor = HDBetExtractor()
@@ -29,7 +29,6 @@ class TestHDBetExtractor(unittest.TestCase):
     def tearDown(self):
         # Clean up created files if they exist
         shutil.rmtree(self.output_dir)
-
 
     def test_extract_creates_output_files(self):
         # we try to run the fastest possible skullstripping on GPU
