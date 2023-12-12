@@ -15,7 +15,7 @@ class Registrator(ABC):
         transformed_image_path: Any,
         matrix_path: Any,
         log_file_path: str,
-    ) -> None:
+    ):
         """
         Abstract method for registering images.
 
@@ -25,9 +25,6 @@ class Registrator(ABC):
             transformed_image_path (Any): The resulting transformed image after registration.
             matrix_path (Any): The transformation matrix applied during registration.
             log_file_path (str): The path to the log file for recording registration details.
-
-        Returns:
-            None
         """
         pass
 
@@ -37,9 +34,9 @@ class Registrator(ABC):
         fixed_image_path: Any,
         moving_image_path: Any,
         transformed_image_path: Any,
-        matrix: Any,
-        log_file: str,
-    ) -> None:
+        matrix_path: Any,
+        log_file_path: str,
+    ):
         """
         Abstract method for transforming images.
 
@@ -50,7 +47,5 @@ class Registrator(ABC):
             matrix_path (Any): The transformation matrix applied during transformation.
             log_file_path (str): The path to the log file for recording transformation details.
 
-        Returns:
-            None
         """
         pass
