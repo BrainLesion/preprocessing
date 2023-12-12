@@ -15,8 +15,10 @@ class TestHDBetExtractor(unittest.TestCase):
         os.makedirs(self.output_dir, exist_ok=True)
 
         self.brain_extractor = HDBetExtractor()
+
         self.input_image_path = input_dir + "/tcia_example_t1c.nii.gz"
         self.input_brain_mask_path = input_dir + "/bet_tcia_example_t1c_mask.nii.gz"
+
         self.masked_image_path = self.output_dir + "/bet_tcia_example_t1c.nii.gz"
         self.brain_mask_path = self.output_dir + "/bet_tcia_example_t1c_mask.nii.gz"
         self.masked_again_image_path = (
