@@ -80,9 +80,9 @@ class Preprocessor:
             moving_modality.transform(
                 registrator=self.registrator,
                 fixed_image_path=self.atlas_image_path,
-                registration_dir=self.atlas_dir,
+                registration_dir_path=self.atlas_dir,
                 moving_image_name=file_name,
-                transformation_matrix=transformation_matrix,
+                transformation_matrix_path=transformation_matrix,
             )
         self._save_output(
             src=self.atlas_dir,
@@ -97,13 +97,13 @@ class Preprocessor:
             os.makedirs(brain_masked_dir, exist_ok=True)
 
             atlas_mask = self.center_modality.extract_brain_region(
-                brain_extractor=self.brain_extractor, bet_dir=bet_dir
+                brain_extractor=self.brain_extractor, bet_dir_path=bet_dir
             )
             for moving_modality in self.moving_modalities:
                 moving_modality.apply_mask(
                     brain_extractor=self.brain_extractor,
-                    brain_masked_dir=brain_masked_dir,
-                    atlas_mask=atlas_mask,
+                    brain_masked_dir_path=brain_masked_dir,
+                    atlas_mask_path=atlas_mask,
                 )
 
             self._save_output(
