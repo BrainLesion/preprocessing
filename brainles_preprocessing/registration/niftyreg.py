@@ -12,9 +12,9 @@ from brainles_preprocessing.registration.registrator import Registrator
 class NiftyRegRegistrator(Registrator):
     def __init__(
         self,
-        registration_abspath=os.path.dirname(os.path.abspath(__file__)),
-        registration_script=None,
-        transformation_script=None,
+        registration_abspath: str = os.path.dirname(os.path.abspath(__file__)),
+        registration_script: str | None = None,
+        transformation_script: str | None = None,
     ):
         """
         Initialize the NiftyRegRegistrator.
@@ -47,7 +47,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str,
-    ):
+    ) -> None:
         """
         Register images using NiftyReg.
 
@@ -90,7 +90,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str,
-    ):
+    ) -> None:
         """
         Apply a transformation using NiftyReg.
 
