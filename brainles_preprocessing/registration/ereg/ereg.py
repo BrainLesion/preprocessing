@@ -40,7 +40,9 @@ class eRegRegistrator(Registrator):
             log_file_path (str): Path to the log file.
         """
         # TODO do we need to handle kwargs?
-        registrator = RegistrationClass(config_file=config_file)
+        registrator = RegistrationClass(
+            config_file=config_file,
+        )
 
         # TODO we need a log file
         registrator.register(
@@ -71,7 +73,9 @@ class eRegRegistrator(Registrator):
             log_file_path (str): Path to the log file.
         """
         # TODO do we need to handle kwargs?
-        registrator = RegistrationClass(config_file=config_file)
+        registrator = RegistrationClass(
+            config_file=config_file,
+        )
 
         registrator.resample_image(
             target_image=fixed_image_path,
