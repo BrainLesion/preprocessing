@@ -119,7 +119,7 @@ class Modality:
         registrator.register(
             fixed_image_path=fixed_image_path,
             moving_image_path=self.current,
-            transformed_image=registered,
+            transformed_image_path=registered,
             matrix_path=registered_matrix,
             log_file_path=registered_log,
         )
