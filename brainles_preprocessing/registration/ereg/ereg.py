@@ -10,6 +10,7 @@ from brainles_preprocessing.registration.registrator import Registrator
 class eRegRegistrator(Registrator):
     def __init__(
         self,
+        # TODO should the config file be handed over here or should we allow to supply a different config file for each call of the method?
     ):
         """
         # TODO
