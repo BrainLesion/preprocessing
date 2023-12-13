@@ -57,6 +57,8 @@ class eRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str,
+        # TODO default config file
+        config_file: str,
     ) -> None:
         """
         Apply a transformation using NiftyReg.
@@ -68,6 +70,14 @@ class eRegRegistrator(Registrator):
             matrix_path (str): Path to the transformation matrix.
             log_file_path (str): Path to the log file.
         """
-        # TODO https://github.com/BrainLesion/eReg/blob/11f8024176a37ee3c7ab8b8e42669d08c3f6f7d0/ereg/registration.py#L317
-        # TODO -> ereg should have a transform method, as this is a very common task! -> https://github.com/BrainLesion/eReg/issues/16
-        pass
+        # TODO do we need to handle kwargs?
+        registrator = RegistrationClass(config_file=config_file)
+
+        registrator.resample_image(
+            target_image=fixed_image_path,
+            moving_image=moving_image_path,
+            output_image=transformed_image_path,
+            # TODO how can this default to none
+            transform_file=matrix_path,
+            # TODO we need to deal with logging
+        )
