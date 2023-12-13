@@ -1,1 +1,1 @@
-from .niftyreg import NiftyRegRegistrator
+from .niftyreg.niftyreg import NiftyRegRegistrator

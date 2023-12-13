@@ -4,7 +4,7 @@ import unittest
 
 from auxiliary.turbopath import turbopath
 
-from brainles_preprocessing.registration.niftyreg import NiftyRegRegistrator
+from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
 
 
 class TestNiftyRegRegistrator(unittest.TestCase):
