@@ -1,4 +1,3 @@
-# TODO add typing and docs
 import os
 
 from auxiliary.runscript import ScriptRunner
