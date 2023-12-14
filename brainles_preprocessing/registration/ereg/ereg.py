@@ -1,7 +1,4 @@
 # TODO add typing and docs
-import os
-
-from auxiliary.turbopath import turbopath
 from ereg.registration import RegistrationClass
 
 from brainles_preprocessing.registration.registrator import Registrator
