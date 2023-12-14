@@ -50,8 +50,6 @@ class eRegRegistrator(Registrator):
             log_file=log_file_path,
         )
 
-        # registrator.config_file
-
     def transform(
         self,
         fixed_image_path: str,
