@@ -33,7 +33,6 @@ class eRegRegistrator(Registrator):
             matrix_path (str): Path to the transformation matrix (output).
             log_file_path (str): Path to the log file.
         """
-        # config_file = kwargs["config_file"]
         # TODO do we need to handle kwargs?
         registrator = RegistrationClass(
             config_file=self.config_file,
