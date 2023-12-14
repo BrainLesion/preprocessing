@@ -10,13 +10,13 @@ from brainles_preprocessing.registration.registrator import Registrator
 class eRegRegistrator(Registrator):
     def __init__(
         self,
-        # TODO should the config file be handed over here or should we allow to supply a different config file for each call of the method?
+        # TODO define default
+        config_file: str,
     ):
         """
         # TODO
         """
-        # TODO
-        pass
+        self.config_file = config_file
 
     # TODO how to deal with the config file and the abstract class
     def register(
@@ -26,8 +26,6 @@ class eRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str,
-        # TODO default config file
-        config_file: str,
     ) -> None:
         """
         Register images using NiftyReg.
@@ -39,18 +37,21 @@ class eRegRegistrator(Registrator):
             matrix_path (str): Path to the transformation matrix (output).
             log_file_path (str): Path to the log file.
         """
+        # config_file = kwargs["config_file"]
         # TODO do we need to handle kwargs?
         registrator = RegistrationClass(
-            config_file=config_file,
+            config_file=self.config_file,
         )
-
-        # TODO we need a log file
+        
         registrator.register(
             target_image=fixed_image_path,
             moving_image=moving_image_path,
             output_image=transformed_image_path,
             transform_file=matrix_path,
+            # TODO we need a log file
         )
+
+        # registrator.config_file
 
     def transform(
         self,
@@ -60,7 +61,6 @@ class eRegRegistrator(Registrator):
         matrix_path: str,
         log_file_path: str,
         # TODO default config file
-        config_file: str,
     ) -> None:
         """
         Apply a transformation using NiftyReg.
@@ -74,7 +74,7 @@ class eRegRegistrator(Registrator):
         """
         # TODO do we need to handle kwargs?
         registrator = RegistrationClass(
-            config_file=config_file,
+            config_file=self.config_file,
         )
 
         registrator.resample_image(
