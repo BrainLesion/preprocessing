@@ -18,14 +18,13 @@ class eRegRegistrator(Registrator):
         """
         self.config_file = config_file
 
-    # TODO how to deal with the config file and the abstract class
     def register(
         self,
         fixed_image_path: str,
         moving_image_path: str,
         transformed_image_path: str,
         matrix_path: str,
-        log_file_path: str,
+        log_file_path: str = None,
     ) -> None:
         """
         Register images using NiftyReg.
@@ -42,13 +41,13 @@ class eRegRegistrator(Registrator):
         registrator = RegistrationClass(
             config_file=self.config_file,
         )
-        
+
         registrator.register(
             target_image=fixed_image_path,
             moving_image=moving_image_path,
             output_image=transformed_image_path,
             transform_file=matrix_path,
-            # TODO we need a log file
+            log_file=log_file_path,
         )
 
         # registrator.config_file
@@ -59,8 +58,7 @@ class eRegRegistrator(Registrator):
         moving_image_path: str,
         transformed_image_path: str,
         matrix_path: str,
-        log_file_path: str,
-        # TODO default config file
+        log_file_path: str = None,
     ) -> None:
         """
         Apply a transformation using NiftyReg.
@@ -81,7 +79,6 @@ class eRegRegistrator(Registrator):
             target_image=fixed_image_path,
             moving_image=moving_image_path,
             output_image=transformed_image_path,
-            # TODO how can this default to none
             transform_file=matrix_path,
-            # TODO we need to deal with logging
+            log_file=log_file_path,
         )
