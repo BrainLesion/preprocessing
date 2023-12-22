@@ -53,8 +53,8 @@ class Preprocessor:
 
     def run(
         self,
-        brain_extraction: bool,
-        normalization: bool,
+        brain_extraction: bool,  # TODO probably this should be true if one of the modalities has a bet flag with true?
+        normalization: bool,  # TODO probably this should be true if one of the modalities has a normalizer?
         save_dir_coregistration: Optional[str] = None,
         save_dir_atlas_registration: Optional[str] = None,
         save_dir_brain_extraction: Optional[str] = None,
@@ -111,6 +111,8 @@ class Preprocessor:
             src=self.atlas_dir,
             save_dir=save_dir_atlas_registration,
         )
+
+        # Optional:
 
         # Optional: Brain extraction
         if brain_extraction:
