@@ -43,6 +43,7 @@ class Modality:
         input_path: str,
         output_path: str,
         bet: bool,
+        atlas_correction: bool = True,
         normalizer: Normalizer | None = None,
     ) -> None:
         self.modality_name = modality_name
