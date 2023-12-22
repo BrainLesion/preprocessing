@@ -8,7 +8,7 @@ class eRegRegistrator(Registrator):
     def __init__(
         self,
         # TODO define default
-        config_file: str,
+        config_file: str | None = None,
     ):
         """
         # TODO
