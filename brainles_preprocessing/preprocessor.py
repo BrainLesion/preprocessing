@@ -57,6 +57,7 @@ class Preprocessor:
         normalization: bool,  # TODO probably this should be true if one of the modalities has a normalizer?
         save_dir_coregistration: Optional[str] = None,
         save_dir_atlas_registration: Optional[str] = None,
+        save_dir_atlas_correction: Optional[str] = None,
         save_dir_brain_extraction: Optional[str] = None,
         save_dir_unnormalized: Optional[str] = None,
     ):
@@ -112,7 +113,32 @@ class Preprocessor:
             save_dir=save_dir_atlas_registration,
         )
 
-        # Optional:
+        # Optional: additionalcorrection in atlas space
+        if save_dir_atlas_correction is not None:
+            atlas_correction_dir = os.path.join(self.temp_folder, "atlas-correction")
+            os.makedirs(atlas_correction_dir, exist_ok=True)
+
+            for moving_modality in self.moving_modalities:
+                file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
+                moving_modality.register(
+                    registrator=self.registrator,
+                    fixed_image_path=self.center_modality.current,
+                    registration_dir=atlas_correction_dir,
+                    moving_image_name=file_name,
+                )
+
+            shutil.copyfile(
+                src=self.center_modality.current,
+                dst=os.path.join(
+                    atlas_correction_dir,
+                    f"atlas_corrected__{self.center_modality.modality_name}.nii.gz",
+                ),
+            )
+
+            self._save_output(
+                src=atlas_correction_dir,
+                save_dir=save_dir_brain_extraction,
+            )
 
         # Optional: Brain extraction
         if brain_extraction:
