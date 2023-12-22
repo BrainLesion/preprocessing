@@ -50,6 +50,7 @@ class Modality:
         self.input_path = turbopath(input_path)
         self.output_path = turbopath(output_path)
         self.bet = bet
+        self.atlas_correction = atlas_correction
         self.normalizer = normalizer
         self.current = self.input_path
 
