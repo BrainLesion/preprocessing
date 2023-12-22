@@ -222,5 +222,6 @@ class Modality:
             brain_mask_path=atlas_mask_path,
             log_file_path=bet_log,
         )
-        self.current = atlas_bet_cm
+        if self.bet is True:
+            self.current = atlas_bet_cm
         return atlas_mask_path
