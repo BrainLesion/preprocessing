@@ -56,6 +56,7 @@ def preprocess(inputDir):
                 input_path=t1cFile,
                 output_path=prep_dir + "/" + inputDir.name + "_t1c.nii.gz",
                 bet=False,
+                atlas_correction=True,
                 normalizer=percentile_normalizer,
             )
 
@@ -65,6 +66,7 @@ def preprocess(inputDir):
                     input_path=t1File,
                     output_path=prep_dir + "/" + inputDir.name + "_t1.nii.gz",
                     bet=True,
+                    atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
                 Modality(
@@ -72,6 +74,7 @@ def preprocess(inputDir):
                     input_path=t2File,
                     output_path=prep_dir + "/" + inputDir.name + "_t2.nii.gz",
                     bet=True,
+                    atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
                 Modality(
@@ -79,6 +82,7 @@ def preprocess(inputDir):
                     input_path=flaFile,
                     output_path=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
                     bet=True,
+                    atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
             ]
@@ -97,6 +101,7 @@ def preprocess(inputDir):
                 normalization=True,
                 save_dir_coregistration=brainles_dir + "/co-registration",
                 save_dir_atlas_registration=brainles_dir + "/atlas-registration",
+                save_dir_atlas_correction=brainles_dir + "/atlas-correction",
                 save_dir_brain_extraction=brainles_dir + "/brain-extraction",
                 save_dir_unnormalized=brainles_dir + "/unnormalized",
             )

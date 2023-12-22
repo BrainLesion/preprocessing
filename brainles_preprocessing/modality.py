@@ -43,12 +43,14 @@ class Modality:
         input_path: str,
         output_path: str,
         bet: bool,
+        atlas_correction: bool = True,
         normalizer: Normalizer | None = None,
     ) -> None:
         self.modality_name = modality_name
         self.input_path = turbopath(input_path)
         self.output_path = turbopath(output_path)
         self.bet = bet
+        self.atlas_correction = atlas_correction
         self.normalizer = normalizer
         self.current = self.input_path
 

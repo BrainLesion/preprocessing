@@ -53,10 +53,11 @@ class Preprocessor:
 
     def run(
         self,
-        brain_extraction: bool,
-        normalization: bool,
+        brain_extraction: bool,  # TODO probably this should be true if one of the modalities has a bet flag with true?
+        normalization: bool,  # TODO probably this should be true if one of the modalities has a normalizer?
         save_dir_coregistration: Optional[str] = None,
         save_dir_atlas_registration: Optional[str] = None,
+        save_dir_atlas_correction: Optional[str] = None,
         save_dir_brain_extraction: Optional[str] = None,
         save_dir_unnormalized: Optional[str] = None,
     ):
@@ -110,6 +111,34 @@ class Preprocessor:
         self._save_output(
             src=self.atlas_dir,
             save_dir=save_dir_atlas_registration,
+        )
+
+        # Optional: additional correction in atlas space
+        atlas_correction_dir = os.path.join(self.temp_folder, "atlas-correction")
+        os.makedirs(atlas_correction_dir, exist_ok=True)
+
+        for moving_modality in self.moving_modalities:
+            if moving_modality.atlas_correction is True:
+                file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
+                moving_modality.register(
+                    registrator=self.registrator,
+                    fixed_image_path=self.center_modality.current,
+                    registration_dir=atlas_correction_dir,
+                    moving_image_name=file_name,
+                )
+
+        if self.center_modality.atlas_correction is True:
+            shutil.copyfile(
+                src=self.center_modality.current,
+                dst=os.path.join(
+                    atlas_correction_dir,
+                    f"atlas_corrected__{self.center_modality.modality_name}.nii.gz",
+                ),
+            )
+
+        self._save_output(
+            src=atlas_correction_dir,
+            save_dir=save_dir_atlas_correction,
         )
 
         # Optional: Brain extraction
