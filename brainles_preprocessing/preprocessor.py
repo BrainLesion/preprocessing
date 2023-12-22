@@ -113,12 +113,12 @@ class Preprocessor:
             save_dir=save_dir_atlas_registration,
         )
 
-        # Optional: additionalcorrection in atlas space
-        if save_dir_atlas_correction is not None:
-            atlas_correction_dir = os.path.join(self.temp_folder, "atlas-correction")
-            os.makedirs(atlas_correction_dir, exist_ok=True)
+        # Optional: additional correction in atlas space
+        atlas_correction_dir = os.path.join(self.temp_folder, "atlas-correction")
+        os.makedirs(atlas_correction_dir, exist_ok=True)
 
-            for moving_modality in self.moving_modalities:
+        for moving_modality in self.moving_modalities:
+            if moving_modality.atlas_correction is True:
                 file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
                 moving_modality.register(
                     registrator=self.registrator,
@@ -127,6 +127,7 @@ class Preprocessor:
                     moving_image_name=file_name,
                 )
 
+        if self.center_modality.atlas_correction is True:
             shutil.copyfile(
                 src=self.center_modality.current,
                 dst=os.path.join(
@@ -135,10 +136,10 @@ class Preprocessor:
                 ),
             )
 
-            self._save_output(
-                src=atlas_correction_dir,
-                save_dir=save_dir_brain_extraction,
-            )
+        self._save_output(
+            src=atlas_correction_dir,
+            save_dir=save_dir_atlas_correction,
+        )
 
         # Optional: Brain extraction
         if brain_extraction:
