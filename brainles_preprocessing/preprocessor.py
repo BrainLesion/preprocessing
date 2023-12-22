@@ -82,9 +82,17 @@ class Preprocessor:
                 registration_dir=coregistration_dir,
                 moving_image_name=file_name,
             )
-        self._save_coregistration(
-            coregistration_dir=coregistration_dir,
-            save_dir_coregistration=save_dir_coregistration,
+
+        shutil.copyfile(
+                src=self.center_modality.input_path,
+                dst=os.path.join(
+                coregistration_dir,
+                f"native__{self.center_modality.modality_name}.nii.gz",
+            )
+
+        self._save_output(
+            src=coregistration_dir,
+            save_dir=save_dir_coregistration,
         )
 
         # Register center modality to atlas
@@ -195,27 +203,7 @@ class Preprocessor:
                 dirs_exist_ok=True,
             )
 
-    def _save_coregistration(
-        self,
-        coregistration_dir: str,
-        save_dir_coregistration: Optional[str],
-    ):
-        if save_dir_coregistration:
-            save_dir_coregistration = turbopath(save_dir_coregistration)
-            native_cm = os.path.join(
-                coregistration_dir,
-                f"native__{self.center_modality.modality_name}.nii.gz",
-            )
 
-            shutil.copyfile(
-                src=self.center_modality.input_path,
-                dst=native_cm,
-            )
-            shutil.copytree(
-                src=coregistration_dir,
-                dst=save_dir_coregistration,
-                dirs_exist_ok=True,
-            )
 
 
 class PreprocessorGPU(Preprocessor):
