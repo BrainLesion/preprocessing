@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import List, Optional
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
@@ -44,7 +45,7 @@ class Modality:
         output_path: str,
         bet: bool,
         atlas_correction: bool = True,
-        normalizer: Normalizer | None = None,
+        normalizer: Optional[Normalizer] = None,
     ) -> None:
         self.modality_name = modality_name
         self.input_path = turbopath(input_path)
