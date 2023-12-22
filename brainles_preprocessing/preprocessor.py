@@ -53,8 +53,6 @@ class Preprocessor:
 
     def run(
         self,
-        brain_extraction: bool,  # TODO probably this should be true if one of the modalities has a bet flag with true?
-        normalization: bool,  # TODO probably this should be true if one of the modalities has a normalizer?
         save_dir_coregistration: Optional[str] = None,
         save_dir_atlas_registration: Optional[str] = None,
         save_dir_atlas_correction: Optional[str] = None,
@@ -142,6 +140,7 @@ class Preprocessor:
         )
 
         # Optional: Brain extraction
+        brain_extraction = any(modality.bet for modality in self.all_modalities)
         if brain_extraction:
             bet_dir = os.path.join(self.temp_folder, "brain-extraction")
             os.makedirs(bet_dir, exist_ok=True)
@@ -164,6 +163,7 @@ class Preprocessor:
             )
 
         # Optional: Normalization
+        normalization = any(modality.normalizer for modality in self.all_modalities)
         if normalization:
             for modality in [self.center_modality] + self.moving_modalities:
                 modality.normalize(
