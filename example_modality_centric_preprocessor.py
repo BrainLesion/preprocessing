@@ -10,6 +10,7 @@ from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
 from brainles_preprocessing.preprocessor import Preprocessor, PreprocessorGPU
 from brainles_preprocessing.registration import NiftyRegRegistrator
+from brainles_preprocessing.registration.ereg.ereg import eRegRegistrator
 
 
 def preprocess(inputDir):
