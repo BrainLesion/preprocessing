@@ -51,10 +51,12 @@ class Preprocessor:
         self.atlas_dir = os.path.join(self.temp_folder, "atlas-space")
         os.makedirs(self.atlas_dir, exist_ok=True)
 
+    @property
+    def all_modalities(self):
+        return [self.center_modality] + self.moving_modalities
+
     def run(
         self,
-        brain_extraction: bool,  # TODO probably this should be true if one of the modalities has a bet flag with true?
-        normalization: bool,  # TODO probably this should be true if one of the modalities has a normalizer?
         save_dir_coregistration: Optional[str] = None,
         save_dir_atlas_registration: Optional[str] = None,
         save_dir_atlas_correction: Optional[str] = None,
@@ -62,15 +64,14 @@ class Preprocessor:
         save_dir_unnormalized: Optional[str] = None,
     ):
         """
-        Run the preprocessing pipeline.
+        Execute the preprocessing pipeline.
 
         Args:
-            brain_extraction (bool): Whether to perform brain extraction.
-            normalization (bool): Whether to perform intensity normalization.
-            save_dir_coregistration (str, optional): Directory to save coregistration results.
-            save_dir_atlas_registration (str, optional): Directory to save atlas registration results.
-            save_dir_brain_extraction (str, optional): Directory to save brain extraction results.
-            save_dir_unnormalized (str, optional): Directory to save unnormalized images.
+            save_dir_coregistration (str, optional): Directory path to save coregistration results.
+            save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
+            save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
+            save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
+            save_dir_unnormalized (str, optional): Directory path to save unnormalized images.
         """
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
@@ -84,9 +85,18 @@ class Preprocessor:
                 registration_dir=coregistration_dir,
                 moving_image_name=file_name,
             )
-        self._save_coregistration(
-            coregistration_dir=coregistration_dir,
-            save_dir_coregistration=save_dir_coregistration,
+
+        shutil.copyfile(
+            src=self.center_modality.input_path,
+            dst=os.path.join(
+                coregistration_dir,
+                f"native__{self.center_modality.modality_name}.nii.gz",
+            ),
+        )
+
+        self._save_output(
+            src=coregistration_dir,
+            save_dir=save_dir_coregistration,
         )
 
         # Register center modality to atlas
@@ -142,6 +152,7 @@ class Preprocessor:
         )
 
         # Optional: Brain extraction
+        brain_extraction = any(modality.bet for modality in self.all_modalities)
         if brain_extraction:
             bet_dir = os.path.join(self.temp_folder, "brain-extraction")
             os.makedirs(bet_dir, exist_ok=True)
@@ -164,6 +175,7 @@ class Preprocessor:
             )
 
         # Optional: Normalization
+        normalization = any(modality.normalizer for modality in self.all_modalities)
         if normalization:
             for modality in [self.center_modality] + self.moving_modalities:
                 modality.normalize(
@@ -178,10 +190,6 @@ class Preprocessor:
                 modality.output_path,
             )
 
-    @property
-    def all_modalities(self):
-        return [self.center_modality] + self.moving_modalities
-
     def _save_output(
         self,
         src: str,
@@ -192,28 +200,6 @@ class Preprocessor:
             shutil.copytree(
                 src=src,
                 dst=save_dir,
-                dirs_exist_ok=True,
-            )
-
-    def _save_coregistration(
-        self,
-        coregistration_dir: str,
-        save_dir_coregistration: Optional[str],
-    ):
-        if save_dir_coregistration:
-            save_dir_coregistration = turbopath(save_dir_coregistration)
-            native_cm = os.path.join(
-                coregistration_dir,
-                f"native__{self.center_modality.modality_name}.nii.gz",
-            )
-
-            shutil.copyfile(
-                src=self.center_modality.input_path,
-                dst=native_cm,
-            )
-            shutil.copytree(
-                src=coregistration_dir,
-                dst=save_dir_coregistration,
                 dirs_exist_ok=True,
             )
 
