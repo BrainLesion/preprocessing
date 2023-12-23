@@ -51,6 +51,10 @@ class Preprocessor:
         self.atlas_dir = os.path.join(self.temp_folder, "atlas-space")
         os.makedirs(self.atlas_dir, exist_ok=True)
 
+    @property
+    def all_modalities(self):
+        return [self.center_modality] + self.moving_modalities
+
     def run(
         self,
         save_dir_coregistration: Optional[str] = None,
@@ -185,10 +189,6 @@ class Preprocessor:
                 modality.current,
                 modality.output_path,
             )
-
-    @property
-    def all_modalities(self):
-        return [self.center_modality] + self.moving_modalities
 
     def _save_output(
         self,
