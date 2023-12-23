@@ -88,11 +88,12 @@ class Preprocessor:
             )
 
         shutil.copyfile(
-                src=self.center_modality.input_path,
-                dst=os.path.join(
+            src=self.center_modality.input_path,
+            dst=os.path.join(
                 coregistration_dir,
                 f"native__{self.center_modality.modality_name}.nii.gz",
-            )
+            ),
+        )
 
         self._save_output(
             src=coregistration_dir,
@@ -202,8 +203,6 @@ class Preprocessor:
                 dst=save_dir,
                 dirs_exist_ok=True,
             )
-
-
 
 
 class PreprocessorGPU(Preprocessor):
