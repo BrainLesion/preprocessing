@@ -64,15 +64,14 @@ class Preprocessor:
         save_dir_unnormalized: Optional[str] = None,
     ):
         """
-        Run the preprocessing pipeline.
+        Execute the preprocessing pipeline.
 
         Args:
-            brain_extraction (bool): Whether to perform brain extraction.
-            normalization (bool): Whether to perform intensity normalization.
-            save_dir_coregistration (str, optional): Directory to save coregistration results.
-            save_dir_atlas_registration (str, optional): Directory to save atlas registration results.
-            save_dir_brain_extraction (str, optional): Directory to save brain extraction results.
-            save_dir_unnormalized (str, optional): Directory to save unnormalized images.
+            save_dir_coregistration (str, optional): Directory path to save coregistration results.
+            save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
+            save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
+            save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
+            save_dir_unnormalized (str, optional): Directory path to save unnormalized images.
         """
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
