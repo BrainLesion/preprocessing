@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
-from brainles_preprocessing.preprocessor import Preprocessor, PreprocessorGPU
+from brainles_preprocessing.preprocessor import Preprocessor
 from brainles_preprocessing.registration import NiftyRegRegistrator
 
 
@@ -65,7 +65,10 @@ def preprocess(inputDir):
                     modality_name="t1",
                     input_path=t1File,
                     output_path=prep_dir + "/" + inputDir.name + "_t1.nii.gz",
-                    bet=True,
+                    # raw_brainextracted_output_path,
+                    # normalized_brainextracted_output_path,
+                    # raw_withskull_output_path,
+                    # normalized_withskull_output_path,
                     atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
@@ -87,7 +90,7 @@ def preprocess(inputDir):
                 ),
             ]
 
-            preprocessor = PreprocessorGPU(
+            preprocessor = Preprocessor(
                 center_modality=center,
                 moving_modalities=moving_modalities,
                 registrator=NiftyRegRegistrator(),

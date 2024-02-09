@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import tempfile
 from typing import List, Optional
 
@@ -21,6 +22,8 @@ class Preprocessor:
         brain_extractor (BrainExtractor): The brain extractor object for brain extraction.
         atlas_image_path (str, optional): Path to the atlas image for registration (default is the T1 atlas).
         temp_folder (str, optional): Path to a temporary folder for storing intermediate results.
+        use_gpu (Optional[bool]): Use GPU for processing if True, CPU if False, or automatically detect if None.
+        limit_cuda_visible_devices (Optional[str]): Limit CUDA visible devices to a specific GPU ID.
 
     """
 
@@ -33,12 +36,18 @@ class Preprocessor:
         atlas_image_path: str = turbopath(__file__).parent
         + "/registration/atlas/t1_brats_space.nii",
         temp_folder: Optional[str] = None,
+        use_gpu: Optional[bool] = None,
+        limit_cuda_visible_devices: Optional[str] = None,
     ):
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
         self.atlas_image_path = turbopath(atlas_image_path)
         self.registrator = registrator
         self.brain_extractor = brain_extractor
+
+        self._configure_gpu(
+            use_gpu=use_gpu, limit_cuda_visible_devices=limit_cuda_visible_devices
+        )
 
         # Create temporary storage
         if temp_folder:
@@ -50,6 +59,39 @@ class Preprocessor:
 
         self.atlas_dir = os.path.join(self.temp_folder, "atlas-space")
         os.makedirs(self.atlas_dir, exist_ok=True)
+
+    def _configure_gpu(
+        self, use_gpu: Optional[bool], limit_cuda_visible_devices: Optional[str] = None
+    ):
+        """
+        Configures the environment for GPU usage based on the `use_gpu` parameter and CUDA availability.
+
+        Args:
+            use_gpu (Optional[bool]): Determines the GPU usage strategy.
+        """
+        if use_gpu is True or (use_gpu is None and self._cuda_is_available()):
+            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+            if limit_cuda_visible_devices:
+                os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
+
+    @staticmethod
+    def _cuda_is_available():
+        """
+        Checks if CUDA is available on the system by attempting to run 'nvidia-smi'.
+
+        Returns:
+            bool: True if 'nvidia-smi' can be executed successfully, indicating CUDA is available.
+        """
+        try:
+            subprocess.run(
+                ["nvidia-smi"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+            )
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
 
     @property
     def all_modalities(self):
@@ -202,57 +244,3 @@ class Preprocessor:
                 dst=save_dir,
                 dirs_exist_ok=True,
             )
-
-
-class PreprocessorGPU(Preprocessor):
-    """
-    Preprocesses medical image modalities using GPU acceleration.
-
-    Args:
-        center_modality (Modality): The central modality for coregistration.
-        moving_modalities (List[Modality]): List of modalities to be coregistered to the central modality.
-        registrator (Registrator): The registrator object for coregistration and registration to the atlas.
-        brain_extractor (BrainExtractor): The brain extractor object for brain extraction.
-        atlas_image_path (str, optional): Path to the atlas image for registration (default is the T1 atlas).
-        temp_folder (str, optional): Path to a temporary folder for storing intermediate results.
-        limit_cuda_visible_devices (str, optional): Limit CUDA visible devices for GPU acceleration.
-
-    """
-
-    def __init__(
-        self,
-        center_modality: Modality,
-        moving_modalities: List[Modality],
-        registrator: Registrator,
-        brain_extractor: BrainExtractor,
-        atlas_image_path: str = turbopath(__file__).parent
-        + "/registration/atlas/t1_brats_space.nii",
-        temp_folder: Optional[str] = None,
-        limit_cuda_visible_devices: Optional[str] = None,
-    ):
-        super().__init__(
-            center_modality,
-            moving_modalities,
-            registrator,
-            brain_extractor,
-            atlas_image_path,
-            temp_folder,
-        )
-        self.set_cuda_devices(
-            limit_cuda_visible_devices=limit_cuda_visible_devices,
-        )
-
-    def set_cuda_devices(
-        self,
-        limit_cuda_visible_devices: Optional[str] = None,
-    ):
-        """
-        Set CUDA devices for GPU acceleration.
-
-        Args:
-            limit_cuda_visible_devices (str, optional): Limit CUDA visible devices for GPU acceleration.
-
-        """
-        if limit_cuda_visible_devices:
-            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-            os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
