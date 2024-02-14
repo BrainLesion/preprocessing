@@ -105,13 +105,23 @@ class Preprocessor:
         save_dir_brain_extraction: Optional[str] = None,
     ):
         """
-        Execute the preprocessing pipeline.
+        Execute the preprocessing pipeline, encompassing coregistration, atlas-based registration,
+        atlas correction, and optional brain extraction.
 
         Args:
             save_dir_coregistration (str, optional): Directory path to save coregistration results.
             save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
             save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
             save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
+
+        This method orchestrates the entire preprocessing workflow by sequentially performing:
+
+        1. Coregistration: Aligning moving modalities to the central modality.
+        2. Atlas Registration: Aligning the central modality to a predefined atlas.
+        3. Atlas Correction: Applying additional correction in atlas space if specified.
+        4. Brain Extraction: Optionally extracting brain regions using specified masks.
+
+        Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
