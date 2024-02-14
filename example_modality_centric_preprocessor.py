@@ -22,7 +22,10 @@ def preprocess(inputDir):
 
         # is the exam already processed?
         brainles_dir = turbopath(inputDir) + "/" + inputDir.name + "_brainles"
-        prep_dir = brainles_dir + "/preprocessed"
+        raw_bet_dir = brainles_dir / "raw_bet"
+        norm_bet_dir = brainles_dir / "normalized_bet"
+        raw_skull_dir = brainles_dir / "raw_skull"
+        norm_skull_dir = brainles_dir / "normalized_skull"
 
         # if not os.path.exists(prep_dir):
         # if os.path.exists(prep_dir):
@@ -54,8 +57,13 @@ def preprocess(inputDir):
             center = Modality(
                 modality_name="t1c",
                 input_path=t1cFile,
-                output_path=prep_dir + "/" + inputDir.name + "_t1c.nii.gz",
-                bet=False,
+                raw_bet_output_path=raw_bet_dir / inputDir.name + "_t1c_bet_raw.nii.gz",
+                raw_skull_output_path=raw_skull_dir / inputDir.name
+                + "_t1c_skull_raw.nii.gz",
+                normalized_bet_output_path=norm_bet_dir / inputDir.name
+                + "_t1c_bet_normalized.nii.gz",
+                normalized_skull_output_path=norm_skull_dir / inputDir.name
+                + "_t1c_skull_normalized.nii.gz",
                 atlas_correction=True,
                 normalizer=percentile_normalizer,
             )
@@ -64,27 +72,42 @@ def preprocess(inputDir):
                 Modality(
                     modality_name="t1",
                     input_path=t1File,
-                    output_path=prep_dir + "/" + inputDir.name + "_t1.nii.gz",
-                    # raw_brainextracted_output_path,
-                    # normalized_brainextracted_output_path,
-                    # raw_withskull_output_path,
-                    # normalized_withskull_output_path,
+                    raw_bet_output_path=raw_bet_dir / inputDir.name
+                    + "_t1_bet_raw.nii.gz",
+                    raw_skull_output_path=raw_skull_dir / inputDir.name
+                    + "_t1_skull_raw.nii.gz",
+                    normalized_bet_output_path=norm_bet_dir / inputDir.name
+                    + "_t1_bet_normalized.nii.gz",
+                    normalized_skull_output_path=norm_skull_dir / inputDir.name
+                    + "_t1_skull_normalized.nii.gz",
                     atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
                 Modality(
                     modality_name="t2",
                     input_path=t2File,
-                    output_path=prep_dir + "/" + inputDir.name + "_t2.nii.gz",
-                    bet=True,
+                    raw_bet_output_path=raw_bet_dir / inputDir.name
+                    + "_t2_bet_raw.nii.gz",
+                    raw_skull_output_path=raw_skull_dir / inputDir.name
+                    + "_t2_skull_raw.nii.gz",
+                    normalized_bet_output_path=norm_bet_dir / inputDir.name
+                    + "_t2_bet_normalized.nii.gz",
+                    normalized_skull_output_path=norm_skull_dir / inputDir.name
+                    + "_t2_skull_normalized.nii.gz",
                     atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
                 Modality(
                     modality_name="flair",
                     input_path=flaFile,
-                    output_path=prep_dir + "/" + inputDir.name + "_fla.nii.gz",
-                    bet=True,
+                    raw_bet_output_path=raw_bet_dir / inputDir.name
+                    + "_fla_bet_raw.nii.gz",
+                    raw_skull_output_path=raw_skull_dir / inputDir.name
+                    + "_fla_skull_raw.nii.gz",
+                    normalized_bet_output_path=norm_bet_dir / inputDir.name
+                    + "_fla_bet_normalized.nii.gz",
+                    normalized_skull_output_path=norm_skull_dir / inputDir.name
+                    + "_fla_skull_normalized.nii.gz",
                     atlas_correction=True,
                     normalizer=percentile_normalizer,
                 ),
@@ -104,7 +127,6 @@ def preprocess(inputDir):
                 save_dir_atlas_registration=brainles_dir + "/atlas-registration",
                 save_dir_atlas_correction=brainles_dir + "/atlas-correction",
                 save_dir_brain_extraction=brainles_dir + "/brain-extraction",
-                save_dir_unnormalized=brainles_dir + "/unnormalized",
             )
 
     except Exception as e:
