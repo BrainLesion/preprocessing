@@ -41,7 +41,6 @@ class Preprocessor:
     ):
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
-        self.all_modalities = [center_modality] + moving_modalities
         self.atlas_image_path = turbopath(atlas_image_path)
         self.registrator = registrator
         self.brain_extractor = brain_extractor
