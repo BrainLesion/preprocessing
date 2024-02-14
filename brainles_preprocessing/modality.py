@@ -252,7 +252,7 @@ class Modality:
             self.current = atlas_bet_cm
         return atlas_mask_path
 
-    def save_image(
+    def save_current_image(
         self,
         output_path: str,
         normalization=False,
