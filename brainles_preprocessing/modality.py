@@ -251,3 +251,24 @@ class Modality:
         if self.bet is True:
             self.current = atlas_bet_cm
         return atlas_mask_path
+
+    def save_image(
+        self,
+        output_path: str,
+        normalization=False,
+    ) -> None:
+        os.makedirs(output_path.parent, exist_ok=True)
+
+        if normalization is False:
+            shutil.copyfile(
+                self.current,
+                output_path,
+            )
+        elif normalization is True:
+            image = read_nifti(self.current)
+            normalized_image = self.normalizer.normalize(image=image)
+            write_nifti(
+                input_array=normalized_image,
+                output_nifti_path=self.current,
+                reference_nifti_path=self.current,
+            )
