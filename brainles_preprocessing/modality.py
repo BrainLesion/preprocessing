@@ -42,15 +42,19 @@ class Modality:
         self,
         modality_name: str,
         input_path: str,
-        output_path: str,
-        bet: bool,
+        raw_bet_output_path: str,
+        normalized_bet_output_path: str,
+        raw_skull_output_path: str,
+        normalized_skull_output_path: str,
         atlas_correction: bool = True,
         normalizer: Optional[Normalizer] = None,
     ) -> None:
         self.modality_name = modality_name
         self.input_path = turbopath(input_path)
-        self.output_path = turbopath(output_path)
-        self.bet = bet
+        self.raw_bet_output_path = turbopath(raw_bet_output_path)
+        self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+        self.raw_skull_output_path = turbopath(raw_skull_output_path)
+        self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
         self.atlas_correction = atlas_correction
         self.normalizer = normalizer
         self.current = self.input_path
