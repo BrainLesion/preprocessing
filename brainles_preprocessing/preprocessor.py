@@ -103,7 +103,6 @@ class Preprocessor:
         save_dir_atlas_registration: Optional[str] = None,
         save_dir_atlas_correction: Optional[str] = None,
         save_dir_brain_extraction: Optional[str] = None,
-        save_dir_unnormalized: Optional[str] = None,
     ):
         """
         Execute the preprocessing pipeline.
@@ -113,7 +112,6 @@ class Preprocessor:
             save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
             save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
             save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
-            save_dir_unnormalized (str, optional): Directory path to save unnormalized images.
         """
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
@@ -196,11 +194,15 @@ class Preprocessor:
         # now we save images that are not skullstripped
         for modality in self.all_modalities:
             if modality.raw_skull_output_path:
-                # TODO save without normalization
-                pass
+                modality.save_image(
+                    modality.raw_skull_output_path,
+                    normalization=False,
+                )
             if modality.normalized_skull_output_path:
-                # TODO save with normalization
-                pass
+                modality.save_image(
+                    modality.normalized_skull_output_path,
+                    normalization=True,
+                )
 
         # Optional: Brain extraction
         brain_extraction = any(modality.bet for modality in self.all_modalities)
