@@ -273,6 +273,6 @@ class Modality:
             normalized_image = self.normalizer.normalize(image=image)
             write_nifti(
                 input_array=normalized_image,
-                output_nifti_path=self.current,
+                output_nifti_path=output_path,
                 reference_nifti_path=self.current,
             )
