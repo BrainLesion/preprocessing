@@ -169,12 +169,12 @@ class Preprocessor:
 
         for moving_modality in self.moving_modalities:
             if moving_modality.atlas_correction is True:
-                file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
+                moving_file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
                 moving_modality.register(
                     registrator=self.registrator,
                     fixed_image_path=self.center_modality.current,
                     registration_dir=atlas_correction_dir,
-                    moving_image_name=file_name,
+                    moving_image_name=moving_file_name,
                 )
 
         if self.center_modality.atlas_correction is True:
