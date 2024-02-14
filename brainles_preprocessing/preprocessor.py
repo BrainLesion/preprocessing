@@ -140,22 +140,22 @@ class Preprocessor:
         )
 
         # Register center modality to atlas
-        file_name = f"atlas__{self.center_modality.modality_name}"
+        center_file_name = f"atlas__{self.center_modality.modality_name}"
         transformation_matrix = self.center_modality.register(
             registrator=self.registrator,
             fixed_image_path=self.atlas_image_path,
             registration_dir=self.atlas_dir,
-            moving_image_name=file_name,
+            moving_image_name=center_file_name,
         )
 
         # Transform moving modalities to atlas
         for moving_modality in self.moving_modalities:
-            file_name = f"atlas__{moving_modality.modality_name}"
+            moving_file_name = f"atlas__{moving_modality.modality_name}"
             moving_modality.transform(
                 registrator=self.registrator,
                 fixed_image_path=self.atlas_image_path,
                 registration_dir_path=self.atlas_dir,
-                moving_image_name=file_name,
+                moving_image_name=moving_file_name,
                 transformation_matrix_path=transformation_matrix,
             )
         self._save_output(
