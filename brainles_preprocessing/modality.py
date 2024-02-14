@@ -68,14 +68,14 @@ class Modality:
                     "A normalizer must be provided if normalized_bet_output_path is not None."
                 )
         self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
-        
+
         if normalized_skull_output_path is not None:
             if normalizer is None:
                 raise ValueError(
                     "A normalizer must be provided if normalized_skull_output_path is not None."
                 )
         self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
-        
+
         self.normalizer = normalizer
         self.atlas_correction = atlas_correction
 
