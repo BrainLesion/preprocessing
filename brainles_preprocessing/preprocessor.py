@@ -41,6 +41,7 @@ class Preprocessor:
     ):
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
+        self.all_modalities = [center_modality] + moving_modalities
         self.atlas_image_path = turbopath(atlas_image_path)
         self.registrator = registrator
         self.brain_extractor = brain_extractor
@@ -193,6 +194,15 @@ class Preprocessor:
             save_dir=save_dir_atlas_correction,
         )
 
+        # now we save images that are not skullstrippe
+        for modality in self.all_modalities:
+            if modality.raw_skull_output_path:
+                # TODO save without normalization
+                pass
+            if modality.normalized_skull_output_path:
+                # TODO save with normalization
+                pass
+
         # Optional: Brain extraction
         brain_extraction = any(modality.bet for modality in self.all_modalities)
         if brain_extraction:
@@ -216,6 +226,16 @@ class Preprocessor:
                 save_dir=save_dir_brain_extraction,
             )
 
+        # now we save images that are skullstripped
+        for modality in self.all_modalities:
+            if modality.raw_bet_output_path:
+                # TODO save without normalization
+                pass
+            if modality.normalized_bet_output_path:
+                # TODO save with normalization
+                pass
+
+        # TODO probably this finish can go
         # Optional: Normalization
         normalization = any(modality.normalizer for modality in self.all_modalities)
         if normalization:
