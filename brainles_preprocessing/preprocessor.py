@@ -193,7 +193,7 @@ class Preprocessor:
             save_dir=save_dir_atlas_correction,
         )
 
-        # now we save images that are not skullstrippe
+        # now we save images that are not skullstripped
         for modality in self.all_modalities:
             if modality.raw_skull_output_path:
                 # TODO save without normalization
