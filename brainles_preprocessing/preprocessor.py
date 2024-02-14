@@ -205,7 +205,11 @@ class Preprocessor:
                 )
 
         # Optional: Brain extraction
-        brain_extraction = any(modality.bet for modality in self.all_modalities)
+        brain_extraction = any(
+            modality.normalized_bet_output_path or modality.raw_bet_output_path
+            for modality in self.all_modalities
+        )
+
         if brain_extraction:
             bet_dir = os.path.join(self.temp_folder, "brain-extraction")
             os.makedirs(bet_dir, exist_ok=True)
@@ -230,28 +234,15 @@ class Preprocessor:
         # now we save images that are skullstripped
         for modality in self.all_modalities:
             if modality.raw_bet_output_path:
-                # TODO save without normalization
-                pass
-            if modality.normalized_bet_output_path:
-                # TODO save with normalization
-                pass
-
-        # TODO probably this finish can go
-        # Optional: Normalization
-        normalization = any(modality.normalizer for modality in self.all_modalities)
-        if normalization:
-            for modality in [self.center_modality] + self.moving_modalities:
-                modality.normalize(
-                    temporary_directory=self.temp_folder,
-                    store_unnormalized=save_dir_unnormalized,
+                modality.save_current_image(
+                    modality.raw_bet_output_path,
+                    normalization=False,
                 )
-
-        for modality in self.all_modalities:
-            os.makedirs(modality.output_path.parent, exist_ok=True)
-            shutil.copyfile(
-                modality.current,
-                modality.output_path,
-            )
+            if modality.normalized_bet_output_path:
+                modality.save_current_image(
+                    modality.normalized_bet_output_path,
+                    normalization=True,
+                )
 
     def _save_output(
         self,
