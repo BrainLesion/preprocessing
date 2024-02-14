@@ -81,6 +81,10 @@ class Modality:
 
         self.current = self.input_path
 
+    @property
+    def bet(self) -> bool:
+        return any([self.raw_bet_output_path, self.normalized_bet_output_path])
+
     def normalize(
         self,
         temporary_directory: str,
