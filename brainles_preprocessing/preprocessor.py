@@ -203,12 +203,12 @@ class Preprocessor:
 
         # now we save images that are not skullstripped
         for modality in self.all_modalities:
-            if modality.raw_skull_output_path:
+            if modality.raw_skull_output_path is not None:
                 modality.save_current_image(
                     modality.raw_skull_output_path,
                     normalization=False,
                 )
-            if modality.normalized_skull_output_path:
+            if modality.normalized_skull_output_path is not None:
                 modality.save_current_image(
                     modality.normalized_skull_output_path,
                     normalization=True,
@@ -245,7 +245,7 @@ class Preprocessor:
                     modality.raw_bet_output_path,
                     normalization=False,
                 )
-            if modality.normalized_bet_output_path:
+            if modality.normalized_bet_output_path is not None:
                 modality.save_current_image(
                     modality.normalized_bet_output_path,
                     normalization=True,
@@ -256,7 +256,7 @@ class Preprocessor:
         src: str,
         save_dir: Optional[str],
     ):
-        if save_dir:
+        if save_dir is not None:
             save_dir = turbopath(save_dir)
             shutil.copytree(
                 src=src,
