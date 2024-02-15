@@ -4,20 +4,16 @@
 
 
 # BrainLes-Preprocessing
+`BrainLes preprocessing` is a comprehensive tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI. It can be used to build to build modular preprocessing pipelines:
 
-`BrainLes-Preprocessing` is a comprehensive tool tailored for preprocessing tasks in medical imaging, with a current focus on brain MRIs. Here's what it can currently do:
+This includes **normalization**, **co-registration**, **atlas registration** and **skulstripping / brain extraction**.
 
-- **Co-registration using NiftyReg**: Aligning two images or series of images. While `NiftyReg` is the current tool used for co-registration, our architecture allows for potential extensions with other tools in the future.
-- **Atlas Registration**: Maps images to a standard atlas for consistent spatial referencing.
-- **Transformation**: Adjusts the image based on certain parameters.
-- **Skull-stripping in BRATS-space**: Removes non-brain tissue from MRI data.
-- **Apply Masking**: Applies a mask to an image, highlighting or hiding specific parts of it.
+BrainLes is written `backend-agnostic` meaning it allows to swap the registration and brain extration tools.
 
-The outcome of this processing sequence is a set of 4 NIFTI images, skull-stripped in BRATS-space. These results are then saved to the provided path.
+<!-- TODO mention defacing -->
 
-## Atlas Reference
+<!-- TODO include image here -->
 
-We use the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/)
 
 ## Installation
 
@@ -26,3 +22,26 @@ With a Python 3.10+ environment you can install directly from [pypi.org](https:/
 ```
 pip install brainles-preprocessing
 ```
+
+
+## Usage
+Please have a look at our [Jupyter Notebook tutorials](https://github.com/BrainLesion/tutorials/tree/main/preprocessing) illustrating the usage of BrainLes preprocessing.
+
+
+<!-- TODO citation -->
+
+
+## FAQ
+Please credit the authors by citing their work.
+
+### Atlas Reference
+We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
+However, custom atlases can be supplied.
+
+### Brain extraction
+We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
+
+### Registration
+We currently provide support for [niftyreg](https://github.com/KCL-BMEIS/niftyreg).
+
+<!-- TODO mention defacing -->
