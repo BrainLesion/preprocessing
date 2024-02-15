@@ -42,15 +42,23 @@ class Modality:
         self,
         modality_name: str,
         input_path: str,
-        raw_bet_output_path: str = None,
-        raw_skull_output_path: str = None,
-        normalized_bet_output_path: str = None,
-        normalized_skull_output_path: str = None,
+        raw_bet_output_path: Optional[str] = None,
+        raw_skull_output_path: Optional[str] = None,
+        normalized_bet_output_path: Optional[str] = None,
+        normalized_skull_output_path: Optional[str] = None,
         normalizer: Optional[Normalizer] = None,
         atlas_correction: bool = True,
     ) -> None:
+        # basics
         self.modality_name = modality_name
+
         self.input_path = turbopath(input_path)
+        self.current = self.input_path
+
+        self.normalizer = normalizer
+        self.atlas_correction = atlas_correction
+
+        # check that atleast one output is generated
         if (
             raw_bet_output_path is None
             and normalized_bet_output_path is None
@@ -60,30 +68,42 @@ class Modality:
             raise ValueError(
                 "All output paths are None. At least one output path must be provided."
             )
-        self.raw_bet_output_path = turbopath(raw_bet_output_path)
-        self.raw_skull_output_path = turbopath(raw_skull_output_path)
+
+        # handle input paths
+        if raw_bet_output_path is not None:
+            self.raw_bet_output_path = turbopath(raw_bet_output_path)
+        else:
+            self.raw_bet_output_path = raw_bet_output_path
+
+        if raw_skull_output_path is not None:
+            self.raw_skull_output_path = turbopath(raw_skull_output_path)
+        else:
+            self.raw_skull_output_path = raw_skull_output_path
+
         if normalized_bet_output_path is not None:
             if normalizer is None:
                 raise ValueError(
                     "A normalizer must be provided if normalized_bet_output_path is not None."
                 )
-        self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+            self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+        else:
+            self.normalized_bet_output_path = normalized_bet_output_path
 
         if normalized_skull_output_path is not None:
             if normalizer is None:
                 raise ValueError(
                     "A normalizer must be provided if normalized_skull_output_path is not None."
                 )
-        self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
-
-        self.normalizer = normalizer
-        self.atlas_correction = atlas_correction
-
-        self.current = self.input_path
+            self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
+        else:
+            self.normalized_skull_output_path = normalized_skull_output_path
 
     @property
     def bet(self) -> bool:
-        return any([self.raw_bet_output_path, self.normalized_bet_output_path])
+        return any(
+            path is not None
+            for path in [self.raw_bet_output_path, self.normalized_skull_output_path]
+        )
 
     def normalize(
         self,
