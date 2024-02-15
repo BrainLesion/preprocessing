@@ -42,18 +42,48 @@ class Modality:
         self,
         modality_name: str,
         input_path: str,
-        output_path: str,
-        bet: bool,
-        atlas_correction: bool = True,
+        raw_bet_output_path: str = None,
+        raw_skull_output_path: str = None,
+        normalized_bet_output_path: str = None,
+        normalized_skull_output_path: str = None,
         normalizer: Optional[Normalizer] = None,
+        atlas_correction: bool = True,
     ) -> None:
         self.modality_name = modality_name
         self.input_path = turbopath(input_path)
-        self.output_path = turbopath(output_path)
-        self.bet = bet
-        self.atlas_correction = atlas_correction
+        if (
+            raw_bet_output_path is None
+            and normalized_bet_output_path is None
+            and raw_skull_output_path is None
+            and normalized_skull_output_path is None
+        ):
+            raise ValueError(
+                "All output paths are None. At least one output path must be provided."
+            )
+        self.raw_bet_output_path = turbopath(raw_bet_output_path)
+        self.raw_skull_output_path = turbopath(raw_skull_output_path)
+        if normalized_bet_output_path is not None:
+            if normalizer is None:
+                raise ValueError(
+                    "A normalizer must be provided if normalized_bet_output_path is not None."
+                )
+        self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+
+        if normalized_skull_output_path is not None:
+            if normalizer is None:
+                raise ValueError(
+                    "A normalizer must be provided if normalized_skull_output_path is not None."
+                )
+        self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
+
         self.normalizer = normalizer
+        self.atlas_correction = atlas_correction
+
         self.current = self.input_path
+
+    @property
+    def bet(self) -> bool:
+        return any([self.raw_bet_output_path, self.normalized_bet_output_path])
 
     def normalize(
         self,
@@ -225,3 +255,24 @@ class Modality:
         if self.bet is True:
             self.current = atlas_bet_cm
         return atlas_mask_path
+
+    def save_current_image(
+        self,
+        output_path: str,
+        normalization=False,
+    ) -> None:
+        os.makedirs(output_path.parent, exist_ok=True)
+
+        if normalization is False:
+            shutil.copyfile(
+                self.current,
+                output_path,
+            )
+        elif normalization is True:
+            image = read_nifti(self.current)
+            normalized_image = self.normalizer.normalize(image=image)
+            write_nifti(
+                input_array=normalized_image,
+                output_nifti_path=output_path,
+                reference_nifti_path=self.current,
+            )
