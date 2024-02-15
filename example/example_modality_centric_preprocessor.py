@@ -52,8 +52,8 @@ def preprocess(inputDir):
             raw_bet_output_path=raw_bet_dir / inputDir.name + "_t1c_bet_raw.nii.gz",
             raw_skull_output_path=raw_skull_dir / inputDir.name
             + "_t1c_skull_raw.nii.gz",
-            # normalized_bet_output_path=norm_bet_dir / inputDir.name
-            # + "_t1c_bet_normalized.nii.gz",
+            normalized_bet_output_path=norm_bet_dir / inputDir.name
+            + "_t1c_bet_normalized.nii.gz",
             normalized_skull_output_path=norm_skull_dir / inputDir.name
             + "_t1c_skull_normalized.nii.gz",
             atlas_correction=True,
