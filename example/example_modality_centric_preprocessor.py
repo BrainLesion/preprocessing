@@ -1,6 +1,4 @@
 # This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
-import datetime
-
 from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
 from auxiliary.turbopath import turbopath
 from tqdm import tqdm
@@ -16,19 +14,17 @@ def preprocess(inputDir):
     print("*** start ***")
 
     # where are the raw mr files?
-    btk_raw_dir = turbopath(inputDir)
-    # is the exam already processed?
     brainles_dir = turbopath(inputDir) + "/" + inputDir.name + "_brainles"
+
     raw_bet_dir = brainles_dir / "raw_bet"
     norm_bet_dir = brainles_dir / "normalized_bet"
     raw_skull_dir = brainles_dir / "raw_skull"
     norm_skull_dir = brainles_dir / "normalized_skull"
-    # if not os.path.exists(prep_dir):
-    # if os.path.exists(prep_dir):
-    t1_file = btk_raw_dir.files("*t1.nii.gz")
-    t1c_file = btk_raw_dir.files("*t1c.nii.gz")
-    t2_file = btk_raw_dir.files("*t2.nii.gz")
-    flair_file = btk_raw_dir.files("*fla.nii.gz")
+
+    t1_file = inputDir.files("*t1.nii.gz")
+    t1c_file = inputDir.files("*t1c.nii.gz")
+    t2_file = inputDir.files("*t2.nii.gz")
+    flair_file = inputDir.files("*fla.nii.gz")
     if len(t1_file) == len(t1c_file) == len(t2_file) == len(flair_file) == 1:
         # print(t1_file)
         # print(t1c_file)
