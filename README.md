@@ -25,7 +25,7 @@ pip install brainles-preprocessing
 
 
 ## Usage
-Please have a look at our [Jupyter tutorials](https://TODO) illustrating the usage of BrainLes preprocessing.
+Please have a look at our [Jupyter Notebook tutorials](https://github.com/BrainLesion/tutorials/tree/main/preprocessing) illustrating the usage of BrainLes preprocessing.
 
 
 <!-- TODO citation -->
