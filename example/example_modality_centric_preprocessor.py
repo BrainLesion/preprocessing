@@ -1,5 +1,4 @@
-# TODO move this to tutorial
-# TODO polish this
+# This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
 import datetime
 
 from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
