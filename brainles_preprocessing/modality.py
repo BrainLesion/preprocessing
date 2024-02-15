@@ -92,7 +92,10 @@ class Modality:
 
     @property
     def bet(self) -> bool:
-        return any([self.raw_bet_output_path, self.normalized_bet_output_path])
+        return any(
+            path is not None
+            for path in [self.raw_bet_output_path, self.normalized_skull_output_path]
+        )
 
     def normalize(
         self,
