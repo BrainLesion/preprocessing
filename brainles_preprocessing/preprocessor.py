@@ -103,17 +103,25 @@ class Preprocessor:
         save_dir_atlas_registration: Optional[str] = None,
         save_dir_atlas_correction: Optional[str] = None,
         save_dir_brain_extraction: Optional[str] = None,
-        save_dir_unnormalized: Optional[str] = None,
     ):
         """
-        Execute the preprocessing pipeline.
+        Execute the preprocessing pipeline, encompassing coregistration, atlas-based registration,
+        atlas correction, and optional brain extraction.
 
         Args:
             save_dir_coregistration (str, optional): Directory path to save coregistration results.
             save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
             save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
             save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
-            save_dir_unnormalized (str, optional): Directory path to save unnormalized images.
+
+        This method orchestrates the entire preprocessing workflow by sequentially performing:
+
+        1. Coregistration: Aligning moving modalities to the central modality.
+        2. Atlas Registration: Aligning the central modality to a predefined atlas.
+        3. Atlas Correction: Applying additional correction in atlas space if specified.
+        4. Brain Extraction: Optionally extracting brain regions using specified masks.
+
+        Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
@@ -142,22 +150,22 @@ class Preprocessor:
         )
 
         # Register center modality to atlas
-        file_name = f"atlas__{self.center_modality.modality_name}"
+        center_file_name = f"atlas__{self.center_modality.modality_name}"
         transformation_matrix = self.center_modality.register(
             registrator=self.registrator,
             fixed_image_path=self.atlas_image_path,
             registration_dir=self.atlas_dir,
-            moving_image_name=file_name,
+            moving_image_name=center_file_name,
         )
 
         # Transform moving modalities to atlas
         for moving_modality in self.moving_modalities:
-            file_name = f"atlas__{moving_modality.modality_name}"
+            moving_file_name = f"atlas__{moving_modality.modality_name}"
             moving_modality.transform(
                 registrator=self.registrator,
                 fixed_image_path=self.atlas_image_path,
                 registration_dir_path=self.atlas_dir,
-                moving_image_name=file_name,
+                moving_image_name=moving_file_name,
                 transformation_matrix_path=transformation_matrix,
             )
         self._save_output(
@@ -171,12 +179,12 @@ class Preprocessor:
 
         for moving_modality in self.moving_modalities:
             if moving_modality.atlas_correction is True:
-                file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
+                moving_file_name = f"atlas_corrected__{self.center_modality.modality_name}__{moving_modality.modality_name}"
                 moving_modality.register(
                     registrator=self.registrator,
                     fixed_image_path=self.center_modality.current,
                     registration_dir=atlas_correction_dir,
-                    moving_image_name=file_name,
+                    moving_image_name=moving_file_name,
                 )
 
         if self.center_modality.atlas_correction is True:
@@ -193,8 +201,22 @@ class Preprocessor:
             save_dir=save_dir_atlas_correction,
         )
 
+        # now we save images that are not skullstripped
+        for modality in self.all_modalities:
+            if modality.raw_skull_output_path:
+                modality.save_current_image(
+                    modality.raw_skull_output_path,
+                    normalization=False,
+                )
+            if modality.normalized_skull_output_path:
+                modality.save_current_image(
+                    modality.normalized_skull_output_path,
+                    normalization=True,
+                )
+
         # Optional: Brain extraction
         brain_extraction = any(modality.bet for modality in self.all_modalities)
+
         if brain_extraction:
             bet_dir = os.path.join(self.temp_folder, "brain-extraction")
             os.makedirs(bet_dir, exist_ok=True)
@@ -216,21 +238,18 @@ class Preprocessor:
                 save_dir=save_dir_brain_extraction,
             )
 
-        # Optional: Normalization
-        normalization = any(modality.normalizer for modality in self.all_modalities)
-        if normalization:
-            for modality in [self.center_modality] + self.moving_modalities:
-                modality.normalize(
-                    temporary_directory=self.temp_folder,
-                    store_unnormalized=save_dir_unnormalized,
-                )
-
+        # now we save images that are skullstripped
         for modality in self.all_modalities:
-            os.makedirs(modality.output_path.parent, exist_ok=True)
-            shutil.copyfile(
-                modality.current,
-                modality.output_path,
-            )
+            if modality.raw_bet_output_path:
+                modality.save_current_image(
+                    modality.raw_bet_output_path,
+                    normalization=False,
+                )
+            if modality.normalized_bet_output_path:
+                modality.save_current_image(
+                    modality.normalized_bet_output_path,
+                    normalization=True,
+                )
 
     def _save_output(
         self,
