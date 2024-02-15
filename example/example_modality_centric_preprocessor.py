@@ -106,8 +106,8 @@ def preprocess(inputDir):
             moving_modalities=moving_modalities,
             registrator=NiftyRegRegistrator(),
             brain_extractor=HDBetExtractor(),
-            temp_folder="tempo",
-            limit_cuda_visible_devices="1",
+            temp_folder="temporary_directory",
+            limit_cuda_visible_devices="0",
         )
 
         preprocessor.run(
