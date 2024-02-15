@@ -216,6 +216,7 @@ class Preprocessor:
 
         # Optional: Brain extraction
         brain_extraction = any(modality.bet for modality in self.all_modalities)
+        # print("brain extraction: ", brain_extraction)
 
         if brain_extraction:
             bet_dir = os.path.join(self.temp_folder, "brain-extraction")

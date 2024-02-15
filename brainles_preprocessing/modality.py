@@ -98,11 +98,15 @@ class Modality:
         else:
             self.normalized_skull_output_path = normalized_skull_output_path
 
+        # print("self.raw_bet_output_path", self.raw_bet_output_path)
+        # print("self.normalized_skull_output_path", self.normalized_skull_output_path)
+        # print("self.bet:", self.bet)
+
     @property
     def bet(self) -> bool:
         return any(
             path is not None
-            for path in [self.raw_bet_output_path, self.normalized_skull_output_path]
+            for path in [self.raw_bet_output_path, self.normalized_bet_output_path]
         )
 
     def normalize(
@@ -290,6 +294,7 @@ class Modality:
             )
         elif normalization is True:
             image = read_nifti(self.current)
+            print("current image", self.current)
             normalized_image = self.normalizer.normalize(image=image)
             write_nifti(
                 input_array=normalized_image,
