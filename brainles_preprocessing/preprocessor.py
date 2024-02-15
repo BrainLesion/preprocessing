@@ -240,7 +240,7 @@ class Preprocessor:
 
         # now we save images that are skullstripped
         for modality in self.all_modalities:
-            if modality.raw_bet_output_path:
+            if modality.raw_bet_output_path is not None:
                 modality.save_current_image(
                     modality.raw_bet_output_path,
                     normalization=False,

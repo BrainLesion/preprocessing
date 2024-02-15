@@ -72,9 +72,13 @@ class Modality:
         # handle input paths
         if raw_bet_output_path is not None:
             self.raw_bet_output_path = turbopath(raw_bet_output_path)
+        else:
+            self.raw_bet_output_path = raw_bet_output_path
 
         if raw_skull_output_path is not None:
             self.raw_skull_output_path = turbopath(raw_skull_output_path)
+        else:
+            self.raw_skull_output_path = raw_skull_output_path
 
         if normalized_bet_output_path is not None:
             if normalizer is None:
@@ -82,6 +86,8 @@ class Modality:
                     "A normalizer must be provided if normalized_bet_output_path is not None."
                 )
             self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+        else:
+            self.normalized_bet_output_path = normalized_bet_output_path
 
         if normalized_skull_output_path is not None:
             if normalizer is None:
@@ -89,6 +95,8 @@ class Modality:
                     "A normalizer must be provided if normalized_skull_output_path is not None."
                 )
             self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
+        else:
+            self.normalized_skull_output_path = normalized_skull_output_path
 
     @property
     def bet(self) -> bool:
