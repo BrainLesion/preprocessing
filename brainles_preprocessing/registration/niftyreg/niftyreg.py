@@ -66,7 +66,7 @@ class NiftyRegRegistrator(Registrator):
         niftyreg_executable = str(
             turbopath(__file__).parent + "/niftyreg_scripts/reg_aladin",
         )
-        
+
         turbopath(matrix_path)
         if matrix_path.suffix != ".txt":
             matrix_path = matrix_path.with_suffix(".txt")
