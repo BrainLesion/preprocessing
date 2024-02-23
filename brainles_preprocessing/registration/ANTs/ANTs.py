@@ -16,6 +16,7 @@ class ANTsRegistrator(Registrator):
     def __init__(
         self,
         type_of_transform: str = "Rigid",
+        # TODO add registration parameters here
     ):
         """
         TODO
@@ -41,11 +42,13 @@ class ANTsRegistrator(Registrator):
             log_file_path (str): Path to the log file.
         """
         transformed_image_path = turbopath(transformed_image_path)
-        matrix_path = turbopath(matrix_path)
-        
+        # we need to add .mat as this is the format for ANTs matrixes
+        matrix_path = turbopath(matrix_path) + ".mat"
+
         fixed_image = ants.image_read(fixed_image_path)
         moving_image = ants.image_read(moving_image_path)
 
+        # TODO finetune registration parameters
         registration_result = ants.registration(
             fixed=fixed_image,
             moving=moving_image,
