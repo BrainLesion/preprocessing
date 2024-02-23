@@ -72,7 +72,7 @@ class NiftyRegRegistrator(Registrator):
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
-            turbopath(matrix_path),
+            turbopath(matrix_path) + ".txt",
         ]
 
         # Call the run method to execute the script and capture the output in the log file
@@ -115,7 +115,8 @@ class NiftyRegRegistrator(Registrator):
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
-            turbopath(matrix_path),
+            # we need to add txt as this is the format for niftyreg matrixes
+            turbopath(matrix_path) + ".txt",
         ]
 
         # Call the run method to execute the script and capture the output in the log file

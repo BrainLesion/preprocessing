@@ -6,7 +6,8 @@ from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
 
-from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
+from brainles_preprocessing.brain_extraction.brain_extractor import \
+    BrainExtractor
 from brainles_preprocessing.registration.registrator import Registrator
 
 
@@ -170,7 +171,9 @@ class Modality:
             str: Path to the registration matrix.
         """
         registered = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
-        registered_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
+        registered_matrix = os.path.join(
+            registration_dir, f"{moving_image_name}"
+        )  # note, add file ending depending on registration backend!
         registered_log = os.path.join(registration_dir, f"{moving_image_name}.log")
 
         registrator.register(
