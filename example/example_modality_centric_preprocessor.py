@@ -6,8 +6,7 @@ from tqdm import tqdm
 from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
 from brainles_preprocessing.preprocessor import Preprocessor
-from brainles_preprocessing.registration import (ANTsRegistrator,
-                                                 NiftyRegRegistrator)
+from brainles_preprocessing.registration import ANTsRegistrator, NiftyRegRegistrator
 
 
 def preprocess(inputDir):
