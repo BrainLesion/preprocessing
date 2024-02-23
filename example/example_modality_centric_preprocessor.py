@@ -6,7 +6,8 @@ from tqdm import tqdm
 from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
 from brainles_preprocessing.preprocessor import Preprocessor
-from brainles_preprocessing.registration import NiftyRegRegistrator
+from brainles_preprocessing.registration import (ANTsRegistrator,
+                                                 NiftyRegRegistrator)
 
 
 def preprocess(inputDir):
@@ -100,7 +101,9 @@ def preprocess(inputDir):
         preprocessor = Preprocessor(
             center_modality=center,
             moving_modalities=moving_modalities,
-            registrator=NiftyRegRegistrator(),
+            # choose the registration backend you want to use
+            # registrator=NiftyRegRegistrator(),
+            registrator=ANTsRegistrator(),
             brain_extractor=HDBetExtractor(),
             temp_folder="temporary_directory",
             limit_cuda_visible_devices="0",
