@@ -80,30 +80,22 @@ class ANTsRegistrator(Registrator):
             matrix_path (str): Path to the transformation matrix.
             log_file_path (str): Path to the log file.
         """
-        runner = ScriptRunner(
-            script_path=self.transformation_script,
-            log_path=log_file_path,
+
+        fixed_image = ants.image_read(fixed_image_path)
+        moving_image = ants.image_read(moving_image_path)
+
+        transformed_image_path = turbopath(transformed_image_path)
+        os.makedirs(transformed_image_path.parent, exist_ok=True)
+
+        matrix_path = turbopath(matrix_path) + ".mat"
+
+        transformed_image = ants.apply_transforms(
+            fixed=fixed_image, moving=moving_image, transformlist=[matrix_path]
         )
 
-        niftyreg_executable = str(
-            turbopath(__file__).parent + "/niftyreg_scripts/reg_resample",
-        )
+        ants.image_write(transformed_image, transformed_image_path)
 
-        input_params = [
-            turbopath(niftyreg_executable),
-            turbopath(fixed_image_path),
-            turbopath(moving_image_path),
-            turbopath(transformed_image_path),
-            turbopath(matrix_path),
-        ]
-
-        # Call the run method to execute the script and capture the output in the log file
-        success, error = runner.run(input_params)
-
-        # if success:
-        #     print("Script executed successfully. Check the log file for details.")
-        # else:
-        #     print("Script execution failed:", error)
+        # TODO logging
 
 
 if __name__ == "__main__":
