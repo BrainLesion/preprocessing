@@ -107,12 +107,21 @@ class ANTsRegistrator(Registrator):
 
 
 if __name__ == "__main__":
+    # TODO move this into unit tests
     reg = ANTsRegistrator()
 
     reg.register(
         fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
         moving_image_path="example/example_data/TCGA-DU-7294/AX_T2_FR-FSE_RF2_150_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T2_FR-FSE_RF2_150_RM_4_t2.nii.gz",
         transformed_image_path="example/example_ants/transformed_image.nii.gz",
-        matrix_path="example/example_ants_matrix/matrix.txt",
+        matrix_path="example/example_ants_matrix/matrix",
+        log_file_path="example/example_ants/log.txt",
+    )
+
+    reg.transform(
+        fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
+        moving_image_path="example/example_data/OtherEXampleFromTCIA/T1_AX_OtherEXampleTCIA_TCGA-FG-6692_Si_TCGA-FG-6692_T1_AX_SE_10_se2d1_t1.nii.gz",
+        transformed_image_path="example/example_ants_transformed/transformed_image.nii.gz",
+        matrix_path="example/example_ants_matrix/matrix",
         log_file_path="example/example_ants/log.txt",
     )
