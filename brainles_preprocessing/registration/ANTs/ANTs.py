@@ -19,9 +19,22 @@ class ANTsRegistrator(Registrator):
         # TODO add registration parameters here
     ):
         """
-        TODO
+        Initialize an ANTsRegistrator instance.
+
+        Parameters:
+        - registration_params (dict, optional): Dictionary of parameters for the registration method.
+          Defaults to None, which implies using default registration parameters with a rigid transformation.
+        - transformation_params (dict, optional): Dictionary of parameters for the transformation method.
+          Defaults to an empty dictionary.
+
+        The registration_params dictionary may include the following keys:
+        - type_of_transform (str, optional): Type of transformation to use (default is "Rigid").
+
+        Example:
+        >>> reg_params = {'type_of_transform': 'Affine', 'reg_iterations': (30, 20, 10)}
+        >>> transform_params = {'interpolator': 'linear', 'imagetype': 1}
+        >>> registrator = ANTsRegistrator(registration_params=reg_params, transformation_params=transform_params)
         """
-        self.type_of_transform = type_of_transform
 
     def register(
         self,
