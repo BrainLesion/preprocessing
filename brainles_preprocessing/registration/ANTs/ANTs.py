@@ -1,4 +1,5 @@
 # TODO add typing and docs
+import datetime
 import os
 import shutil
 
@@ -59,6 +60,9 @@ class ANTsRegistrator(Registrator):
             **kwargs: Additional registration parameters to update the instantiated defaults.
         """
         # we update the transformation parameters with the provided kwargs
+
+        start_time = datetime.datetime.now()
+
         registration_kwargs = {**self.registration_params, **kwargs}
         transformed_image_path = turbopath(transformed_image_path)
 
@@ -78,7 +82,19 @@ class ANTsRegistrator(Registrator):
         ants.image_write(transformed_image, transformed_image_path)
         os.makedirs(matrix_path.parent, exist_ok=True)
         shutil.copyfile(registration_result["fwdtransforms"][0], matrix_path)
-        # TODO logging
+
+        end_time = datetime.datetime.now()
+
+        # TODO nicer logging
+        # we create a dummy log file for the moment to pass the tests
+        with open(log_file_path, "w") as f:
+            f.write("*** Registration with antspyx at:  ***\n")
+            f.write(f"start time: {start_time} \n")
+            f.write(f"fixed image: {fixed_image_path} \n")
+            f.write(f"moving image: {moving_image_path} \n")
+            f.write(f"transformed image: {transformed_image_path} \n")
+            f.write(f"matrix: {matrix_path} \n")
+            f.write(f"end time: {end_time} \n")
 
     def transform(
         self,
@@ -100,6 +116,8 @@ class ANTsRegistrator(Registrator):
             log_file_path (str): Path to the log file.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
         """
+        start_time = datetime.datetime.now()
+
         # we update the transformation parameters with the provided kwargs
         transform_kwargs = {**self.transformation_params, **kwargs}
         fixed_image = ants.image_read(fixed_image_path)
@@ -117,7 +135,19 @@ class ANTsRegistrator(Registrator):
             **transform_kwargs,
         )
         ants.image_write(transformed_image, transformed_image_path)
-        # TODO logging
+
+        end_time = datetime.datetime.now()
+
+        # TODO nicer logging
+        # we create a dummy log file for the moment to pass the tests
+        with open(log_file_path, "w") as f:
+            f.write("*** Registration with antspyx at:  ***\n")
+            f.write(f"start time: {start_time} \n")
+            f.write(f"fixed image: {fixed_image_path} \n")
+            f.write(f"moving image: {moving_image_path} \n")
+            f.write(f"transformed image: {transformed_image_path} \n")
+            f.write(f"matrix: {matrix_path} \n")
+            f.write(f"end time: {end_time} \n")
 
 
 if __name__ == "__main__":
