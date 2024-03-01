@@ -28,7 +28,6 @@ class TestNiftyRegRegistrator(unittest.TestCase):
         shutil.rmtree(self.output_dir)
 
     def test_register_creates_output_files(self):
-        # we try to run the fastest possible skullstripping on GPU
         self.registrator.register(
             fixed_image_path=self.fixed_image,
             moving_image_path=self.moving_image,
