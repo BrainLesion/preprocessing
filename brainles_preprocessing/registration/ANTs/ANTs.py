@@ -87,14 +87,17 @@ class ANTsRegistrator(Registrator):
 
         # TODO nicer logging
         # we create a dummy log file for the moment to pass the tests
-        with open(log_file_path, "w") as f:
-            f.write("*** Registration with antspyx at:  ***\n")
-            f.write(f"start time: {start_time} \n")
-            f.write(f"fixed image: {fixed_image_path} \n")
-            f.write(f"moving image: {moving_image_path} \n")
-            f.write(f"transformed image: {transformed_image_path} \n")
-            f.write(f"matrix: {matrix_path} \n")
-            f.write(f"end time: {end_time} \n")
+
+        self._log_to_file(
+            log_file_path=log_file_path,
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=matrix_path,
+            operation_name="registration",
+            start_time=start_time,
+            end_time=end_time,
+        )
 
     def transform(
         self,
@@ -140,14 +143,50 @@ class ANTsRegistrator(Registrator):
 
         # TODO nicer logging
         # we create a dummy log file for the moment to pass the tests
+
+        self._log_to_file(
+            log_file_path=log_file_path,
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=matrix_path,
+            operation_name="transformation",
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+    @staticmethod
+    def _log_to_file(
+        log_file_path: str,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: str,
+        operation_name: str,
+        start_time,
+        end_time,
+    ):
+
+        # Calculate the duration and make it human readable
+        duration = (end_time - start_time).total_seconds()
+
+        hours = int(duration // 3600)
+        minutes = int((duration % 3600) // 60)
+        seconds = int(duration % 60)
+        milliseconds = int((duration - int(duration)) * 1000)
+
+        # Format the duration as "0:0:0:0"
+        duration_formatted = f"{hours}h {minutes}m {seconds}s {milliseconds}ms"
+
         with open(log_file_path, "w") as f:
-            f.write("*** Registration with antspyx at:  ***\n")
+            f.write(f"*** {operation_name} with antspyx ***\n")
             f.write(f"start time: {start_time} \n")
             f.write(f"fixed image: {fixed_image_path} \n")
             f.write(f"moving image: {moving_image_path} \n")
             f.write(f"transformed image: {transformed_image_path} \n")
             f.write(f"matrix: {matrix_path} \n")
             f.write(f"end time: {end_time} \n")
+            f.write(f"duration: {duration_formatted}\n")
 
 
 if __name__ == "__main__":
