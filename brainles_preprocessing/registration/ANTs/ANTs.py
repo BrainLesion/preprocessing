@@ -45,7 +45,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Register images using ANTs.
@@ -56,8 +56,9 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output).
             log_file_path (str): Path to the log file.
-            **kwargs: Additional registration parameters.
+            **kwargs: Additional registration parameters to update the instantiated defaults.
         """
+        # we update the transformation parameters with the provided kwargs
         registration_kwargs = {**self.registration_params, **kwargs}
         transformed_image_path = turbopath(transformed_image_path)
 
@@ -86,7 +87,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Apply a transformation using ANTs.
@@ -97,8 +98,9 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix.
             log_file_path (str): Path to the log file.
-            **kwargs: Additional transformation parameters.
+            **kwargs: Additional transformation parameters to update the instantiated defaults.
         """
+        # we update the transformation parameters with the provided kwargs
         transform_kwargs = {**self.transformation_params, **kwargs}
         fixed_image = ants.image_read(fixed_image_path)
         moving_image = ants.image_read(moving_image_path)
