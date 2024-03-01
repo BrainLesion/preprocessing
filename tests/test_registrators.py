@@ -6,8 +6,7 @@ from abc import abstractmethod
 from auxiliary.turbopath import turbopath
 
 from brainles_preprocessing.registration.ANTs.ANTs import ANTsRegistrator
-from brainles_preprocessing.registration.niftyreg.niftyreg import \
-    NiftyRegRegistrator
+from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
 
 
 class RegistratorBase:
