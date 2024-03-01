@@ -6,7 +6,8 @@ from abc import abstractmethod
 from auxiliary.turbopath import turbopath
 
 from brainles_preprocessing.registration.ANTs.ANTs import ANTsRegistrator
-from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
+from brainles_preprocessing.registration.niftyreg.niftyreg import \
+    NiftyRegRegistrator
 
 
 class RegistratorBase:
@@ -31,7 +32,7 @@ class RegistratorBase:
         self.moving_image = input_dir + "/bet_tcia_example_t1c_mask.nii.gz"
 
         self.matrix = self.output_dir + "/matrix"
-        self.transform_matrix = f"{self.matrix}.{self.matrix_extension}"
+        self.transform_matrix = input_dir + f"/matrix.{self.matrix_extension}"
 
     def tearDown(self):
         # Clean up created files if they exist
