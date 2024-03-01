@@ -21,7 +21,7 @@ class TestRegistratorBase(unittest.TestCase):
         self.output_dir = test_data_dir + "/temp_output_niftyreg"
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.registrator = get_registrator()
+        self.registrator = self.get_registrator()
 
         self.fixed_image = input_dir + "/tcia_example_t1c.nii.gz"
         self.moving_image = input_dir + "/bet_tcia_example_t1c_mask.nii.gz"
@@ -65,7 +65,6 @@ class TestRegistratorBase(unittest.TestCase):
 class TestANTsRegistratorBase(TestRegistratorBase):
     def get_registrator(self):
         return ANTsRegistrator()
-
 
 class TestNiftyRegRegistratorRegistratorBase(TestRegistratorBase):
     def get_registrator(self):
