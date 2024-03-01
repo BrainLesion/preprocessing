@@ -40,11 +40,10 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
-
 [tool.poetry.dependencies]
 python = "^3.10"
 # core
-path = "^16.2.0"
+path = "^16.10.0"
 ttictoc = "^0.5.6"
 pathlib = "^1.0.1"
 nibabel = "^3.2.1"
@@ -55,8 +54,16 @@ BrainLes-HD-BET = ">=0.0.5"
 
 # utils
 tqdm = "^4.64.1"
-auxiliary = "^0.0.40"
+auxiliary = "^0.0.41"
 rich = "^13.6.0"
+
+# optional registration backends
+antspyx = { version = "^0.4.2", optional = true }
+
+[tool.poetry.extras]
+all = ["antspyx"]
+ants = ["antspyx"]
+
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
