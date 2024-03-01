@@ -1,20 +1,27 @@
 import os
 import shutil
 import unittest
+from abc import abstractmethod
 
 from auxiliary.turbopath import turbopath
 
-from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
+from brainles_preprocessing.registration.ANTs.ANTs import ANTsRegistrator
+from brainles_preprocessing.registration.niftyreg.niftyreg import \
+    NiftyRegRegistrator
 
 
-class TestNiftyRegRegistrator(unittest.TestCase):
+class TestRegistratorBase(unittest.TestCase):
+    @abstractmethod
+    def get_registrator(self):
+        pass
+
     def setUp(self):
         test_data_dir = turbopath(__file__).parent + "/test_data"
         input_dir = test_data_dir + "/input"
         self.output_dir = test_data_dir + "/temp_output_niftyreg"
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.registrator = NiftyRegRegistrator()
+        self.registrator = get_registrator()
 
         self.fixed_image = input_dir + "/tcia_example_t1c.nii.gz"
         self.moving_image = input_dir + "/bet_tcia_example_t1c_mask.nii.gz"
@@ -53,3 +60,13 @@ class TestNiftyRegRegistrator(unittest.TestCase):
 
 
 # TODO also test transform
+
+
+class TestANTsRegistratorBase(TestRegistratorBase):
+    def get_registrator(self):
+        return ANTsRegistrator()
+
+
+class TestNiftyRegRegistratorRegistratorBase(TestRegistratorBase):
+    def get_registrator(self):
+        return NiftyRegRegistrator()
