@@ -8,12 +8,12 @@ class eRegRegistrator(Registrator):
     def __init__(
         self,
         # TODO define default
-        config_file: str | None = None,
+        configuration_file: str | None = None,
     ):
         """
         # TODO
         """
-        self.config_file = config_file
+        self.configuration_file = configuration_file
 
     def register(
         self,
@@ -35,7 +35,7 @@ class eRegRegistrator(Registrator):
         """
         # TODO do we need to handle kwargs?
         registrator = RegistrationClass(
-            config_file=self.config_file,
+            configuration_file=self.configuration_file,
         )
 
         registrator.register(
@@ -66,7 +66,7 @@ class eRegRegistrator(Registrator):
         """
         # TODO do we need to handle kwargs?
         registrator = RegistrationClass(
-            config_file=self.config_file,
+            configuration_file=self.configuration_file,
         )
 
         registrator.resample_image(
