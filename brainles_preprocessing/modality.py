@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import List, Optional
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.normalization.normalizer_base import Normalizer
@@ -41,16 +42,72 @@ class Modality:
         self,
         modality_name: str,
         input_path: str,
-        output_path: str,
-        bet: bool,
-        normalizer: Normalizer | None = None,
+        raw_bet_output_path: Optional[str] = None,
+        raw_skull_output_path: Optional[str] = None,
+        normalized_bet_output_path: Optional[str] = None,
+        normalized_skull_output_path: Optional[str] = None,
+        normalizer: Optional[Normalizer] = None,
+        atlas_correction: bool = True,
     ) -> None:
+        # basics
         self.modality_name = modality_name
+
         self.input_path = turbopath(input_path)
-        self.output_path = turbopath(output_path)
-        self.bet = bet
-        self.normalizer = normalizer
         self.current = self.input_path
+
+        self.normalizer = normalizer
+        self.atlas_correction = atlas_correction
+
+        # check that atleast one output is generated
+        if (
+            raw_bet_output_path is None
+            and normalized_bet_output_path is None
+            and raw_skull_output_path is None
+            and normalized_skull_output_path is None
+        ):
+            raise ValueError(
+                "All output paths are None. At least one output path must be provided."
+            )
+
+        # handle input paths
+        if raw_bet_output_path is not None:
+            self.raw_bet_output_path = turbopath(raw_bet_output_path)
+        else:
+            self.raw_bet_output_path = raw_bet_output_path
+
+        if raw_skull_output_path is not None:
+            self.raw_skull_output_path = turbopath(raw_skull_output_path)
+        else:
+            self.raw_skull_output_path = raw_skull_output_path
+
+        if normalized_bet_output_path is not None:
+            if normalizer is None:
+                raise ValueError(
+                    "A normalizer must be provided if normalized_bet_output_path is not None."
+                )
+            self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+        else:
+            self.normalized_bet_output_path = normalized_bet_output_path
+
+        if normalized_skull_output_path is not None:
+            if normalizer is None:
+                raise ValueError(
+                    "A normalizer must be provided if normalized_skull_output_path is not None."
+                )
+            self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
+        else:
+            self.normalized_skull_output_path = normalized_skull_output_path
+
+        # print("self.raw_bet_output_path", self.raw_bet_output_path)
+        # print("self.normalized_skull_output_path", self.normalized_skull_output_path)
+        # print("self.bet:", self.bet)
+
+    @property
+    def bet(self) -> bool:
+        return any(
+            path is not None
+            for path in [self.raw_bet_output_path, self.normalized_bet_output_path]
+        )
 
     def normalize(
         self,
@@ -113,7 +170,9 @@ class Modality:
             str: Path to the registration matrix.
         """
         registered = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
-        registered_matrix = os.path.join(registration_dir, f"{moving_image_name}.txt")
+        registered_matrix = os.path.join(
+            registration_dir, f"{moving_image_name}"
+        )  # note, add file ending depending on registration backend!
         registered_log = os.path.join(registration_dir, f"{moving_image_name}.log")
 
         registrator.register(
@@ -219,5 +278,28 @@ class Modality:
             brain_mask_path=atlas_mask_path,
             log_file_path=bet_log,
         )
-        self.current = atlas_bet_cm
+        if self.bet is True:
+            self.current = atlas_bet_cm
         return atlas_mask_path
+
+    def save_current_image(
+        self,
+        output_path: str,
+        normalization=False,
+    ) -> None:
+        os.makedirs(output_path.parent, exist_ok=True)
+
+        if normalization is False:
+            shutil.copyfile(
+                self.current,
+                output_path,
+            )
+        elif normalization is True:
+            image = read_nifti(self.current)
+            print("current image", self.current)
+            normalized_image = self.normalizer.normalize(image=image)
+            write_nifti(
+                input_array=normalized_image,
+                output_nifti_path=output_path,
+                reference_nifti_path=self.current,
+            )

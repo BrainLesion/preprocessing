@@ -66,6 +66,10 @@ class NiftyRegRegistrator(Registrator):
             turbopath(__file__).parent + "/niftyreg_scripts/reg_aladin",
         )
 
+        turbopath(matrix_path)
+        if matrix_path.suffix != ".txt":
+            matrix_path = matrix_path.with_suffix(".txt")
+
         input_params = [
             turbopath(niftyreg_executable),
             turbopath(fixed_image_path),
@@ -109,12 +113,17 @@ class NiftyRegRegistrator(Registrator):
             turbopath(__file__).parent + "/niftyreg_scripts/reg_resample",
         )
 
+        turbopath(matrix_path)
+        if matrix_path.suffix != ".txt":
+            matrix_path = matrix_path.with_suffix(".txt")
+
         input_params = [
             turbopath(niftyreg_executable),
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
             turbopath(matrix_path),
+            # we need to add txt as this is the format for niftyreg matrixes
         ]
 
         # Call the run method to execute the script and capture the output in the log file
