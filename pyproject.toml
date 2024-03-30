@@ -48,7 +48,6 @@ ttictoc = "^0.5.6"
 pathlib = "^1.0.1"
 nibabel = "^3.2.1"
 numpy = "^1.23.0"
-ereg = "^0.0.4"    # TODO adjust version
 
 # hd-bet reqs
 BrainLes-HD-BET = ">=0.0.5"
@@ -60,10 +59,13 @@ rich = "^13.6.0"
 
 # optional registration backends
 antspyx = { version = "^0.4.2", optional = true }
+ereg = { version = "^0.0.6", optional = true }
+
 
 [tool.poetry.extras]
-all = ["antspyx"]
+all = ["antspyx", "ereg"]
 ants = ["antspyx"]
+ereg = ["ereg"]
 
 
 [tool.poetry.dev-dependencies]
