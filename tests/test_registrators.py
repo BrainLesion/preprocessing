@@ -112,4 +112,4 @@ class TestEregRegistratorRegistrator(RegistratorBase, unittest.TestCase):
         return eRegRegistrator()
 
     def get_method_and_extension(self):
-        return "ereg", "txt"
+        return "ereg", "mat"
