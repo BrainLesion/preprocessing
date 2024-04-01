@@ -10,7 +10,7 @@ from brainles_preprocessing.registration.eReg.eReg import eRegRegistrator
 from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
 
 
-class RegistratorBase:
+class RegistratorBase(unittest.TestCase):
     @abstractmethod
     def get_registrator(self):
         pass
@@ -91,7 +91,7 @@ class RegistratorBase:
 # TODO also test transform
 
 
-class TestANTsRegistrator(RegistratorBase, unittest.TestCase):
+class TestANTsRegistrator(RegistratorBase):
     def get_registrator(self):
         return ANTsRegistrator()
 
@@ -99,7 +99,7 @@ class TestANTsRegistrator(RegistratorBase, unittest.TestCase):
         return "ants", "mat"
 
 
-class TestNiftyRegRegistratorRegistrator(RegistratorBase, unittest.TestCase):
+class TestNiftyRegRegistratorRegistrator(RegistratorBase):
     def get_registrator(self):
         return NiftyRegRegistrator()
 
@@ -107,7 +107,7 @@ class TestNiftyRegRegistratorRegistrator(RegistratorBase, unittest.TestCase):
         return "niftyreg", "txt"
 
 
-class TestEregRegistratorRegistrator(RegistratorBase, unittest.TestCase):
+class TestEregRegistratorRegistrator(RegistratorBase):
     def get_registrator(self):
         return eRegRegistrator()
 
