@@ -40,7 +40,7 @@ class eRegRegistrator(Registrator):
             configuration_file=self.configuration_file,
         )
 
-        matrix_path = _add_txt_suffix(matrix_path)
+        matrix_path = _add_mat_suffix(matrix_path)
 
         registrator.register(
             target_image=fixed_image_path,
@@ -73,7 +73,7 @@ class eRegRegistrator(Registrator):
             configuration_file=self.configuration_file,
         )
 
-        matrix_path = _add_txt_suffix(matrix_path)
+        matrix_path = _add_mat_suffix(matrix_path)
 
         registrator.resample_image(
             target_image=fixed_image_path,
@@ -84,17 +84,17 @@ class eRegRegistrator(Registrator):
         )
 
 
-def _add_txt_suffix(filename: str) -> str:
+def _add_mat_suffix(filename: str) -> str:
     """
-    Adds a ".txt" suffix to the filename if it doesn't have any extension.
+    Adds a ".mat" suffix to the filename if it doesn't have any extension.
 
     Parameters:
         filename (str): The filename to check and potentially modify.
 
     Returns:
-        str: The filename with ".txt" suffix added if needed.
+        str: The filename with ".mat" suffix added if needed.
     """
     base, ext = os.path.splitext(filename)
     if not ext:
-        filename += ".txt"
+        filename += ".mat"
     return filename
