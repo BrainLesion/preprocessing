@@ -26,7 +26,7 @@ class eRegRegistrator(Registrator):
         log_file_path: str = None,
     ) -> None:
         """
-        Register images using NiftyReg.
+        Register images using eReg.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
@@ -59,7 +59,7 @@ class eRegRegistrator(Registrator):
         log_file_path: str = None,
     ) -> None:
         """
-        Apply a transformation using NiftyReg.
+        Apply a transformation using eReg.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
