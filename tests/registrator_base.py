@@ -1,12 +1,11 @@
 import os
-import shutil
-import unittest
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from auxiliary.turbopath import turbopath
+import shutil
 
 
-class RegistratorBase(unittest.TestCase):
+class RegistratorBase:
 
     @abstractmethod
     def get_registrator(self):
@@ -29,14 +28,12 @@ class RegistratorBase(unittest.TestCase):
         self.moving_image = input_dir + "/tcia_example_t1.nii.gz"
 
         self.matrix = self.output_dir + f"/{self.method_name}_matrix"
-        self.transform_matrix = (
-            input_dir + f"/{self.method_name}_matrix.{self.matrix_extension}"
-        )
+        self.transform_matrix = input_dir + f"/{self.method_name}_matrix"
 
     def tearDown(self):
         # Clean up created files if they exist
-        # shutil.rmtree(self.output_dir)
-        pass
+        shutil.rmtree(self.output_dir)
+        # pass
 
     def test_register_creates_output_files(self):
         transformed_image = (
