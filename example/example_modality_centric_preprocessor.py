@@ -106,8 +106,8 @@ def preprocess(inputDir):
             moving_modalities=moving_modalities,
             # choose the registration backend you want to use
             # registrator=NiftyRegRegistrator(),
-            # registrator=ANTsRegistrator(),
-            registrator=eRegRegistrator(),
+            registrator=ANTsRegistrator(),
+            # registrator=eRegRegistrator(),
             brain_extractor=HDBetExtractor(),
             temp_folder="temporary_directory",
             limit_cuda_visible_devices="0",
