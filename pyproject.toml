@@ -59,10 +59,13 @@ rich = "^13.6.0"
 
 # optional registration backends
 antspyx = { version = "^0.4.2", optional = true }
+ereg = { version = "^0.0.10", optional = true }
+
 
 [tool.poetry.extras]
-all = ["antspyx"]
+all = ["antspyx", "ereg"]
 ants = ["antspyx"]
+ereg = ["ereg"]
 
 
 [tool.poetry.dev-dependencies]
