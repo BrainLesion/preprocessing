@@ -86,7 +86,7 @@ class HDBetExtractor(BrainExtractor):
             Path(masked_image_path).parent
             / f"{name_extractor(masked_image_path)}_mask.nii.gz"
         )
-        if hdbet_mask_path != Path(brain_mask_path):
+        if hdbet_mask_path.resolve() != Path(brain_mask_path).resolve():
             copyfile(
                 src=hdbet_mask_path,
                 dst=brain_mask_path,
