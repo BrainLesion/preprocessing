@@ -1,5 +1,6 @@
 # TODO add typing and docs
 from abc import abstractmethod
+from pathlib import Path
 from shutil import copyfile
 
 from auxiliary.nifti.io import read_nifti, write_nifti
@@ -82,7 +83,7 @@ class HDBetExtractor(BrainExtractor):
         )
 
         hdbet_mask_path = (
-            masked_image_path.parent
+            Path(masked_image_path).parent
             + "/"
             + name_extractor(masked_image_path)
             + "_mask.nii.gz"
