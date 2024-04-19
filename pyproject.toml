@@ -50,7 +50,7 @@ nibabel = "^3.2.1"
 numpy = "^1.23.0"
 
 # hd-bet reqs
-BrainLes-HD-BET = ">=0.0.5"
+brainles_hd_bet = "*" #= ">=0.0.5"
 
 # utils
 tqdm = "^4.64.1"
