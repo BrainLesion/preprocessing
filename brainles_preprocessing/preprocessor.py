@@ -103,7 +103,7 @@ class Preprocessor:
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
-    def _set_log_file(self, log_file: str | Path) -> None:
+    def _set_log_file(self, log_file: Optional[str | Path]) -> None:
         """Set the log file and remove the file handler from a potential previous run.
 
         Args:
@@ -113,7 +113,11 @@ class Preprocessor:
             logging.getLogger().removeHandler(self.log_file_handler)
 
         # ensure parent directories exists
-        log_file = Path(log_file)  # is idempotent
+        log_file = Path(
+            log_file
+            if log_file
+            else f"brainles_preprocessing_{datetime.now().isoformat()}.log"
+        )
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
         self.log_file_handler = logging.FileHandler(log_file)
@@ -173,6 +177,7 @@ class Preprocessor:
         save_dir_atlas_registration: Optional[str] = None,
         save_dir_atlas_correction: Optional[str] = None,
         save_dir_brain_extraction: Optional[str] = None,
+        log_file: Optional[str] = None,
     ):
         """
         Execute the preprocessing pipeline, encompassing coregistration, atlas-based registration,
@@ -183,6 +188,7 @@ class Preprocessor:
             save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
             save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
             save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
+            log_file (str, optional): Path to save the log file. Defaults to a timestamped file in the current directory.
 
         This method orchestrates the entire preprocessing workflow by sequentially performing:
 
@@ -193,7 +199,7 @@ class Preprocessor:
 
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
-        self._set_log_file(f"brainles_preprocessing_{datetime.now().isoformat()}.log")
+        self._set_log_file(log_file=log_file)
         logger.info(f"{' Starting preprocessing ':=^80}")
         logger.info(f"Logs are saved to {self.log_file_handler.baseFilename}")
         logger.info(
