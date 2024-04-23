@@ -46,15 +46,15 @@ python = "^3.10"
 path = "^16.10.0"
 ttictoc = "^0.5.6"
 pathlib = "^1.0.1"
-nibabel = "^3.2.1"
+nibabel = ">=5.2.1"
 numpy = "^1.23.0"
 
 # hd-bet reqs
-brainles_hd_bet = "*" #= ">=0.0.5"
+brainles_hd_bet = ">=0.0.8"
 
 # utils
 tqdm = "^4.64.1"
-auxiliary = "^0.0.41"
+auxiliary = ">=0.0.42"
 rich = "^13.6.0"
 
 # optional registration backends
@@ -69,7 +69,7 @@ ereg = ["ereg"]
 
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2"
+pytest = ">=8.1.1"
 
 [tool.poetry.group.docs]
 optional = true
