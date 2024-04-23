@@ -104,7 +104,7 @@ class Preprocessor:
             return False
 
     def _set_log_file(self, log_file: str | Path) -> None:
-        """Set the log file for the inference run and remove the file handler from a potential previous run.
+        """Set the log file and remove the file handler from a potential previous run.
 
         Args:
             log_file (str | Path): log file path
