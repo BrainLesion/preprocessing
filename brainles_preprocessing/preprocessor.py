@@ -1,3 +1,4 @@
+from functools import wraps
 import logging
 import os
 from pathlib import Path
@@ -103,6 +104,18 @@ class Preprocessor:
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
+    def ensure_remove_log_file_handler(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            finally:
+                self = args[0]
+                if isinstance(self, Preprocessor) and self.log_file_handler:
+                    logging.getLogger().removeHandler(self.log_file_handler)
+
+        return wrapper
+
     def _set_log_file(self, log_file: Optional[str | Path]) -> None:
         """Set the log file and remove the file handler from a potential previous run.
 
@@ -171,6 +184,7 @@ class Preprocessor:
     def all_modalities(self):
         return [self.center_modality] + self.moving_modalities
 
+    @ensure_remove_log_file_handler
     def run(
         self,
         save_dir_coregistration: Optional[str] = None,
@@ -207,6 +221,7 @@ class Preprocessor:
         )
 
         logger.info(f"{' Starting Coregistration ':-^80}")
+
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
         os.makedirs(coregistration_dir, exist_ok=True)
