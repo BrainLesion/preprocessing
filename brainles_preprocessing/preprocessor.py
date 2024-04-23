@@ -192,11 +192,12 @@ class Preprocessor:
 
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
+        logger.info(f"{' Starting preprocessing ':=^80}")
         logger.info(
-            f"Starting preprocessing for center modality: {self.center_modality.modality_name} and moving modalities: {', '.join([modality.modality_name for modality in self.moving_modalities])}"
+            f"Received center modality: {self.center_modality.modality_name} and moving modalities: {', '.join([modality.modality_name for modality in self.moving_modalities])}"
         )
 
-        logger.info("Starting registrations...")
+        logger.info(f"{' Starting Coregistration ':-^80}")
         # Coregister moving modalities to center modality
         coregistration_dir = os.path.join(self.temp_folder, "coregistration")
         os.makedirs(coregistration_dir, exist_ok=True)
@@ -232,6 +233,7 @@ class Preprocessor:
         )
 
         # Register center modality to atlas
+        logger.info(f"{' Starting atlas registration ':-^80}")
         logger.info(f"Registering center modality to atlas...")
         center_file_name = f"atlas__{self.center_modality.modality_name}"
         transformation_matrix = self.center_modality.register(
@@ -267,6 +269,7 @@ class Preprocessor:
         )
 
         # Optional: additional correction in atlas space
+        logger.info(f"{' Checking optional atlas correction ':-^80}")
         atlas_correction_dir = os.path.join(self.temp_folder, "atlas-correction")
         os.makedirs(atlas_correction_dir, exist_ok=True)
 
@@ -305,7 +308,6 @@ class Preprocessor:
         # now we save images that are not skullstripped
         logger.info("Saving non skull-stripped images...")
         for modality in self.all_modalities:
-            logger.info(f"Saving {modality.modality_name} non skull-stripped images...")
             if modality.raw_skull_output_path is not None:
                 modality.save_current_image(
                     modality.raw_skull_output_path,
@@ -317,6 +319,7 @@ class Preprocessor:
                     normalization=True,
                 )
         # Optional: Brain extraction
+        logger.info(f"{' Checking optional brain extraction ':-^80}")
         brain_extraction = any(modality.bet for modality in self.all_modalities)
         # print("brain extraction: ", brain_extraction)
 
@@ -363,7 +366,7 @@ class Preprocessor:
                     modality.normalized_bet_output_path,
                     normalization=True,
                 )
-        logger.info("Preprocessing complete.")
+        logger.info(f"{' Preprocessing complete ':=^80}")
 
     def _save_output(
         self,
