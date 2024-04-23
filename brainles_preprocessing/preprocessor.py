@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import traceback
+from datetime import datetime
 from typing import List, Optional
 
 from auxiliary.turbopath import turbopath
@@ -111,14 +112,14 @@ class Preprocessor:
         if self.log_file_handler:
             logging.getLogger().removeHandler(self.log_file_handler)
 
-        parent_dir = Path(log_file).parent
-        # create parent dir if the path is more than just a file name
-        if parent_dir:
-            parent_dir.makedir(parents=True, exist_ok=True)
+        # ensure parent directories exists
+        log_file = Path(log_file)  # is idempotent
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+
         self.log_file_handler = logging.FileHandler(log_file)
         self.log_file_handler.setFormatter(
             logging.Formatter(
-                "[%(levelname)-8s | %(module)-15s | L%(lineno)-5d] | %(asctime)s: %(message)s",
+                "[%(levelname)-8s | %(module)-15s | L%(lineno)-5d] %(asctime)s: %(message)s",
                 "%Y-%m-%dT%H:%M:%S%z",
             )
         )
@@ -130,7 +131,7 @@ class Preprocessor:
         """Setup the logger and overwrite system hooks to add logging for exceptions and signals."""
 
         logging.basicConfig(
-            format="[%(levelname)-8s | %(module)-15s | L%(lineno)-5d] | %(asctime)s: %(message)s",
+            format="[%(levelname)s] %(asctime)s: %(message)s",
             datefmt="%Y-%m-%dT%H:%M:%S%z",
             level=logging.INFO,
         )
@@ -192,7 +193,9 @@ class Preprocessor:
 
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
+        self._set_log_file(f"brainles_preprocessing_{datetime.now().isoformat()}.log")
         logger.info(f"{' Starting preprocessing ':=^80}")
+        logger.info(f"Logs are saved to {self.log_file_handler.baseFilename}")
         logger.info(
             f"Received center modality: {self.center_modality.modality_name} and moving modalities: {', '.join([modality.modality_name for modality in self.moving_modalities])}"
         )
