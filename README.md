@@ -42,6 +42,6 @@ However, custom atlases can be supplied.
 We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
 
 ### Registration
-We currently provide support for [niftyreg](https://github.com/KCL-BMEIS/niftyreg).
+We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
 
 <!-- TODO mention defacing -->
