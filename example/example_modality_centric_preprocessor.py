@@ -8,8 +8,8 @@ from brainles_preprocessing.modality import Modality
 from brainles_preprocessing.preprocessor import Preprocessor
 from brainles_preprocessing.registration import (
     ANTsRegistrator,
-    NiftyRegRegistrator,
-    eRegRegistrator,
+    # NiftyRegRegistrator,
+    # eRegRegistrator,
 )
 
 
