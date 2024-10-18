@@ -6,10 +6,17 @@ build-backend = "poetry_dynamic_versioning.backend"
 enable = true
 
 [tool.poetry]
+exclude = [
+  "example", # Example data and scripts
+  "tests",   # Test files
+  "docs",    # Documentation files
+  ".github", # GitHub workflows, actions, etc.
+]
+
 name = "brainles_preprocessing"
 version = "0.0.0"               # will be overwritten by poetry-dynamic-versioning but needs to be set
-description = "TODO."
-license = "AGPL-3.0"
+description = "Tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI"
+license = "Apache-2.0"
 
 authors = [
   "Florian Kofler <florian.kofler@tum.de>",
@@ -36,7 +43,6 @@ keywords = [
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: GNU Affero General Public License v3",
   "Operating System :: OS Independent",
 ]
 
