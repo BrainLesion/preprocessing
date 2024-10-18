@@ -29,14 +29,87 @@ pip install brainles-preprocessing
 
 
 ## Usage
-A minimal example can be found following these badges:  
+A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
+```python
+from pathlib import Path
+from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
+
+from brainles_preprocessing.brain_extraction import HDBetExtractor
+from brainles_preprocessing.modality import Modality
+from brainles_preprocessing.preprocessor import Preprocessor
+from brainles_preprocessing.registration import ANTsRegistrator #, NiftyRegRegistrator,# eRegRegistrator
+import tempfile
+
+patient_folder = Path("/home/marcelrosier/preprocessing/patient")
+
+# specify a normalizer
+percentile_normalizer = PercentileNormalizer(
+    lower_percentile=0.1,
+    upper_percentile=99.9,
+    lower_limit=0,
+    upper_limit=1,
+)
+
+# define modalities
+center = Modality(
+    modality_name="t1c",
+    input_path=patient_folder / "t1c.nii.gz",
+    # specify the output paths for the raw and normalized images of each step
+    raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
+    raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
+    normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
+    normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
+    atlas_correction=True,
+    normalizer=percentile_normalizer,
+)
+moving_modalities = [
+    Modality(
+        modality_name="flair",
+        input_path=patient_folder / "flair.nii.gz",
+        # specify the output paths for the raw and normalized images of each step
+        raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
+        raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
+        normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
+        normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
+        atlas_correction=True,
+        normalizer=percentile_normalizer,
+    )
+]
+
+with tempfile.TemporaryDirectory() as temp_folder:
+    preprocessor = Preprocessor(
+        center_modality=center,
+        moving_modalities=moving_modalities,
+        # choose the registration backend you want to use
+        # registrator=NiftyRegRegistrator(),
+        registrator=ANTsRegistrator(),
+        # registrator=eRegRegistrator(),
+        brain_extractor=HDBetExtractor(),
+        temp_folder=temp_folder,
+        limit_cuda_visible_devices="0",
+    )
+
+    preprocessor.run(
+        save_dir_coregistration="output/co-registration",
+        save_dir_atlas_registration="output/atlas-registration",
+        save_dir_atlas_correction="output/atlas-correction",
+        save_dir_brain_extraction="output/brain-extraction",
+    )
+```
+
+
+An example notebook with 4 modalities can be found following these badges:
+
 [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.org/github/BrainLesion/tutorials/blob/main/preprocessing/preprocessing_tutorial.ipynb)
 <a target="_blank" href="https://colab.research.google.com/github/BrainLesion/tutorials/blob/main/preprocessing/preprocessing_tutorial.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
+For further information please have a look at our [Jupyter Notebook tutorials](https://github.com/BrainLesion/tutorials/tree/main/preprocessing) in our tutorials repo.
 
-For further information please have a look at our [Jupyter Notebook tutorials](https://github.com/BrainLesion/tutorials/tree/main/preprocessing) illustrating the usage of BrainLes preprocessing.
+
+
+
 
 
 <!-- TODO citation -->
