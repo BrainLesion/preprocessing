@@ -17,16 +17,23 @@ class Modality:
     Args:
         modality_name (str): Name of the modality, e.g., "T1", "T2", "FLAIR".
         input_path (str): Path to the input modality data.
-        output_path (str): Path to save the preprocessed modality data.
-        bet (bool): Indicates whether brain extraction should be performed (True) or not (False).
+        raw_bet_output_path (str, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str, optional): Path to save the raw modality data with skull.
+        normalized_bet_output_path (str, optional): Path to save the normalized brain extracted modality data.
+        normalized_skull_output_path (str, optional): Path to save the normalized modality data with skull.
         normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+        atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
 
     Attributes:
         modality_name (str): Name of the modality.
         input_path (str): Path to the input modality data.
-        output_path (str): Path to save the preprocessed modality data.
+        raw_bet_output_path (str, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str, optional): Path to save the raw modality data with skull.
+        normalized_bet_output_path (str, optional): Path to save the normalized brain extracted modality data.
+        normalized_skull_output_path (str, optional): Path to save the normalized modality data with skull.
         bet (bool): Indicates whether brain extraction is enabled.
         normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+        atlas_correction (bool): Indicates whether atlas correction should be performed.
 
     Example:
         >>> t1_modality = Modality(
