@@ -85,12 +85,7 @@ preprocessor = Preprocessor(
     limit_cuda_visible_devices="0",
 )
 
-preprocessor.run(
-    save_dir_coregistration="output/co-registration",
-    save_dir_atlas_registration="output/atlas-registration",
-    save_dir_atlas_correction="output/atlas-correction",
-    save_dir_brain_extraction="output/brain-extraction",
-)
+preprocessor.run()
 ```
 
 
