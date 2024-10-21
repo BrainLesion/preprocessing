@@ -37,8 +37,7 @@ from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
 from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
 from brainles_preprocessing.preprocessor import Preprocessor
-from brainles_preprocessing.registration import ANTsRegistrator #, NiftyRegRegistrator,# eRegRegistrator
-import tempfile
+from brainles_preprocessing.registration import ANTsRegistrator  # , NiftyRegRegistrator,# eRegRegistrator
 
 patient_folder = Path("/home/marcelrosier/preprocessing/patient")
 
@@ -54,7 +53,7 @@ percentile_normalizer = PercentileNormalizer(
 center = Modality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
-    # specify the output paths for the raw and normalized images of each step
+    # specify the output paths for the raw and normalized images of each step (all optional)
     raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
     raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
     normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
@@ -62,11 +61,12 @@ center = Modality(
     atlas_correction=True,
     normalizer=percentile_normalizer,
 )
+
 moving_modalities = [
     Modality(
         modality_name="flair",
         input_path=patient_folder / "flair.nii.gz",
-        # specify the output paths for the raw and normalized images of each step
+        # specify the output paths for the raw and normalized images of each step (all optional)
         raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
         raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
         normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
@@ -76,25 +76,21 @@ moving_modalities = [
     )
 ]
 
-with tempfile.TemporaryDirectory() as temp_folder:
-    preprocessor = Preprocessor(
-        center_modality=center,
-        moving_modalities=moving_modalities,
-        # choose the registration backend you want to use
-        # registrator=NiftyRegRegistrator(),
-        registrator=ANTsRegistrator(),
-        # registrator=eRegRegistrator(),
-        brain_extractor=HDBetExtractor(),
-        temp_folder=temp_folder,
-        limit_cuda_visible_devices="0",
-    )
+preprocessor = Preprocessor(
+    center_modality=center,
+    moving_modalities=moving_modalities,
+    # choose the registration backend & brain extractor you want to use
+    registrator=ANTsRegistrator(),
+    brain_extractor=HDBetExtractor(),
+    limit_cuda_visible_devices="0",
+)
 
-    preprocessor.run(
-        save_dir_coregistration="output/co-registration",
-        save_dir_atlas_registration="output/atlas-registration",
-        save_dir_atlas_correction="output/atlas-correction",
-        save_dir_brain_extraction="output/brain-extraction",
-    )
+preprocessor.run(
+    save_dir_coregistration="output/co-registration",
+    save_dir_atlas_registration="output/atlas-registration",
+    save_dir_atlas_correction="output/atlas-correction",
+    save_dir_brain_extraction="output/brain-extraction",
+)
 ```
 
 
