@@ -53,26 +53,25 @@ percentile_normalizer = PercentileNormalizer(
 center = Modality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
-    # specify the output paths for the raw and normalized images of each step (all optional)
-    raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
-    raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
-    normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
-    normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
-    atlas_correction=True,
     normalizer=percentile_normalizer,
+    # specify the output paths for the raw and normalized images of each step (all optional)
+    # Abbreviations: bet = brain extracted, skull = with skull
+    raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
+    raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
+    normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
+    normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
 )
 
 moving_modalities = [
     Modality(
         modality_name="flair",
         input_path=patient_folder / "flair.nii.gz",
-        # specify the output paths for the raw and normalized images of each step (all optional)
-        raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
-        raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
-        normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
-        normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
-        atlas_correction=True,
         normalizer=percentile_normalizer,
+        # specify the output paths for the raw and normalized images of each step (all optional)
+        raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
+        raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
+        normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
+        normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
     )
 ]
 
