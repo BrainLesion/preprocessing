@@ -3,10 +3,9 @@ import shutil
 from typing import List, Optional
 
 from auxiliary.nifti.io import read_nifti, write_nifti
-from auxiliary.normalization.normalizer_base import Normalizer
 from auxiliary.turbopath import turbopath
-
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
+from brainles_preprocessing.normalization.normalizer_base import Normalizer
 from brainles_preprocessing.registration.registrator import Registrator
 
 
