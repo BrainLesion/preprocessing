@@ -1,5 +1,7 @@
 # This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
-from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
+from brainles_preprocessing.normalization.percentile_normalizer import (
+    PercentileNormalizer,
+)
 from auxiliary.turbopath import turbopath
 from tqdm import tqdm
 
