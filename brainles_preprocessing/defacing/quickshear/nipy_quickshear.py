@@ -2,16 +2,18 @@
 # Minor adaptions in terms of parameters and return values
 # Original Author': Copyright (c) 2011, Nakeisha Schimke. All rights reserved.
 
+import argparse
+import logging
+
 #!/usr/bin/python
 import sys
-import argparse
-import numpy as np
+
 import nibabel as nb
-import logging
+import numpy as np
 from numpy.typing import NDArray
 
 try:
-    from duecredit import due, BibTeX
+    from duecredit import BibTeX, due
 except ImportError:
     # Adapted from
     # https://github.com/duecredit/duecredit/blob/2221bfd/duecredit/stub.py
@@ -129,7 +131,7 @@ def convex_hull(brain):
     description="Geometric neuroimage defacer",
     path="quickshear",
 )
-def quickshear(bet_img: nb.nifti1.Nifti1Image, buffer: int = 10) -> NDArray:
+def run_quickshear(bet_img: nb.nifti1.Nifti1Image, buffer: int = 10) -> NDArray:
     """Deface image using Quickshear algorithm
 
     Parameters
