@@ -30,13 +30,10 @@ class BrainExtractor:
         """
         Apply a brain mask to an input image.
 
-        Parameters:
-        - input_image_path (str): Path to the input image (NIfTI format).
-        - mask_image_path (str): Path to the brain mask image (NIfTI format).
-        - masked_image_path (str): Path to save the resulting masked image (NIfTI format).
-
-        Returns:
-        - str: Path to the saved masked image.
+        Args:
+            input_image_path (str): Path to the input image (NIfTI format).
+            mask_image_path (str): Path to the brain mask image (NIfTI format).
+            masked_image_path (str): Path to save the resulting masked image (NIfTI format).
         """
 
         # read data
