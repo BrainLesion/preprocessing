@@ -13,7 +13,7 @@ from typing import List, Optional
 
 from auxiliary.turbopath import turbopath
 
-from .brain_extraction.brain_extractor import BrainExtractor
+from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
 from .modality import Modality
 from .registration.registrator import Registrator
 
@@ -41,7 +41,7 @@ class Preprocessor:
         center_modality: Modality,
         moving_modalities: List[Modality],
         registrator: Registrator,
-        brain_extractor: BrainExtractor,
+        brain_extractor: Optional[BrainExtractor] = None,
         atlas_image_path: str = turbopath(__file__).parent
         + "/registration/atlas/t1_brats_space.nii",
         temp_folder: Optional[str] = None,
@@ -342,10 +342,10 @@ class Preprocessor:
                     modality.normalized_skull_output_path,
                     normalization=True,
                 )
+
         # Optional: Brain extraction
         logger.info(f"{' Checking optional brain extraction ':-^80}")
         brain_extraction = any(modality.bet for modality in self.all_modalities)
-        # print("brain extraction: ", brain_extraction)
 
         if brain_extraction:
             logger.info("Starting brain extraction...")
@@ -354,6 +354,15 @@ class Preprocessor:
             brain_masked_dir = os.path.join(bet_dir, "brain_masked")
             os.makedirs(brain_masked_dir, exist_ok=True)
             logger.info("Extracting brain region for center modality...")
+
+            # Assert that a brain extractor is specified (since the arg is optional)
+            if self.brain_extractor is None:
+                logger.warning(
+                    "Requested brain extraction but no brain extractor was specified during class initialization."
+                    + " Using default `brainles_preprocessing.brain_extraction.HDBetExtractor`"
+                )
+                self.brain_extractor = HDBetExtractor()
+
             atlas_mask = self.center_modality.extract_brain_region(
                 brain_extractor=self.brain_extractor, bet_dir_path=bet_dir
             )
