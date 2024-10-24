@@ -1,4 +1,3 @@
-from enum import IntEnum
 import logging
 import os
 import shutil
@@ -13,6 +12,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from auxiliary.turbopath import turbopath
+from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 
 from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
@@ -20,15 +20,6 @@ from .modality import Modality
 from .registration.registrator import Registrator
 
 logger = logging.getLogger(__name__)
-
-
-class PreprocessorSteps(IntEnum):
-    INPUT = 0
-    COREGISTERED = 1
-    ATLAS_REGISTERED = 2
-    ATLAS_CORRECTED = 3
-    BET = 4
-    DEFACED = 5
 
 
 class Preprocessor:
@@ -213,11 +204,11 @@ class Preprocessor:
         atlas correction, and optional brain extraction.
 
         Args:
-            save_dir_coregistration (str, optional): Directory path to save coregistration results.
-            save_dir_atlas_registration (str, optional): Directory path to save atlas registration results.
-            save_dir_atlas_correction (str, optional): Directory path to save atlas correction results.
-            save_dir_brain_extraction (str, optional): Directory path to save brain extraction results.
-            save_dir_defacing (str, optional): Directory path to save defacing results.
+            save_dir_coregistration (str, optional): Directory path to save intermediate coregistration results.
+            save_dir_atlas_registration (str, optional): Directory path to save intermediate atlas registration results.
+            save_dir_atlas_correction (str, optional): Directory path to save intermediate atlas correction results.
+            save_dir_brain_extraction (str, optional): Directory path to save intermediate brain extraction results.
+            save_dir_defacing (str, optional): Directory path to save intermediate defacing results.
             log_file (str, optional): Path to save the log file. Defaults to a timestamped file in the current directory.
 
         This method orchestrates the entire preprocessing workflow by sequentially performing:
@@ -225,11 +216,12 @@ class Preprocessor:
         1. Co-registration: Aligning moving modalities to the central modality.
         2. Atlas Registration: Aligning the central modality to a predefined atlas.
         3. Atlas Correction: Applying additional correction in atlas space if specified.
-        4. Brain Extraction: Optionally extracting brain regions using specified masks.
-        5. Defacing: Optionally deface images to remove facial features.
+        4. Brain Extraction: Optionally extracting brain regions using specified masks. Only executed if any modality requires a brain extraction output (or a defacing output that requires prior brain extraction).
+        5. Defacing: Optionally deface images to remove facial features. Only executed if any modality requires a defacing output.
 
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
+
         self._set_log_file(log_file=log_file)
         logger.info(f"{' Starting preprocessing ':=^80}")
         logger.info(f"Logs are saved to {self.log_file_handler.baseFilename}")
@@ -281,12 +273,19 @@ class Preprocessor:
             save_dir_brain_extraction=save_dir_brain_extraction,
         )
         # ## Defacing
-        # logger.info(f"{' Checking optional defacing ':-^80}")
-
+        logger.info(f"{' Checking optional defacing ':-^80}")
+        self.run_defacing(
+            save_dir_defacing=save_dir_defacing,
+        )
         ## end
         logger.info(f"{' Preprocessing complete ':=^80}")
 
     def run_coregistration(self, save_dir_coregistration: Optional[str] = None) -> None:
+        """Coregister moving modalities to center modality.
+
+        Args:
+            save_dir_coregistration (str, optional): Directory path to save intermediate coregistration results.
+        """
         coregistration_dir = Path(os.path.join(self.temp_folder, "coregistration"))
         coregistration_dir.mkdir(exist_ok=True, parents=True)
 
@@ -303,6 +302,7 @@ class Preprocessor:
                 fixed_image_path=self.center_modality.current,
                 registration_dir=coregistration_dir,
                 moving_image_name=file_name,
+                step=PreprocessorSteps.COREGISTERED,
             )
 
         shutil.copyfile(
@@ -321,6 +321,11 @@ class Preprocessor:
     def run_atlas_registration(
         self, save_dir_atlas_registration: Optional[str] = None
     ) -> None:
+        """Register center modality to atlas.
+
+        Args:
+            save_dir_atlas_registration (Optional[str], optional): Directory path to save intermediate atlas registration results. Defaults to None.
+        """
         logger.info(f"Registering center modality to atlas...")
         center_file_name = f"atlas__{self.center_modality.modality_name}"
         transformation_matrix = self.center_modality.register(
@@ -328,6 +333,7 @@ class Preprocessor:
             fixed_image_path=self.atlas_image_path,
             registration_dir=self.atlas_dir,
             moving_image_name=center_file_name,
+            step=PreprocessorSteps.ATLAS_REGISTERED,
         )
         logger.info(f"Atlas registration complete. Output saved to {self.atlas_dir}")
 
@@ -346,6 +352,7 @@ class Preprocessor:
                 registration_dir_path=Path(self.atlas_dir),
                 moving_image_name=moving_file_name,
                 transformation_matrix_path=transformation_matrix,
+                step=PreprocessorSteps.ATLAS_REGISTERED,
             )
         self._save_output(
             src=self.atlas_dir,
@@ -356,6 +363,11 @@ class Preprocessor:
         self,
         save_dir_atlas_correction: Optional[str] = None,
     ) -> None:
+        """Apply optional atlas correction to moving modalities.
+
+        Args:
+            save_dir_atlas_correction (Optional[str], optional): Directory path to save intermediate atlas correction results. Defaults to None.
+        """
         atlas_correction_dir = Path(os.path.join(self.temp_folder, "atlas-correction"))
         atlas_correction_dir.mkdir(exist_ok=True, parents=True)
 
@@ -370,6 +382,7 @@ class Preprocessor:
                     fixed_image_path=self.center_modality.current,
                     registration_dir=atlas_correction_dir,
                     moving_image_name=moving_file_name,
+                    step=PreprocessorSteps.ATLAS_CORRECTED,
                 )
             else:
                 logger.info(
@@ -377,12 +390,17 @@ class Preprocessor:
                 )
 
         if self.center_modality.atlas_correction:
+            center_atlas_corrected_path = os.path.join(
+                atlas_correction_dir,
+                f"atlas_corrected__{self.center_modality.modality_name}.nii.gz",
+            )
             shutil.copyfile(
                 src=self.center_modality.current,
-                dst=os.path.join(
-                    atlas_correction_dir,
-                    f"atlas_corrected__{self.center_modality.modality_name}.nii.gz",
-                ),
+                dst=center_atlas_corrected_path,
+            )
+            # save step result
+            self.center_modality.steps[PreprocessorSteps.ATLAS_CORRECTED] = (
+                center_atlas_corrected_path
             )
             logger.info(
                 f"Atlas correction complete. Output saved to {save_dir_atlas_correction}"
@@ -396,10 +414,21 @@ class Preprocessor:
     def run_brain_extraction(
         self, save_dir_brain_extraction: Optional[str] = None
     ) -> None:
+        """Extract brain regions using specified BrainExtractor.
+
+        Args:
+            save_dir_brain_extraction (Optional[str], optional): Directory path to save intermediate brain extraction results. Defaults to None.
+        """
+        # check if any bet output paths are requested
         brain_extraction = any(modality.bet for modality in self.all_modalities)
 
-        if brain_extraction:
-            logger.info("Starting brain extraction...")
+        # check if any downstream task (e.g. QuickShear) requires brain extraction
+        required_downstream = isinstance(self.defacer, QuickshearDefacer)
+
+        if brain_extraction or required_downstream:
+            logger.info(
+                f"Starting brain extraction{' (for downstream defacing task)' if (required_downstream and not brain_extraction) else ''}..."
+            )
             bet_dir = os.path.join(self.temp_folder, "brain-extraction")
             os.makedirs(bet_dir, exist_ok=True)
             brain_masked_dir = os.path.join(bet_dir, "brain_masked")
@@ -409,7 +438,7 @@ class Preprocessor:
             # Assert that a brain extractor is specified (since the arg is optional)
             if self.brain_extractor is None:
                 logger.warning(
-                    "Requested brain extraction but no brain extractor was specified during class initialization."
+                    "Brain extraction is required to compute specified outputs but no brain extractor was specified during class initialization."
                     + " Using default `brainles_preprocessing.brain_extraction.HDBetExtractor`"
                 )
                 self.brain_extractor = HDBetExtractor()
@@ -421,7 +450,7 @@ class Preprocessor:
                 logger.info(
                     f"Applying brain mask to {moving_modality.modality_name}..."
                 )
-                moving_modality.apply_mask(
+                moving_modality.apply_bet_mask(
                     brain_extractor=self.brain_extractor,
                     brain_masked_dir_path=brain_masked_dir,
                     atlas_mask_path=atlas_mask,
@@ -452,61 +481,66 @@ class Preprocessor:
                 )
 
     def run_defacing(self, save_dir_defacing: Optional[str] = None) -> None:
-        pass
-        # defacing = any(modality.deface for modality in self.all_modalities)
+        """Deface images to remove facial features using specified Defacer.
 
-        # if defacing:
-        #     logger.info("Starting defacing...")
-        #     deface_dir = os.path.join(self.temp_folder, "deface")
-        #     os.makedirs(deface_dir, exist_ok=True)
-        #     brain_masked_dir = os.path.join(deface_dir, "brain_masked")
-        #     os.makedirs(brain_masked_dir, exist_ok=True)
-        #     logger.info("Defacing center modality...")
+        Args:
+            save_dir_defacing (Optional[str], optional): Directory path to save intermediate defacing results. Defaults to None.
+        """
+        requires_defacing = any(
+            modality.requires_deface for modality in self.all_modalities
+        )
 
-        #     # Assert that a defacer is specified (since the arg is optional)
-        #     if self.defacer is None:
-        #         logger.warning(
-        #             "Requested defacing but no defacer was specified during class initialization."
-        #             + " Using default `brainles_preprocessing.defacing.QuickshearDefacer`"
-        #         )
-        #         self.defacer = QuickshearDefacer()
+        if requires_defacing:
+            logger.info("Starting defacing...")
+            deface_dir = os.path.join(self.temp_folder, "deface")
+            os.makedirs(deface_dir, exist_ok=True)
+            brain_masked_dir = os.path.join(deface_dir, "brain_masked")
+            os.makedirs(brain_masked_dir, exist_ok=True)
+            logger.info("Defacing center modality...")
 
-        #     atlas_mask = self.center_modality.deface(
-        #         defacer=self.defacer, defaced_dir_path=deface_dir, bet_dir_path=bet_dir
-        #     )
-        #     for moving_modality in self.moving_modalities:
-        #         logger.info(
-        #             f"Applying deface mask to {moving_modality.modality_name}..."
-        #         )
-        #         moving_modality.apply_mask(
-        #             brain_extractor=self.brain_extractor,
-        #             atlas_mask_path=atlas_mask,
-        #             brain_masked_dir_path=brain_masked_dir,
-        #         )
+            # Assert that a defacer is specified (since the arg is optional)
+            if self.defacer is None:
+                logger.warning(
+                    "Requested defacing but no defacer was specified during class initialization."
+                    + " Using default `brainles_preprocessing.defacing.QuickshearDefacer`"
+                )
+                self.defacer = QuickshearDefacer()
 
-        #     self._save_output(
-        #         src=bet_dir,
-        #         save_dir=save_dir_defacing,
-        #     )
-        #     logger.info(
-        #         f"Brain extraction complete. Output saved to {save_dir_defacing}"
-        #     )
-        # else:
-        #     logger.info("Skipping optional brain extraction.")
+            atlas_mask = self.center_modality.deface(
+                defacer=self.defacer, defaced_dir_path=deface_dir
+            )
+            # looping over _all_ modalities since .deface is no applying the computed mask
+            for moving_modality in self.all_modalities:
+                logger.info(
+                    f"Applying deface mask to {moving_modality.modality_name}..."
+                )
+                moving_modality.apply_deface_mask(
+                    defacer=self.defacer,
+                    atlas_mask_path=atlas_mask,
+                    brain_masked_dir_path=brain_masked_dir,
+                )
 
-        # # now we save images that are skullstripped
-        # logger.info("Saving brain extracted (bet), i.e. skull-stripped images...")
-        # for modality in self.all_modalities:
-        #     if modality.raw_bet_output_path is not None:
-        #         modality.save_current_image(
-        #             modality.raw_bet_output_path,
-        #             normalization=False,
-        #         )
-        #     if modality.normalized_bet_output_path is not None:
-        #         modality.save_current_image(
-        #             modality.normalized_bet_output_path,
-        #             normalization=True,
-        #         )
+            self._save_output(
+                src=deface_dir,
+                save_dir=save_dir_defacing,
+            )
+            logger.info(f"Defacing complete. Output saved to {save_dir_defacing}")
+        else:
+            logger.info("Skipping optional defacing.")
+
+        # now we save images that are skull-stripped
+        logger.info("Saving defaced images...")
+        for modality in self.all_modalities:
+            if modality.raw_defaced_output_path is not None:
+                modality.save_current_image(
+                    modality.raw_defaced_output_path,
+                    normalization=False,
+                )
+            if modality.normalized_defaced_output_path is not None:
+                modality.save_current_image(
+                    modality.normalized_defaced_output_path,
+                    normalization=True,
+                )
 
     def _save_output(
         self,
