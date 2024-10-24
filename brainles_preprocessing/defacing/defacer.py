@@ -9,6 +9,7 @@ class Defacer:
     def deface(
         self,
         input_image_path: Path,
+        mask_image_path: Path,
     ) -> None:
         pass
 

@@ -4,6 +4,7 @@ import nibabel as nib
 from brainles_preprocessing.defacing.defacer import Defacer
 from brainles_preprocessing.defacing.quickshear.nipy_quickshear import run_quickshear
 from numpy.typing import NDArray
+from auxiliary.nifti.io import write_nifti
 
 
 class QuickshearDefacer(Defacer):
@@ -36,7 +37,7 @@ class QuickshearDefacer(Defacer):
         super().__init__()
         self.buffer = buffer
 
-    def deface(self, bet_img_path: Path) -> NDArray:
+    def deface(self, mask_image_path: Path, bet_img_path: Path) -> NDArray:
         """Deface image using Quickshear algorithm
 
         Args:
@@ -47,4 +48,9 @@ class QuickshearDefacer(Defacer):
         """
 
         bet_img = nib.load(bet_img_path)
-        return run_quickshear(bet_img=bet_img, buff=self.buffer)
+        mask = run_quickshear(bet_img=bet_img, buffer=self.buffer)
+        write_nifti(
+            input_array=mask,
+            output_nifti_path=mask_image_path,
+            reference_nifti_path=bet_img_path,
+        )
