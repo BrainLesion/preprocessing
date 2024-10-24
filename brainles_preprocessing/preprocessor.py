@@ -430,9 +430,10 @@ class Preprocessor:
         # check if any bet output paths are requested
         brain_extraction = any(modality.bet for modality in self.all_modalities)
 
-        # check if any downstream task (e.g. QuickShear) requires brain extraction
-        required_downstream = self.requires_defacing and isinstance(
-            self.defacer, QuickshearDefacer
+        # check if any downstream task (e.g. QuickShear) requires brain extraction.
+        # Quickshear is the default defacer so we also require bet if no defacer is specified
+        required_downstream = self.requires_defacing and (
+            isinstance(self.defacer, QuickshearDefacer) or self.defacer is None
         )
 
         # skip if no brain extraction is required
