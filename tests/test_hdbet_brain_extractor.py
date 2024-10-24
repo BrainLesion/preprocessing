@@ -55,8 +55,8 @@ class TestHDBetExtractor(unittest.TestCase):
     def test_apply_mask_creates_output_file(self):
         self.brain_extractor.apply_mask(
             input_image_path=self.input_image_path,
-            mask_image_path=self.input_brain_mask_path,
-            masked_image_path=self.masked_again_image_path,
+            mask_path=self.input_brain_mask_path,
+            bet_image_path=self.masked_again_image_path,
         )
         self.assertTrue(
             os.path.exists(self.masked_again_image_path),
