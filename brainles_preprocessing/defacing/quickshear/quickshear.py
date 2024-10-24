@@ -37,14 +37,11 @@ class QuickshearDefacer(Defacer):
         super().__init__()
         self.buffer = buffer
 
-    def deface(self, mask_image_path: Path, bet_img_path: Path) -> NDArray:
+    def deface(self, mask_image_path: Path, bet_img_path: Path) -> None:
         """Deface image using Quickshear algorithm
 
         Args:
             bet_img_path (Path): Path to the brain extracted image
-
-        Returns:
-            NDArray: Defaced image mask
         """
 
         bet_img = nib.load(bet_img_path)
