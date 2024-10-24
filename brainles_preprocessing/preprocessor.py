@@ -17,6 +17,7 @@ from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 
 from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
 from .modality import Modality
+from .registration import ANTsRegistrator
 from .registration.registrator import Registrator
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ class Preprocessor:
         self,
         center_modality: Modality,
         moving_modalities: List[Modality],
-        registrator: Registrator,
+        registrator: Registrator = None,
         brain_extractor: Optional[BrainExtractor] = None,
         defacer: Optional[Defacer] = None,
         atlas_image_path: str = turbopath(__file__).parent
@@ -58,6 +59,12 @@ class Preprocessor:
         self.moving_modalities = moving_modalities
         self.atlas_image_path = turbopath(atlas_image_path)
         self.registrator = registrator
+        if self.registrator is None:
+            logger.warning(
+                "No registrator provided, using default ANTsRegistrator for registration."
+            )
+            self.registrator = ANTsRegistrator()
+
         self.brain_extractor = brain_extractor
         self.defacer = defacer
 
@@ -188,6 +195,10 @@ class Preprocessor:
     @property
     def all_modalities(self):
         return [self.center_modality] + self.moving_modalities
+
+    @property
+    def requires_defacing(self):
+        return any(modality.requires_deface for modality in self.all_modalities)
 
     @ensure_remove_log_file_handler
     def run(
@@ -402,9 +413,6 @@ class Preprocessor:
             self.center_modality.steps[PreprocessorSteps.ATLAS_CORRECTED] = (
                 center_atlas_corrected_path
             )
-            logger.info(
-                f"Atlas correction complete. Output saved to {save_dir_atlas_correction}"
-            )
 
         self._save_output(
             src=atlas_correction_dir,
@@ -423,48 +431,48 @@ class Preprocessor:
         brain_extraction = any(modality.bet for modality in self.all_modalities)
 
         # check if any downstream task (e.g. QuickShear) requires brain extraction
-        required_downstream = isinstance(self.defacer, QuickshearDefacer)
+        required_downstream = self.requires_defacing and isinstance(
+            self.defacer, QuickshearDefacer
+        )
 
-        if brain_extraction or required_downstream:
-            logger.info(
-                f"Starting brain extraction{' (for downstream defacing task)' if (required_downstream and not brain_extraction) else ''}..."
-            )
-            bet_dir = os.path.join(self.temp_folder, "brain-extraction")
-            os.makedirs(bet_dir, exist_ok=True)
-            brain_masked_dir = os.path.join(bet_dir, "brain_masked")
-            os.makedirs(brain_masked_dir, exist_ok=True)
-            logger.info("Extracting brain region for center modality...")
+        # skip if no brain extraction is required
+        if not brain_extraction and not required_downstream:
+            logger.info("Skipping brain extraction.")
+            return
 
-            # Assert that a brain extractor is specified (since the arg is optional)
-            if self.brain_extractor is None:
-                logger.warning(
-                    "Brain extraction is required to compute specified outputs but no brain extractor was specified during class initialization."
-                    + " Using default `brainles_preprocessing.brain_extraction.HDBetExtractor`"
-                )
-                self.brain_extractor = HDBetExtractor()
+        logger.info(
+            f"Starting brain extraction{' (for downstream defacing task)' if (required_downstream and not brain_extraction) else ''}..."
+        )
 
-            atlas_mask = self.center_modality.extract_brain_region(
-                brain_extractor=self.brain_extractor, bet_dir_path=bet_dir
-            )
-            for moving_modality in self.moving_modalities:
-                logger.info(
-                    f"Applying brain mask to {moving_modality.modality_name}..."
-                )
-                moving_modality.apply_bet_mask(
-                    brain_extractor=self.brain_extractor,
-                    brain_masked_dir_path=brain_masked_dir,
-                    atlas_mask_path=atlas_mask,
-                )
+        # setup output dirs
+        bet_dir = self.temp_folder / "brain-extraction"
+        os.makedirs(bet_dir, exist_ok=True)
 
-            self._save_output(
-                src=bet_dir,
-                save_dir=save_dir_brain_extraction,
+        logger.info("Extracting brain region for center modality...")
+
+        # Assert that a brain extractor is specified (since the arg is optional)
+        if self.brain_extractor is None:
+            logger.warning(
+                "Brain extraction is required to compute specified outputs but no brain extractor was specified during class initialization."
+                + " Using default `brainles_preprocessing.brain_extraction.HDBetExtractor`"
             )
-            logger.info(
-                f"Brain extraction complete. Output saved to {save_dir_brain_extraction}"
+            self.brain_extractor = HDBetExtractor()
+
+        atlas_mask = self.center_modality.extract_brain_region(
+            brain_extractor=self.brain_extractor, bet_dir_path=bet_dir
+        )
+        for moving_modality in self.moving_modalities:
+            logger.info(f"Applying brain mask to {moving_modality.modality_name}...")
+            moving_modality.apply_bet_mask(
+                brain_extractor=self.brain_extractor,
+                mask_path=atlas_mask,
+                bet_dir=bet_dir,
             )
-        else:
-            logger.info("Skipping optional brain extraction.")
+
+        self._save_output(
+            src=bet_dir,
+            save_dir=save_dir_brain_extraction,
+        )
 
         # now we save images that are skullstripped
         logger.info("Saving brain extracted (bet), i.e. skull-stripped images...")
@@ -486,48 +494,44 @@ class Preprocessor:
         Args:
             save_dir_defacing (Optional[str], optional): Directory path to save intermediate defacing results. Defaults to None.
         """
-        requires_defacing = any(
-            modality.requires_deface for modality in self.all_modalities
-        )
 
-        if requires_defacing:
-            logger.info("Starting defacing...")
-            deface_dir = os.path.join(self.temp_folder, "deface")
-            os.makedirs(deface_dir, exist_ok=True)
-            brain_masked_dir = os.path.join(deface_dir, "brain_masked")
-            os.makedirs(brain_masked_dir, exist_ok=True)
-            logger.info("Defacing center modality...")
-
-            # Assert that a defacer is specified (since the arg is optional)
-            if self.defacer is None:
-                logger.warning(
-                    "Requested defacing but no defacer was specified during class initialization."
-                    + " Using default `brainles_preprocessing.defacing.QuickshearDefacer`"
-                )
-                self.defacer = QuickshearDefacer()
-
-            atlas_mask = self.center_modality.deface(
-                defacer=self.defacer, defaced_dir_path=deface_dir
-            )
-            # looping over _all_ modalities since .deface is no applying the computed mask
-            for moving_modality in self.all_modalities:
-                logger.info(
-                    f"Applying deface mask to {moving_modality.modality_name}..."
-                )
-                moving_modality.apply_deface_mask(
-                    defacer=self.defacer,
-                    atlas_mask_path=atlas_mask,
-                    brain_masked_dir_path=brain_masked_dir,
-                )
-
-            self._save_output(
-                src=deface_dir,
-                save_dir=save_dir_defacing,
-            )
-            logger.info(f"Defacing complete. Output saved to {save_dir_defacing}")
-        else:
+        # skip if no defacing is required
+        if not self.requires_defacing:
             logger.info("Skipping optional defacing.")
+            return
 
+        logger.info("Starting defacing...")
+
+        # setup output dir
+        deface_dir = self.temp_folder / "deface"
+        os.makedirs(deface_dir, exist_ok=True)
+
+        logger.info("Defacing center modality...")
+
+        # Assert that a defacer is specified (since the arg is optional)
+        if self.defacer is None:
+            logger.warning(
+                "Requested defacing but no defacer was specified during class initialization."
+                + " Using default `brainles_preprocessing.defacing.QuickshearDefacer`"
+            )
+            self.defacer = QuickshearDefacer()
+
+        atlas_mask = self.center_modality.deface(
+            defacer=self.defacer, defaced_dir_path=deface_dir
+        )
+        # looping over _all_ modalities since .deface is no applying the computed mask
+        for moving_modality in self.all_modalities:
+            logger.info(f"Applying deface mask to {moving_modality.modality_name}...")
+            moving_modality.apply_deface_mask(
+                defacer=self.defacer,
+                mask_path=atlas_mask,
+                deface_dir=deface_dir,
+            )
+
+        self._save_output(
+            src=deface_dir,
+            save_dir=save_dir_defacing,
+        )
         # now we save images that are skull-stripped
         logger.info("Saving defaced images...")
         for modality in self.all_modalities:
