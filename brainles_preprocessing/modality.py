@@ -1,16 +1,16 @@
 import logging
 import os
 import shutil
-from typing import List, Optional
+from pathlib import Path
+from typing import Optional
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from auxiliary.turbopath import turbopath
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
+from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.normalization.normalizer_base import Normalizer
 from brainles_preprocessing.registration.registrator import Registrator
-
-from brainles_preprocessing.constants import PreprocessorSteps
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +139,11 @@ class Modality:
 
     @property
     def bet(self) -> bool:
+        """Check if any brain extraction output is specified.
+
+        Returns:
+            bool: True if any brain extraction output is specified, False otherwise.
+        """
         return any(
             path is not None
             for path in [self.raw_bet_output_path, self.normalized_bet_output_path]
@@ -146,6 +151,11 @@ class Modality:
 
     @property
     def requires_deface(self) -> bool:
+        """Check if any defacing output is specified.
+
+        Returns:
+            bool: True if any defacing output is specified, False otherwise.
+        """
         return any(
             path is not None
             for path in [
@@ -235,55 +245,47 @@ class Modality:
     def apply_bet_mask(
         self,
         brain_extractor: BrainExtractor,
-        atlas_mask_path: str,
-        brain_masked_dir_path: str,
+        mask_path: Path,
+        bet_dir: Path,
     ) -> None:
         """
         Apply a brain mask to the current modality using the specified brain extractor.
 
         Args:
             brain_extractor (BrainExtractor): The brain extractor object.
-            atlas_mask_path (str): Path to the brain mask.
-            brain_masked_dir_path (str): Directory to store masked images.
+            mask_path (str): Path to the brain mask.
+            bet_dir (str): Directory to store computed bet images.
 
         Returns:
             None
         """
         if self.bet:
-            brain_masked = os.path.join(
-                brain_masked_dir_path,
-                f"brain_masked__{self.modality_name}.nii.gz",
-            )
+            bet_img = bet_dir / f"atlas__{self.modality_name}_bet.nii.gz"
+
             brain_extractor.apply_mask(
                 input_image_path=self.current,
-                mask_image_path=atlas_mask_path,
-                masked_image_path=brain_masked,
+                mask_path=mask_path,
+                bet_image_path=bet_img,
             )
-            self.current = brain_masked
-            self.steps[PreprocessorSteps.BET] = brain_masked
+            self.current = bet_img
+            self.steps[PreprocessorSteps.BET] = bet_img
 
     def apply_deface_mask(
         self,
         defacer: Defacer,
-        atlas_mask_path: str,
-        brain_masked_dir_path: str,
+        mask_path: str,
+        deface_dir: str,
     ) -> None:
         """
-        Apply a brain mask to the current modality using the specified brain extractor.
+        Apply a deface mask to the current modality using the specified brain extractor.
 
         Args:
             defacer (Defacer): The Defacer object.
-            atlas_mask_path (str): Path to the brain mask.
-            brain_masked_dir_path (str): Directory to store masked images.
-
-        Returns:
-            None
+            mask_path (str): Path to the deface mask.
+            defaced_masked_dir_path (str): Directory to store masked images.
         """
         if self.deface:
-            brain_masked = os.path.join(
-                brain_masked_dir_path,
-                f"brain_masked__{self.modality_name}.nii.gz",
-            )
+            defaced_img = deface_dir / f"atlas__{self.modality_name}_defaced.nii.gz"
             input_img = self.steps[
                 (
                     PreprocessorSteps.ATLAS_CORRECTED
@@ -293,11 +295,11 @@ class Modality:
             ]
             defacer.apply_mask(
                 input_image_path=input_img,
-                mask_image_path=atlas_mask_path,
-                masked_image_path=brain_masked,
+                mask_path=mask_path,
+                defaced_image_path=defaced_img,
             )
-            self.current = brain_masked
-            self.steps[PreprocessorSteps.DEFACED] = brain_masked
+            self.current = defaced_img
+            self.steps[PreprocessorSteps.DEFACED] = defaced_img
 
     def transform(
         self,
@@ -351,18 +353,15 @@ class Modality:
         Returns:
             str: Path to the extracted brain mask.
         """
-        bet_log = os.path.join(bet_dir_path, "brain-extraction.log")
-        atlas_bet_cm = os.path.join(
-            bet_dir_path, f"atlas_bet_{self.modality_name}.nii.gz"
-        )
-        atlas_mask_path = os.path.join(
-            bet_dir_path, f"atlas_bet_{self.modality_name}_mask.nii.gz"
-        )
+        bet_log = bet_dir_path / "brain-extraction.log"
+
+        atlas_bet_cm = bet_dir_path / f"atlas__{self.modality_name}_bet.nii.gz"
+        mask_path = bet_dir_path / f"atlas__{self.modality_name}_brain_mask.nii.gz"
 
         brain_extractor.extract(
             input_image_path=self.current,
             masked_image_path=atlas_bet_cm,
-            brain_mask_path=atlas_mask_path,
+            brain_mask_path=mask_path,
             log_file_path=bet_log,
         )
 
@@ -372,7 +371,7 @@ class Modality:
 
         if self.bet is True:
             self.current = atlas_bet_cm
-        return atlas_mask_path
+        return mask_path
 
     def deface(
         self,
@@ -392,7 +391,7 @@ class Modality:
 
         if isinstance(defacer, QuickshearDefacer):
             atlas_mask_path = os.path.join(
-                defaced_dir_path, f"atlas_deface_{self.modality_name}_mask.nii.gz"
+                defaced_dir_path, f"atlas__{self.modality_name}_deface_mask.nii.gz"
             )
             defacer.deface(
                 mask_image_path=atlas_mask_path,
@@ -419,7 +418,7 @@ class Modality:
             )
         elif normalization is True:
             image = read_nifti(self.current)
-            print("current image", self.current)
+            # print("current image", self.current)
             normalized_image = self.normalizer.normalize(image=image)
             write_nifti(
                 input_array=normalized_image,
