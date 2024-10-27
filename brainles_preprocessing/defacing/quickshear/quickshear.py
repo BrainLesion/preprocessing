@@ -1,9 +1,10 @@
 from pathlib import Path
+from typing import Union
 
 import nibabel as nib
+
 from brainles_preprocessing.defacing.defacer import Defacer
 from brainles_preprocessing.defacing.quickshear.nipy_quickshear import run_quickshear
-from numpy.typing import NDArray
 from auxiliary.nifti.io import write_nifti
 
 
@@ -37,17 +38,26 @@ class QuickshearDefacer(Defacer):
         super().__init__()
         self.buffer = buffer
 
-    def deface(self, mask_image_path: Path, bet_img_path: Path) -> None:
-        """Deface image using Quickshear algorithm
+    def deface(
+        self,
+        input_image_path: Union[str, Path],
+        mask_image_path: Union[str, Path],
+    ) -> None:
+        """
+        Generate a defacing mask using Quickshear algorithm.
+
+        Note:
+        The input image must be a brain-extracted (skull-stripped) image.
 
         Args:
-            bet_img_path (Path): Path to the brain extracted image
+        input_image_path (str or Path): Path to the brain-extracted input image.
+        mask_image_path (str or Path): Path to save the generated mask image.
         """
 
-        bet_img = nib.load(bet_img_path)
+        bet_img = nib.load(str(input_image_path))
         mask = run_quickshear(bet_img=bet_img, buffer=self.buffer)
         write_nifti(
             input_array=mask,
-            output_nifti_path=mask_image_path,
-            reference_nifti_path=bet_img_path,
+            output_nifti_path=str(mask_image_path),
+            reference_nifti_path=str(input_image_path),
         )
