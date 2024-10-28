@@ -58,12 +58,12 @@ class Modality:
         modality_name: str,
         input_path: Union[str, Path],
         normalizer: Optional[Normalizer] = None,
-        raw_bet_output_path: Optional[Union[str, Path]]  = None,
-        raw_skull_output_path: Optional[Union[str, Path]]  = None,
-        raw_defaced_output_path: Optional[Union[str, Path]]  = None,
-        normalized_bet_output_path: Optional[Union[str, Path]]  = None,
-        normalized_skull_output_path: Optional[Union[str, Path]]  = None,
-        normalized_defaced_output_path: Optional[Union[str, Path]]  = None,
+        raw_bet_output_path: Optional[Union[str, Path]] = None,
+        raw_skull_output_path: Optional[Union[str, Path]] = None,
+        raw_defaced_output_path: Optional[Union[str, Path]] = None,
+        normalized_bet_output_path: Optional[Union[str, Path]] = None,
+        normalized_skull_output_path: Optional[Union[str, Path]] = None,
+        normalized_defaced_output_path: Optional[Union[str, Path]] = None,
         atlas_correction: bool = True,
     ) -> None:
         # Basics
@@ -89,9 +89,15 @@ class Modality:
             )
 
         # handle input paths
-        self.raw_bet_output_path = Path(raw_bet_output_path) if raw_bet_output_path else None
-        self.raw_skull_output_path = Path(raw_skull_output_path) if raw_skull_output_path else None
-        self.raw_defaced_output_path = Path(raw_defaced_output_path) if raw_defaced_output_path else None
+        self.raw_bet_output_path = (
+            Path(raw_bet_output_path) if raw_bet_output_path else None
+        )
+        self.raw_skull_output_path = (
+            Path(raw_skull_output_path) if raw_skull_output_path else None
+        )
+        self.raw_defaced_output_path = (
+            Path(raw_defaced_output_path) if raw_defaced_output_path else None
+        )
 
         if normalized_bet_output_path:
             if normalizer is None:
@@ -163,7 +169,9 @@ class Modality:
             store_unnormalized.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(
                 src=str(self.current),
-                dst=str(store_unnormalized / f"unnormalized__{self.modality_name}.nii.gz"),
+                dst=str(
+                    store_unnormalized / f"unnormalized__{self.modality_name}.nii.gz"
+                ),
             )
 
         if temporary_directory:
@@ -171,7 +179,9 @@ class Modality:
             unnormalized_dir.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(
                 src=str(self.current),
-                dst=str(unnormalized_dir / f"unnormalized__{self.modality_name}.nii.gz"),
+                dst=str(
+                    unnormalized_dir / f"unnormalized__{self.modality_name}.nii.gz"
+                ),
             )
 
         # Normalize the image
@@ -208,13 +218,13 @@ class Modality:
         """
         fixed_image_path = Path(fixed_image_path)
         registration_dir = Path(registration_dir)
-        
+
         registered = registration_dir / f"{moving_image_name}.nii.gz"
         registered_log = registration_dir / f"{moving_image_name}.log"
-        
+
         # Note, add file ending depending on registration backend!
         registered_matrix = registration_dir / f"{moving_image_name}"
-        
+
         registrator.register(
             fixed_image_path=fixed_image_path,
             moving_image_path=self.current,
@@ -277,9 +287,11 @@ class Modality:
             deface_dir = Path(deface_dir)
             defaced_img = deface_dir / f"atlas__{self.modality_name}_defaced.nii.gz"
             input_img = self.steps[
-                PreprocessorSteps.ATLAS_CORRECTED
-                if self.atlas_correction
-                else PreprocessorSteps.ATLAS_REGISTERED
+                (
+                    PreprocessorSteps.ATLAS_CORRECTED
+                    if self.atlas_correction
+                    else PreprocessorSteps.ATLAS_REGISTERED
+                )
             ]
             defacer.apply_mask(
                 input_image_path=input_img,
@@ -381,7 +393,7 @@ class Modality:
         """
 
         if isinstance(defacer, QuickshearDefacer):
-            
+
             defaced_dir_path = Path(defaced_dir_path)
             atlas_mask_path = (
                 defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"

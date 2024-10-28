@@ -55,12 +55,14 @@ class Preprocessor:
 
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
-        
+
         if atlas_image_path is None:
-            self.atlas_image_path = Path(__file__).parent / "registration" / "atlas" / "t1_brats_space.nii"
+            self.atlas_image_path = (
+                Path(__file__).parent / "registration" / "atlas" / "t1_brats_space.nii"
+            )
         else:
             self.atlas_image_path = Path(atlas_image_path)
-  
+
         self.registrator = registrator
         if self.registrator is None:
             logger.warning(
@@ -86,7 +88,7 @@ class Preprocessor:
 
         self.atlas_dir = self.temp_folder / "atlas-space"
         self.atlas_dir.mkdir(exist_ok=True, parents=True)
-        
+
     def _configure_gpu(
         self, use_gpu: Optional[bool], limit_cuda_visible_devices: Optional[str] = None
     ) -> None:
@@ -249,7 +251,9 @@ class Preprocessor:
         self._set_log_file(log_file=log_file)
         logger.info(f"{' Starting preprocessing ':=^80}")
         logger.info(f"Logs are saved to {self.log_file_handler.baseFilename}")
-        modality_names = ', '.join([modality.modality_name for modality in self.moving_modalities])
+        modality_names = ", ".join(
+            [modality.modality_name for modality in self.moving_modalities]
+        )
         logger.info(
             f"Received center modality: {self.center_modality.modality_name} "
             f"and moving modalities: {modality_names}"
@@ -298,17 +302,19 @@ class Preprocessor:
         self.run_brain_extraction(
             save_dir_brain_extraction=save_dir_brain_extraction,
         )
-        
+
         # Defacing
         logger.info(f"{' Checking optional defacing ':-^80}")
         self.run_defacing(
             save_dir_defacing=save_dir_defacing,
         )
-        
+
         # End
         logger.info(f"{' Preprocessing complete ':=^80}")
 
-    def run_coregistration(self, save_dir_coregistration: Optional[Union[str, Path]] = None) -> None:
+    def run_coregistration(
+        self, save_dir_coregistration: Optional[Union[str, Path]] = None
+    ) -> None:
         """
         Coregister moving modalities to center modality.
 
@@ -336,8 +342,10 @@ class Preprocessor:
 
         shutil.copyfile(
             src=str(self.center_modality.input_path),
-            dst=str(coregistration_dir / 
-                f"native__{self.center_modality.modality_name}.nii.gz"),
+            dst=str(
+                coregistration_dir
+                / f"native__{self.center_modality.modality_name}.nii.gz"
+            ),
         )
 
         self._save_output(
@@ -417,8 +425,11 @@ class Preprocessor:
                 )
 
         if self.center_modality.atlas_correction:
-            center_atlas_corrected_path = atlas_correction_dir / f"atlas_corrected__{self.center_modality.modality_name}.nii.gz"
-            
+            center_atlas_corrected_path = (
+                atlas_correction_dir
+                / f"atlas_corrected__{self.center_modality.modality_name}.nii.gz"
+            )
+
             shutil.copyfile(
                 src=str(self.center_modality.current),
                 dst=str(center_atlas_corrected_path),
@@ -503,7 +514,9 @@ class Preprocessor:
                     normalization=True,
                 )
 
-    def run_defacing(self, save_dir_defacing: Optional[Union[str, Path]] = None) -> None:
+    def run_defacing(
+        self, save_dir_defacing: Optional[Union[str, Path]] = None
+    ) -> None:
         """Deface images to remove facial features using specified Defacer.
 
         Args:
@@ -563,7 +576,7 @@ class Preprocessor:
 
     def _save_output(
         self,
-        src:  Union[str, Path],
+        src: Union[str, Path],
         save_dir: Optional[Union[str, Path]],
     ):
         """

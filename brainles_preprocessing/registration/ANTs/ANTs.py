@@ -60,11 +60,11 @@ class ANTsRegistrator(Registrator):
             **kwargs: Additional registration parameters to update the instantiated defaults.
         """
         start_time = datetime.datetime.now()
-        
+
         # TODO - self.registration_params
         # We update the registration parameters with the provided kwargs
         registration_kwargs = {**self.registration_params, **kwargs}
-        
+
         # Convert all paths to Path objects
         fixed_image_path = Path(fixed_image_path)
         moving_image_path = Path(moving_image_path)
@@ -76,7 +76,7 @@ class ANTsRegistrator(Registrator):
             raise FileNotFoundError(f"Fixed image not found: {fixed_image_path}")
         if not moving_image_path.is_file():
             raise FileNotFoundError(f"Moving image not found: {moving_image_path}")
-        
+
         # Ensure matrix_path has .mat suffix
         if matrix_path.suffix != ".mat":
             matrix_path = matrix_path.with_suffix(".mat")
@@ -89,17 +89,17 @@ class ANTsRegistrator(Registrator):
             **registration_kwargs,
         )
         transformed_image = registration_result["warpedmovout"]
-        
+
         # Ensure output directories exist
         transformed_image_path.parent.mkdir(parents=True, exist_ok=True)
         matrix_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         ants.image_write(transformed_image, str(transformed_image_path))
 
         shutil.copyfile(
-                src=registration_result["fwdtransforms"][0],
-                dst=str(matrix_path),
-            )
+            src=registration_result["fwdtransforms"][0],
+            dst=str(matrix_path),
+        )
 
         end_time = datetime.datetime.now()
 
@@ -142,7 +142,7 @@ class ANTsRegistrator(Registrator):
         # TODO - self.transformation_params
         # we update the transformation parameters with the provided kwargs
         transform_kwargs = {**self.transformation_params, **kwargs}
-        
+
         # Convert all paths to Path objects
         fixed_image_path = Path(fixed_image_path)
         moving_image_path = Path(moving_image_path)
@@ -155,10 +155,9 @@ class ANTsRegistrator(Registrator):
         if not moving_image_path.is_file():
             raise FileNotFoundError(f"Moving image not found: {moving_image_path}")
 
-
         fixed_image = ants.image_read(str(fixed_image_path))
         moving_image = ants.image_read(str(moving_image_path))
-        
+
         # Ensure output directory exist
         transformed_image_path.parent.mkdir(parents=True, exist_ok=True)
 

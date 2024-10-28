@@ -1,5 +1,5 @@
 # TODO add typing and docs
-import shutil 
+import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
@@ -10,8 +10,9 @@ from brainles_hd_bet import run_hd_bet
 
 
 class Mode(Enum):
-    FAST = 'fast'
-    ACCURATE = 'accurate'
+    FAST = "fast"
+    ACCURATE = "accurate"
+
 
 class BrainExtractor:
     @abstractmethod
@@ -51,7 +52,6 @@ class BrainExtractor:
             mask_path (str or Path): Path to the brain mask image (NIfTI format).
             bet_image_path (str or Path): Path to save the resulting masked image (NIfTI format).
         """
-        
 
         try:
             # Read data
@@ -105,11 +105,11 @@ class HDBetExtractor(BrainExtractor):
             device (str or int): Device to use for computation (e.g., 0 for GPU 0, 'cpu' for CPU).
             do_tta (bool): whether to do test time data augmentation by mirroring along all axes.
         """
-        
+
         # Ensure mode is a Mode enum instance
         if isinstance(mode, str):
             try:
-                mode_enum =  Mode(mode.lower())
+                mode_enum = Mode(mode.lower())
             except ValueError:
                 raise ValueError(f"'{mode}' is not a valid Mode.")
         elif isinstance(mode, Mode):
@@ -132,7 +132,9 @@ class HDBetExtractor(BrainExtractor):
 
         # Construct the path to the generated mask
         masked_image_path = Path(masked_image_path)
-        hdbet_mask_path = masked_image_path.with_name(masked_image_path.name.replace('.nii.gz', '_mask.nii.gz'))
+        hdbet_mask_path = masked_image_path.with_name(
+            masked_image_path.name.replace(".nii.gz", "_mask.nii.gz")
+        )
 
         if hdbet_mask_path.resolve() != Path(brain_mask_path).resolve():
             try:
@@ -142,4 +144,3 @@ class HDBetExtractor(BrainExtractor):
                 )
             except Exception as e:
                 raise RuntimeError(f"Error copying mask file: {e}") from e
-
