@@ -19,7 +19,10 @@ from .modality import Modality
 from .registration import ANTsRegistrator
 from .registration.registrator import Registrator
 
-logger = logging.getLogger(__name__)
+from .utils.logging_utils import LoggingManager
+
+logging_man = LoggingManager(name=__name__)
+logger = logging_man.get_logger()
 
 
 class Preprocessor:
@@ -51,7 +54,7 @@ class Preprocessor:
         use_gpu: Optional[bool] = None,
         limit_cuda_visible_devices: Optional[str] = None,
     ):
-        self._setup_logger()
+        logging_man._setup_logger()
 
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
@@ -129,77 +132,10 @@ class Preprocessor:
                 return func(*args, **kwargs)
             finally:
                 self = args[0]
-                if isinstance(self, Preprocessor) and self.log_file_handler:
-                    logging.getLogger().removeHandler(self.log_file_handler)
+                if isinstance(self, Preprocessor):
+                    logging_man.remove_log_file_handler()
 
         return wrapper
-
-    def _set_log_file(self, log_file: Optional[Union[str, Path]]) -> None:
-        """
-        Set the log file and remove the file handler from a potential previous run.
-
-        Args:
-            log_file (str | Path): log file path
-        """
-        if self.log_file_handler:
-            logging.getLogger().removeHandler(self.log_file_handler)
-
-        # Ensure parent directories exists
-        log_file = Path(
-            log_file
-            if log_file
-            else f"brainles_preprocessing_{datetime.now().strftime('%Y-%m-%d_T%H-%M-%S.%f')}.log"
-        )
-        log_file.parent.mkdir(parents=True, exist_ok=True)
-
-        self.log_file_handler = logging.FileHandler(str(log_file))
-        self.log_file_handler.setFormatter(
-            logging.Formatter(
-                "[%(levelname)-8s | %(module)-15s | L%(lineno)-5d] %(asctime)s: %(message)s",
-                "%Y-%m-%dT%H:%M:%S%z",
-            )
-        )
-
-        # Add the file handler to the !root! logger
-        logging.getLogger().addHandler(self.log_file_handler)
-
-    def _setup_logger(self):
-        """
-        Setup the logger and overwrite system hooks to add logging for exceptions and signals.
-        """
-
-        logging.basicConfig(
-            format="[%(levelname)s] %(asctime)s: %(message)s",
-            datefmt="%Y-%m-%dT%H:%M:%S%z",
-            level=logging.INFO,
-        )
-        self.log_file_handler = None
-
-        # overwrite system hooks to log exceptions and signals (SIGINT, SIGTERM)
-        #! NOTE: This will note work in Jupyter Notebooks, (Without extra setup) see https://stackoverflow.com/a/70469055:
-        def exception_handler(exception_type, value, tb):
-            """Handle exceptions
-
-            Args:
-                exception_type (Exception): Exception type
-                exception (Exception): Exception
-                traceback (Traceback): Traceback
-            """
-            logger.error("".join(traceback.format_exception(exception_type, value, tb)))
-
-            if issubclass(exception_type, SystemExit):
-                # add specific code if exception was a system exit
-                sys.exit(value.code)
-
-        def signal_handler(sig, frame):
-            signame = signal.Signals(sig).name
-            logger.error(f"Received signal {sig} ({signame}), exiting...")
-            sys.exit(0)
-
-        sys.excepthook = exception_handler
-
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
 
     @property
     def all_modalities(self) -> List[Modality]:
@@ -248,9 +184,9 @@ class Preprocessor:
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
 
-        self._set_log_file(log_file=log_file)
+        logging_man._set_log_file(log_file)
         logger.info(f"{' Starting preprocessing ':=^80}")
-        logger.info(f"Logs are saved to {self.log_file_handler.baseFilename}")
+        logger.info(f"Logs are saved to {logging_man.log_file_handler.baseFilename}")
         modality_names = ", ".join(
             [modality.modality_name for modality in self.moving_modalities]
         )
