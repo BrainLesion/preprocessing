@@ -401,7 +401,7 @@ class Modality:
 
             defacer.deface(
                 mask_image_path=atlas_mask_path,
-                bet_img_path=self.steps[PreprocessorSteps.BET],
+                input_image_path=self.steps[PreprocessorSteps.BET],
             )
             return atlas_mask_path
         else:
