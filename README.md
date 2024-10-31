@@ -32,12 +32,11 @@ pip install brainles-preprocessing
 A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
 ```python
 from pathlib import Path
-from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
-
-from brainles_preprocessing.brain_extraction import HDBetExtractor
 from brainles_preprocessing.modality import Modality
+from brainles_preprocessing.normalization.percentile_normalizer import (
+    PercentileNormalizer,
+)
 from brainles_preprocessing.preprocessor import Preprocessor
-from brainles_preprocessing.registration import ANTsRegistrator  # , NiftyRegRegistrator,# eRegRegistrator
 
 patient_folder = Path("/home/marcelrosier/preprocessing/patient")
 
@@ -54,8 +53,7 @@ center = Modality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
     normalizer=percentile_normalizer,
-    # specify the output paths for the raw and normalized images of each step (all optional)
-    # Abbreviations: bet = brain extracted, skull = with skull
+    # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
     raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
     raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
     normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
@@ -67,7 +65,7 @@ moving_modalities = [
         modality_name="flair",
         input_path=patient_folder / "flair.nii.gz",
         normalizer=percentile_normalizer,
-        # specify the output paths for the raw and normalized images of each step (all optional)
+        # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
         raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
         raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
         normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
@@ -75,27 +73,26 @@ moving_modalities = [
     )
 ]
 
+# instantiate and run the preprocessor using defaults for registration/ brain extraction/ defacing backends
 preprocessor = Preprocessor(
     center_modality=center,
     moving_modalities=moving_modalities,
-    # choose the registration backend & brain extractor you want to use
-    registrator=ANTsRegistrator(),
-    brain_extractor=HDBetExtractor(),
-    limit_cuda_visible_devices="0",
 )
 
 preprocessor.run()
+
 ```
 
 
-An example notebook with 4 modalities can be found following these badges:
+The package allows to choose registration backends, brain extraction tools and defacing methods.   
+An example notebook with 4 modalities and further outputs and customizations can be found following these badges:
 
 [![nbviewer](https://raw.githubusercontent.com/jupyter/design/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.org/github/BrainLesion/tutorials/blob/main/preprocessing/preprocessing_tutorial.ipynb)
 <a target="_blank" href="https://colab.research.google.com/github/BrainLesion/tutorials/blob/main/preprocessing/preprocessing_tutorial.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
 
-For further information please have a look at our [Jupyter Notebook tutorials](https://github.com/BrainLesion/tutorials/tree/main/preprocessing) in our tutorials repo.
+For further information please have a look at our [Jupyter Notebook tutorials](https://github.com/BrainLesion/tutorials/tree/main/preprocessing) in our tutorials repo (WIP).
 
 
 
@@ -120,4 +117,5 @@ We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
 ### Registration
 We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
 
-<!-- TODO mention defacing -->
+### Defacing
+We currently provide support for [Quickshear](https://github.com/nipy/quickshear)
