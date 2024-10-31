@@ -1,11 +1,9 @@
 import logging
-import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from auxiliary.nifti.io import read_nifti, write_nifti
-from auxiliary.turbopath import turbopath
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
@@ -21,26 +19,26 @@ class Modality:
 
     Args:
         modality_name (str): Name of the modality, e.g., "T1", "T2", "FLAIR".
-        input_path (str): Path to the input modality data.
+        input_path (str or Path): Path to the input modality data.
         normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
-        raw_bet_output_path (str, optional): Path to save the raw brain extracted modality data.
-        raw_skull_output_path (str, optional): Path to save the raw modality data with skull.
-        raw_defaced_output_path (str, optional): Path to save the raw defaced modality data.
-        normalized_bet_output_path (str, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
-        normalized_skull_output_path (str, optional): Path to save the normalized modality data with skull. Requires a normalizer.
-        normalized_defaced_output_path (str, optional): Path to save the normalized defaced modality data. Requires a normalizer.
+        raw_bet_output_path (str or Path, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str or Path, optional): Path to save the raw modality data with skull.
+        raw_defaced_output_path (str or Path, optional): Path to save the raw defaced modality data.
+        normalized_bet_output_path (str or Path, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
+        normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
+        normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
 
     Attributes:
         modality_name (str): Name of the modality.
-        input_path (str): Path to the input modality data.
+        input_path (str or Path): Path to the input modality data.
         normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
-        raw_bet_output_path (str, optional): Path to save the raw brain extracted modality data.
-        raw_skull_output_path (str, optional): Path to save the raw modality data with skull.
-        raw_defaced_output_path (str, optional): Path to save the raw defaced modality data.
-        normalized_bet_output_path (str, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
-        normalized_skull_output_path (str, optional): Path to save the normalized modality data with skull. Requires a normalizer.
-        normalized_defaced_output_path (str, optional): Path to save the normalized defaced modality data. Requires a normalizer.
+        raw_bet_output_path (str or Path, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str or Path, optional): Path to save the raw modality data with skull.
+        raw_defaced_output_path (str or Path, optional): Path to save the raw defaced modality data.
+        normalized_bet_output_path (str or Path, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
+        normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
+        normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         bet (bool): Indicates whether brain extraction is enabled.
         atlas_correction (bool): Indicates whether atlas correction should be performed.
 
@@ -58,178 +56,174 @@ class Modality:
     def __init__(
         self,
         modality_name: str,
-        input_path: str,
+        input_path: Union[str, Path],
         normalizer: Optional[Normalizer] = None,
-        raw_bet_output_path: Optional[str] = None,
-        raw_skull_output_path: Optional[str] = None,
-        raw_defaced_output_path: Optional[str] = None,
-        normalized_bet_output_path: Optional[str] = None,
-        normalized_skull_output_path: Optional[str] = None,
-        normalized_defaced_output_path: Optional[str] = None,
+        raw_bet_output_path: Optional[Union[str, Path]] = None,
+        raw_skull_output_path: Optional[Union[str, Path]] = None,
+        raw_defaced_output_path: Optional[Union[str, Path]] = None,
+        normalized_bet_output_path: Optional[Union[str, Path]] = None,
+        normalized_skull_output_path: Optional[Union[str, Path]] = None,
+        normalized_defaced_output_path: Optional[Union[str, Path]] = None,
         atlas_correction: bool = True,
     ) -> None:
-        # basics
+        # Basics
         self.modality_name = modality_name
-
-        self.input_path = turbopath(input_path)
+        self.input_path = Path(input_path)
         self.current = self.input_path
-
         self.normalizer = normalizer
         self.atlas_correction = atlas_correction
 
-        # check that atleast one output is generated
-        if (
-            raw_bet_output_path is None
-            and normalized_bet_output_path is None
-            and raw_skull_output_path is None
-            and normalized_skull_output_path is None
-            and raw_defaced_output_path is None
-            and normalized_defaced_output_path is None
+        # Check that atleast one output is generated
+        if not any(
+            [
+                raw_bet_output_path,
+                normalized_bet_output_path,
+                raw_skull_output_path,
+                normalized_skull_output_path,
+                raw_defaced_output_path,
+                normalized_defaced_output_path,
+            ]
         ):
             raise ValueError(
                 "All output paths are None. At least one output paths must be provided."
             )
 
         # handle input paths
-        if raw_bet_output_path is not None:
-            self.raw_bet_output_path = turbopath(raw_bet_output_path)
-        else:
-            self.raw_bet_output_path = raw_bet_output_path
+        self.raw_bet_output_path = (
+            Path(raw_bet_output_path) if raw_bet_output_path else None
+        )
+        self.raw_skull_output_path = (
+            Path(raw_skull_output_path) if raw_skull_output_path else None
+        )
+        self.raw_defaced_output_path = (
+            Path(raw_defaced_output_path) if raw_defaced_output_path else None
+        )
 
-        if raw_skull_output_path is not None:
-            self.raw_skull_output_path = turbopath(raw_skull_output_path)
-        else:
-            self.raw_skull_output_path = raw_skull_output_path
-
-        if raw_defaced_output_path is not None:
-            self.raw_defaced_output_path = turbopath(raw_defaced_output_path)
-        else:
-            self.raw_defaced_output_path = raw_defaced_output_path
-
-        if normalized_bet_output_path is not None:
+        if normalized_bet_output_path:
             if normalizer is None:
                 raise ValueError(
                     "A normalizer must be provided if normalized_bet_output_path is not None."
                 )
-            self.normalized_bet_output_path = turbopath(normalized_bet_output_path)
+            self.normalized_bet_output_path = Path(normalized_bet_output_path)
         else:
-            self.normalized_bet_output_path = normalized_bet_output_path
+            self.normalized_bet_output_path = None
 
-        if normalized_skull_output_path is not None:
+        if normalized_skull_output_path:
             if normalizer is None:
                 raise ValueError(
                     "A normalizer must be provided if normalized_skull_output_path is not None."
                 )
-            self.normalized_skull_output_path = turbopath(normalized_skull_output_path)
+            self.normalized_skull_output_path = Path(normalized_skull_output_path)
         else:
-            self.normalized_skull_output_path = normalized_skull_output_path
+            self.normalized_skull_output_path = None
 
         if normalized_defaced_output_path is not None:
             if normalizer is None:
                 raise ValueError(
                     "A normalizer must be provided if normalized_defaced_output_path is not None."
                 )
-            self.normalized_defaced_output_path = turbopath(
-                normalized_defaced_output_path
-            )
+            self.normalized_defaced_output_path = Path(normalized_defaced_output_path)
         else:
-            self.normalized_defaced_output_path = normalized_defaced_output_path
+            self.normalized_defaced_output_path = None
 
         self.steps = {k: None for k in PreprocessorSteps}
 
     @property
     def bet(self) -> bool:
-        """Check if any brain extraction output is specified.
+        """
+        Check if any brain extraction output is specified.
 
         Returns:
             bool: True if any brain extraction output is specified, False otherwise.
         """
-        return any(
-            path is not None
-            for path in [self.raw_bet_output_path, self.normalized_bet_output_path]
-        )
+        return any([self.raw_bet_output_path, self.normalized_bet_output_path])
 
     @property
     def requires_deface(self) -> bool:
-        """Check if any defacing output is specified.
+        """
+        Check if any defacing output is specified.
 
         Returns:
             bool: True if any defacing output is specified, False otherwise.
         """
-        return any(
-            path is not None
-            for path in [
-                self.raw_defaced_output_path,
-                self.normalized_defaced_output_path,
-            ]
-        )
+        return any([self.raw_defaced_output_path, self.normalized_defaced_output_path])
 
     def normalize(
         self,
-        temporary_directory: str,
-        store_unnormalized: str | None = None,
+        temporary_directory: Union[str, Path],
+        store_unnormalized: Optional[Union[str, Path]] = None,
     ) -> None:
         """
         Normalize the image using the specified normalizer.
 
         Args:
-            temporary_directory (str): Path to the temporary directory.
-            store_unnormalized (str, optional): Path to store unnormalized images.
+            temporary_directory (str or Path): Path to the temporary directory.
+            store_unnormalized (str or Path, optional): Path to store unnormalized images.
 
         Returns:
             None
         """
         # Backup the unnormalized file
-        if store_unnormalized is not None:
-            os.makedirs(store_unnormalized, exist_ok=True)
+        if store_unnormalized:
+            store_unnormalized = Path(store_unnormalized)
+            store_unnormalized.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(
-                src=self.current,
-                dst=f"{store_unnormalized}/unnormalized__{self.modality_name}.nii.gz",
+                src=str(self.current),
+                dst=str(
+                    store_unnormalized / f"unnormalized__{self.modality_name}.nii.gz"
+                ),
             )
 
-        if temporary_directory is not None:
-            unnormalized_dir = f"{temporary_directory}/unnormalized"
-            os.makedirs(unnormalized_dir, exist_ok=True)
+        if temporary_directory:
+            unnormalized_dir = Path(temporary_directory) / "unnormalized"
+            unnormalized_dir.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(
-                src=self.current,
-                dst=f"{unnormalized_dir}/unnormalized__{self.modality_name}.nii.gz",
+                src=str(self.current),
+                dst=str(
+                    unnormalized_dir / f"unnormalized__{self.modality_name}.nii.gz"
+                ),
             )
 
         # Normalize the image
-        if self.normalizer is not None:
-            image = read_nifti(self.current)
+        if self.normalizer:
+            image = read_nifti(str(self.current))
             normalized_image = self.normalizer.normalize(image=image)
             write_nifti(
                 input_array=normalized_image,
-                output_nifti_path=self.current,
-                reference_nifti_path=self.current,
+                output_nifti_path=str(self.current),
+                reference_nifti_path=str(self.current),
             )
+        else:
+            logger.info("No normalizer specified; skipping normalization.")
 
     def register(
         self,
         registrator: Registrator,
-        fixed_image_path: str,
-        registration_dir: str,
+        fixed_image_path: Union[str, Path],
+        registration_dir: Union[str, Path],
         moving_image_name: str,
         step: PreprocessorSteps,
-    ) -> str:
+    ) -> Path:
         """
         Register the current modality to a fixed image using the specified registrator.
 
         Args:
             registrator (Registrator): The registrator object.
-            fixed_image_path (str): Path to the fixed image.
-            registration_dir (str): Directory to store registration results.
+            fixed_image_path (str or Path): Path to the fixed image.
+            registration_dir (str or Path): Directory to store registration results.
             moving_image_name (str): Name of the moving image.
 
         Returns:
-            str: Path to the registration matrix.
+            Path: Path to the registration matrix.
         """
-        registered = os.path.join(registration_dir, f"{moving_image_name}.nii.gz")
-        registered_matrix = os.path.join(
-            registration_dir, f"{moving_image_name}"
-        )  # note, add file ending depending on registration backend!
-        registered_log = os.path.join(registration_dir, f"{moving_image_name}.log")
+        fixed_image_path = Path(fixed_image_path)
+        registration_dir = Path(registration_dir)
+
+        registered = registration_dir / f"{moving_image_name}.nii.gz"
+        registered_log = registration_dir / f"{moving_image_name}.log"
+
+        # Note, add file ending depending on registration backend!
+        registered_matrix = registration_dir / f"{moving_image_name}"
 
         registrator.register(
             fixed_image_path=fixed_image_path,
@@ -245,21 +239,23 @@ class Modality:
     def apply_bet_mask(
         self,
         brain_extractor: BrainExtractor,
-        mask_path: Path,
-        bet_dir: Path,
+        mask_path: Union[str, Path],
+        bet_dir: Union[str, Path],
     ) -> None:
         """
         Apply a brain mask to the current modality using the specified brain extractor.
 
         Args:
             brain_extractor (BrainExtractor): The brain extractor object.
-            mask_path (str): Path to the brain mask.
-            bet_dir (str): Directory to store computed bet images.
+            mask_path (str or Path): Path to the brain mask.
+            bet_dir (str or Path): Directory to store computed bet images.
 
         Returns:
             None
         """
         if self.bet:
+            mask_path = Path(mask_path)
+            bet_dir = Path(bet_dir)
             bet_img = bet_dir / f"atlas__{self.modality_name}_bet.nii.gz"
 
             brain_extractor.apply_mask(
@@ -269,22 +265,26 @@ class Modality:
             )
             self.current = bet_img
             self.steps[PreprocessorSteps.BET] = bet_img
+        else:
+            logger.info("No Brain Extractor specified; skipping brain extraction.")
 
     def apply_deface_mask(
         self,
         defacer: Defacer,
-        mask_path: str,
-        deface_dir: str,
+        mask_path: Union[str, Path],
+        deface_dir: Union[str, Path],
     ) -> None:
         """
         Apply a deface mask to the current modality using the specified brain extractor.
 
         Args:
             defacer (Defacer): The Defacer object.
-            mask_path (str): Path to the deface mask.
-            defaced_masked_dir_path (str): Directory to store masked images.
+            mask_path (str or Path): Path to the deface mask.
+            defaced_masked_dir_path (str or Path): Directory to store masked images.
         """
-        if self.deface:
+        if self.requires_deface:
+            mask_path = Path(mask_path)
+            deface_dir = Path(deface_dir)
             defaced_img = deface_dir / f"atlas__{self.modality_name}_defaced.nii.gz"
             input_img = self.steps[
                 (
@@ -304,10 +304,10 @@ class Modality:
     def transform(
         self,
         registrator: Registrator,
-        fixed_image_path: str,
-        registration_dir_path: str,
+        fixed_image_path: Union[str, Path],
+        registration_dir_path: Union[str, Path],
         moving_image_name: str,
-        transformation_matrix_path: str,
+        transformation_matrix_path: Union[str, Path],
         step: PreprocessorSteps,
     ) -> None:
         """
@@ -315,18 +315,20 @@ class Modality:
 
         Args:
             registrator (Registrator): The registrator object.
-            fixed_image_path (str): Path to the fixed image.
-            registration_dir_path (str): Directory to store transformation results.
+            fixed_image_path (str or Path): Path to the fixed image.
+            registration_dir_path (str or Path): Directory to store transformation results.
             moving_image_name (str): Name of the moving image.
-            transformation_matrix_path (str): Path to the transformation matrix.
+            transformation_matrix_path (str or Path): Path to the transformation matrix.
 
         Returns:
             None
         """
-        transformed = os.path.join(registration_dir_path, f"{moving_image_name}.nii.gz")
-        transformed_log = os.path.join(
-            registration_dir_path, f"{moving_image_name}.log"
-        )
+        fixed_image_path = Path(fixed_image_path)
+        registration_dir_path = Path(registration_dir_path)
+        transformation_matrix_path = Path(transformation_matrix_path)
+
+        transformed = registration_dir_path / f"{moving_image_name}.nii.gz"
+        transformed_log = registration_dir_path / f"{moving_image_name}.log"
 
         registrator.transform(
             fixed_image_path=fixed_image_path,
@@ -341,18 +343,19 @@ class Modality:
     def extract_brain_region(
         self,
         brain_extractor: BrainExtractor,
-        bet_dir_path: str,
-    ) -> str:
+        bet_dir_path: Union[str, Path],
+    ) -> Path:
         """
         Extract the brain region using the specified brain extractor.
 
         Args:
             brain_extractor (BrainExtractor): The brain extractor object.
-            bet_dir_path (str): Directory to store brain extraction results.
+            bet_dir_path (str or Path): Directory to store brain extraction results.
 
         Returns:
-            str: Path to the extracted brain mask.
+            Path: Path to the extracted brain mask.
         """
+        bet_dir_path = Path(bet_dir_path)
         bet_log = bet_dir_path / "brain-extraction.log"
 
         atlas_bet_cm = bet_dir_path / f"atlas__{self.modality_name}_bet.nii.gz"
@@ -369,59 +372,74 @@ class Modality:
         # down the line even if the user does not wish to save the bet image
         self.steps[PreprocessorSteps.BET] = atlas_bet_cm
 
-        if self.bet is True:
+        if self.bet:
             self.current = atlas_bet_cm
         return mask_path
 
     def deface(
         self,
         defacer,
-        defaced_dir_path: str,
-    ) -> str:
+        defaced_dir_path: Union[str, Path],
+    ) -> Path:
         """
         Deface the current modality using the specified defacer.
 
         Args:
             defacer (Defacer): The defacer object.
-            defaced_dir_path (str): Directory to store defacing results.
+            defaced_dir_path (str or Path): Directory to store defacing results.
 
         Returns:
-            str: Path to the extracted brain mask.
+            Path: Path to the extracted brain mask.
         """
 
         if isinstance(defacer, QuickshearDefacer):
-            atlas_mask_path = os.path.join(
-                defaced_dir_path, f"atlas__{self.modality_name}_deface_mask.nii.gz"
+
+            defaced_dir_path = Path(defaced_dir_path)
+            atlas_mask_path = (
+                defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"
             )
+
             defacer.deface(
                 mask_image_path=atlas_mask_path,
-                bet_img_path=self.steps[PreprocessorSteps.BET],
+                input_image_path=self.steps[PreprocessorSteps.BET],
             )
             return atlas_mask_path
         else:
             logger.warning(
                 "Defacing method not implemented yet. Skipping defacing for this modality."
             )
-            pass
+            return None
 
     def save_current_image(
         self,
-        output_path: str,
-        normalization=False,
+        output_path: Union[str, Path],
+        normalization: bool = False,
     ) -> None:
-        os.makedirs(output_path.parent, exist_ok=True)
+        """
+        Save the current image to the specified output path.
 
-        if normalization is False:
-            shutil.copyfile(
-                self.current,
-                output_path,
-            )
-        elif normalization is True:
-            image = read_nifti(self.current)
-            # print("current image", self.current)
+        Args:
+            output_path (str or Path): The output file path.
+            normalization (bool, optional): If True, apply normalization before saving.
+
+        Returns:
+            None
+        """
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if normalization:
+            if self.normalizer is None:
+                raise ValueError("Normalizer is required for normalization.")
+            image = read_nifti(str(self.current))
             normalized_image = self.normalizer.normalize(image=image)
             write_nifti(
                 input_array=normalized_image,
-                output_nifti_path=output_path,
-                reference_nifti_path=self.current,
+                output_nifti_path=str(output_path),
+                reference_nifti_path=str(self.current),
+            )
+        else:
+            shutil.copyfile(
+                src=str(self.current),
+                dst=str(output_path),
             )

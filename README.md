@@ -8,11 +8,11 @@
 <!-- [![codecov](https://codecov.io/gh/BrainLesion/brainles-preprocessing/graph/badge.svg?token=A7FWUKO9Y4)](https://codecov.io/gh/BrainLesion/brainles-preprocessing) -->
 <!-- [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) -->
 
-`BrainLes preprocessing` is a comprehensive tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI. It can be used to build to build modular preprocessing pipelines:
+`BrainLes preprocessing` is a comprehensive tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI. It can be used to build modular preprocessing pipelines:
 
 This includes **normalization**, **co-registration**, **atlas registration** and **skulstripping / brain extraction**.
 
-BrainLes is written `backend-agnostic` meaning it allows to swap the registration and brain extration tools.
+BrainLes is written `backend-agnostic` meaning it allows to swap the registration and brain extraction tools.
 
 <!-- TODO mention defacing -->
 
