@@ -89,9 +89,6 @@ class Preprocessor:
             storage = tempfile.TemporaryDirectory()
             self.temp_folder = Path(storage.name)
 
-        self.atlas_dir = self.temp_folder / "atlas-space"
-        self.atlas_dir.mkdir(exist_ok=True, parents=True)
-
     def _configure_gpu(
         self, use_gpu: Optional[bool], limit_cuda_visible_devices: Optional[str] = None
     ) -> None:
@@ -297,16 +294,19 @@ class Preprocessor:
         Args:
             save_dir_atlas_registration (Optional[str or Path], optional): Directory path to save intermediate atlas registration results. Defaults to None.
         """
+        atlas_dir = self.temp_folder / "atlas-space"
+        atlas_dir.mkdir(exist_ok=True, parents=True)
+
         logger.info(f"Registering center modality to atlas...")
         center_file_name = f"atlas__{self.center_modality.modality_name}"
         transformation_matrix = self.center_modality.register(
             registrator=self.registrator,
             fixed_image_path=self.atlas_image_path,
-            registration_dir=self.atlas_dir,
+            registration_dir=atlas_dir,
             moving_image_name=center_file_name,
             step=PreprocessorSteps.ATLAS_REGISTERED,
         )
-        logger.info(f"Atlas registration complete. Output saved to {self.atlas_dir}")
+        logger.info(f"Atlas registration complete. Output saved to {atlas_dir}")
 
         # Transform moving modalities to atlas
         logger.info(
@@ -320,13 +320,13 @@ class Preprocessor:
             moving_modality.transform(
                 registrator=self.registrator,
                 fixed_image_path=self.atlas_image_path,
-                registration_dir_path=Path(self.atlas_dir),
+                registration_dir_path=Path(atlas_dir),
                 moving_image_name=moving_file_name,
                 transformation_matrix_path=transformation_matrix,
                 step=PreprocessorSteps.ATLAS_REGISTERED,
             )
         self._save_output(
-            src=self.atlas_dir,
+            src=atlas_dir,
             save_dir=save_dir_atlas_registration,
         )
 
