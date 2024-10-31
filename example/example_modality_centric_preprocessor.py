@@ -1,5 +1,7 @@
 # This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
-from auxiliary.normalization.percentile_normalizer import PercentileNormalizer
+from brainles_preprocessing.normalization.percentile_normalizer import (
+    PercentileNormalizer,
+)
 from auxiliary.turbopath import turbopath
 from tqdm import tqdm
 
@@ -24,6 +26,8 @@ def preprocess(inputDir):
     norm_bet_dir = brainles_dir / "normalized_bet"
     raw_skull_dir = brainles_dir / "raw_skull"
     norm_skull_dir = brainles_dir / "normalized_skull"
+    raw_deface_dir = brainles_dir / "raw_defaced"
+    norm_deface_dir = brainles_dir / "normalized_defaced"
 
     t1_file = inputDir.files("*t1.nii.gz")
     t1c_file = inputDir.files("*t1c.nii.gz")
@@ -56,6 +60,10 @@ def preprocess(inputDir):
             + "_t1c_bet_normalized.nii.gz",
             normalized_skull_output_path=norm_skull_dir / inputDir.name
             + "_t1c_skull_normalized.nii.gz",
+            raw_defaced_output_path=raw_deface_dir / inputDir.name
+            + "_t1c_defaced_raw.nii.gz",
+            normalized_defaced_output_path=norm_deface_dir
+            / "_t1c_defaced_normalized.nii.gz",
             atlas_correction=True,
             normalizer=percentile_normalizer,
         )
@@ -70,6 +78,10 @@ def preprocess(inputDir):
                 + "_t1_bet_normalized.nii.gz",
                 normalized_skull_output_path=norm_skull_dir / inputDir.name
                 + "_t1_skull_normalized.nii.gz",
+                raw_defaced_output_path=raw_deface_dir / inputDir.name
+                + "_t1_defaced_raw.nii.gz",
+                normalized_defaced_output_path=norm_deface_dir / inputDir.name
+                + "_t1_defaced_normalized.nii.gz",
                 atlas_correction=True,
                 normalizer=percentile_normalizer,
             ),
@@ -83,6 +95,10 @@ def preprocess(inputDir):
                 + "_t2_bet_normalized.nii.gz",
                 normalized_skull_output_path=norm_skull_dir / inputDir.name
                 + "_t2_skull_normalized.nii.gz",
+                raw_defaced_output_path=raw_deface_dir / inputDir.name
+                + "_t2_defaced_raw.nii.gz",
+                normalized_defaced_output_path=norm_deface_dir / inputDir.name
+                + "_t2_defaced_normalized.nii.gz",
                 atlas_correction=True,
                 normalizer=percentile_normalizer,
             ),
@@ -96,6 +112,10 @@ def preprocess(inputDir):
                 + "_fla_bet_normalized.nii.gz",
                 normalized_skull_output_path=norm_skull_dir / inputDir.name
                 + "_fla_skull_normalized.nii.gz",
+                raw_defaced_output_path=raw_deface_dir / inputDir.name
+                + "_fla_defaced_raw.nii.gz",
+                normalized_defaced_output_path=norm_deface_dir / inputDir.name
+                + "_fla_defaced_normalized.nii.gz",
                 atlas_correction=True,
                 normalizer=percentile_normalizer,
             ),
@@ -118,6 +138,7 @@ def preprocess(inputDir):
             save_dir_atlas_registration=brainles_dir + "/atlas-registration",
             save_dir_atlas_correction=brainles_dir + "/atlas-correction",
             save_dir_brain_extraction=brainles_dir + "/brain-extraction",
+            save_dir_defacing=brainles_dir + "/defacing",
         )
 
 
