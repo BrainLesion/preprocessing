@@ -12,9 +12,7 @@
 
 This includes **normalization**, **co-registration**, **atlas registration** and **skulstripping / brain extraction**.
 
-BrainLes is written `backend-agnostic` meaning it allows to swap the registration and brain extraction tools.
-
-<!-- TODO mention defacing -->
+BrainLes is written `backend-agnostic` meaning it allows to swap the registration, brain extraction tools and defacing tools.
 
 <!-- TODO include image here -->
 
@@ -32,7 +30,7 @@ pip install brainles-preprocessing
 A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
 ```python
 from pathlib import Path
-from brainles_preprocessing.modality import Modality
+from brainles_preprocessing.modality import Modality, CenterModality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
@@ -48,8 +46,8 @@ percentile_normalizer = PercentileNormalizer(
     upper_limit=1,
 )
 
-# define modalities
-center = Modality(
+# define center and moving modalities
+center = CenterModality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
     normalizer=percentile_normalizer,
