@@ -62,8 +62,7 @@ class Preprocessor:
                 "Center modality should be of type CenterModality instead of Modality to allow for more features, e.g. saving bet and deface masks. "
                 "Support for using Modality for the Center Modality will be deprecated in future versions. "
                 "Note: Moving modalities should still be of type Modality.",
-                category=FutureWarning,
-                stacklevel=2,
+                category=DeprecationWarning,
             )
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities

@@ -361,8 +361,7 @@ class Modality:
 
         warnings.warn(
             "Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.",
-            category=FutureWarning,
-            stacklevel=2,
+            category=DeprecationWarning,
         )
 
         bet_dir_path = Path(bet_dir_path)
@@ -405,8 +404,7 @@ class Modality:
         """
         warnings.warn(
             "Legacy method. Please Migrate to use the CenterModality class. Will be removed in future versions.",
-            category=FutureWarning,
-            stacklevel=2,
+            category=DeprecationWarning,
         )
         if isinstance(defacer, QuickshearDefacer):
 
