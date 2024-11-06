@@ -474,8 +474,8 @@ class CenterModality(Modality):
         normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
-        bet_mask_output (str or Path, optional): Path to save the brain extraction mask.
-        deface_mask_output (str or Path, optional): Path to save the defacing mask.
+        bet_mask_output_path (str or Path, optional): Path to save the brain extraction mask.
+        defacing_mask_output_path (str or Path, optional): Path to save the defacing mask.
 
     Attributes:
         modality_name (str): Name of the modality.
@@ -489,8 +489,8 @@ class CenterModality(Modality):
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         bet (bool): Indicates whether brain extraction is enabled.
         atlas_correction (bool): Indicates whether atlas correction should be performed.
-        bet_mask_output (Path, optional): Path to save the brain extraction mask.
-        deface_mask_output (Path, optional): Path to save the defacing mask.
+        bet_mask_output_path (Path, optional): Path to save the brain extraction mask.
+        defacing_mask_output_path (Path, optional): Path to save the defacing mask.
 
     Example:
         >>> t1_modality = CenterModality(
@@ -499,7 +499,7 @@ class CenterModality(Modality):
         ...     normalizer=PercentileNormalizer(),
         ...     raw_bet_output_path="/path/to/raw_bet_t1.nii",
         ...     normalized_bet_output_path="/path/to/norm_bet_t1.nii",
-        ...     bet_mask_output="/path/to/bet_mask_t1.nii",
+        ...     bet_mask_output_path="/path/to/bet_mask_t1.nii",
         ... )
     """
 
@@ -515,8 +515,8 @@ class CenterModality(Modality):
         normalized_skull_output_path: Optional[Union[str, Path]] = None,
         normalized_defaced_output_path: Optional[Union[str, Path]] = None,
         atlas_correction: bool = True,
-        bet_mask_output: Optional[Union[str, Path]] = None,
-        deface_mask_output: Optional[Union[str, Path]] = None,
+        bet_mask_output_path: Optional[Union[str, Path]] = None,
+        defacing_mask_output_path: Optional[Union[str, Path]] = None,
     ) -> None:
         super().__init__(
             modality_name=modality_name,
@@ -531,9 +531,11 @@ class CenterModality(Modality):
             atlas_correction=atlas_correction,
         )
         # Only for CenterModality
-        self.bet_mask_output = Path(bet_mask_output) if bet_mask_output else None
-        self.deface_mask_output = (
-            Path(deface_mask_output) if deface_mask_output else None
+        self.bet_mask_output_path = (
+            Path(bet_mask_output_path) if bet_mask_output_path else None
+        )
+        self.defacing_mask_output_path = (
+            Path(defacing_mask_output_path) if defacing_mask_output_path else None
         )
 
     def extract_brain_region(
@@ -564,9 +566,9 @@ class CenterModality(Modality):
             log_file_path=bet_log,
         )
 
-        if self.bet_mask_output:
-            logger.debug(f"Saving bet mask to {self.bet_mask_output}")
-            self.save_mask(mask_path=mask_path, output_path=self.bet_mask_output)
+        if self.bet_mask_output_path:
+            logger.debug(f"Saving bet mask to {self.bet_mask_output_path}")
+            self.save_mask(mask_path=mask_path, output_path=self.bet_mask_output_path)
 
         # always temporarily store bet image for center modality, since e.g. quickshear defacing could require it
         # down the line even if the user does not wish to save the bet image
@@ -604,10 +606,11 @@ class CenterModality(Modality):
                 input_image_path=self.steps[PreprocessorSteps.BET],
             )
 
-            if self.deface_mask_output:
-                logger.debug(f"Saving deface mask to {self.deface_mask_output}")
+            if self.defacing_mask_output_path:
+                logger.debug(f"Saving deface mask to {self.defacing_mask_output_path}")
                 self.save_mask(
-                    mask_path=atlas_mask_path, output_path=self.deface_mask_output
+                    mask_path=atlas_mask_path,
+                    output_path=self.defacing_mask_output_path,
                 )
 
             return atlas_mask_path
