@@ -108,15 +108,15 @@ We provide a (WIP) documentation. Have a look [here](https://brainles-preprocess
 ## FAQ
 Please credit the authors by citing their work.
 
+### Registration
+We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
+
 ### Atlas Reference
 We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
-However, custom atlases can be supplied.
+However, custom atlases in NIfTI format are supported.
 
 ### Brain extraction
 We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
 
-### Registration
-We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
-
 ### Defacing
-We currently provide support for [Quickshear](https://github.com/nipy/quickshear)
+We currently provide support for [Quickshear](https://github.com/nipy/quickshear).
