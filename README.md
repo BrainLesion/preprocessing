@@ -58,7 +58,7 @@ center = CenterModality(
     normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
     # specify output paths for the brain extraction and defacing masks
     bet_mask_output="patient/masks/t1c_bet_mask.nii.gz",
-    deface_mask_output="patient/masks/t1c_deface_mask.nii.gz",
+    deface_mask_output="patient/masks/t1c_defacing_mask.nii.gz",
 )
 
 moving_modalities = [
