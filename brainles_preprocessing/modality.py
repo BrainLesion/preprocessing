@@ -460,6 +460,48 @@ class Modality:
 
 
 class CenterModality(Modality):
+    """
+    Represents a medical image center modality with associated preprocessing information.
+
+    Args:
+        modality_name (str): Name of the modality, e.g., "T1", "T2", "FLAIR".
+        input_path (str or Path): Path to the input modality data.
+        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+        raw_bet_output_path (str or Path, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str or Path, optional): Path to save the raw modality data with skull.
+        raw_defaced_output_path (str or Path, optional): Path to save the raw defaced modality data.
+        normalized_bet_output_path (str or Path, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
+        normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
+        normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
+        atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
+        bet_mask_output (str or Path, optional): Path to save the brain extraction mask.
+        deface_mask_output (str or Path, optional): Path to save the defacing mask.
+
+    Attributes:
+        modality_name (str): Name of the modality.
+        input_path (str or Path): Path to the input modality data.
+        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+        raw_bet_output_path (str or Path, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str or Path, optional): Path to save the raw modality data with skull.
+        raw_defaced_output_path (str or Path, optional): Path to save the raw defaced modality data.
+        normalized_bet_output_path (str or Path, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
+        normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
+        normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
+        bet (bool): Indicates whether brain extraction is enabled.
+        atlas_correction (bool): Indicates whether atlas correction should be performed.
+        bet_mask_output (Path, optional): Path to save the brain extraction mask.
+        deface_mask_output (Path, optional): Path to save the defacing mask.
+
+    Example:
+        >>> t1_modality = CenterModality(
+        ...     modality_name="T1",
+        ...     input_path="/path/to/input_t1.nii",
+        ...     normalizer=PercentileNormalizer(),
+        ...     raw_bet_output_path="/path/to/raw_bet_t1.nii",
+        ...     normalized_bet_output_path="/path/to/norm_bet_t1.nii",
+        ...     bet_mask_output="/path/to/bet_mask_t1.nii",
+        ... )
+    """
 
     def __init__(
         self,
