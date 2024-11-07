@@ -12,9 +12,7 @@
 
 This includes **normalization**, **co-registration**, **atlas registration** and **skulstripping / brain extraction**.
 
-BrainLes is written `backend-agnostic` meaning it allows to swap the registration and brain extraction tools.
-
-<!-- TODO mention defacing -->
+BrainLes is written `backend-agnostic` meaning it allows to swap the registration, brain extraction tools and defacing tools.
 
 <!-- TODO include image here -->
 
@@ -32,7 +30,7 @@ pip install brainles-preprocessing
 A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
 ```python
 from pathlib import Path
-from brainles_preprocessing.modality import Modality
+from brainles_preprocessing.modality import Modality, CenterModality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
@@ -48,8 +46,8 @@ percentile_normalizer = PercentileNormalizer(
     upper_limit=1,
 )
 
-# define modalities
-center = Modality(
+# define center and moving modalities
+center = CenterModality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
     normalizer=percentile_normalizer,
@@ -58,6 +56,9 @@ center = Modality(
     raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
     normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
     normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
+    # specify output paths for the brain extraction and defacing masks
+    bet_mask_output_path="patient/masks/t1c_bet_mask.nii.gz",
+    defacing_mask_output_path="patient/masks/t1c_defacing_mask.nii.gz",
 )
 
 moving_modalities = [
@@ -107,15 +108,15 @@ We provide a (WIP) documentation. Have a look [here](https://brainles-preprocess
 ## FAQ
 Please credit the authors by citing their work.
 
+### Registration
+We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
+
 ### Atlas Reference
 We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
-However, custom atlases can be supplied.
+However, custom atlases in NIfTI format are supported.
 
 ### Brain extraction
 We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
 
-### Registration
-We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
-
 ### Defacing
-We currently provide support for [Quickshear](https://github.com/nipy/quickshear)
+We currently provide support for [Quickshear](https://github.com/nipy/quickshear).

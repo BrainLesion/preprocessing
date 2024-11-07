@@ -10,12 +10,13 @@ from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
+import warnings
 
 from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 
 from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
-from .modality import Modality
+from .modality import Modality, CenterModality
 from .registration import ANTsRegistrator
 from .registration.registrator import Registrator
 
@@ -30,7 +31,7 @@ class Preprocessor:
     Preprocesses medical image modalities using coregistration, normalization, brain extraction, and more.
 
     Args:
-        center_modality (Modality): The central modality for coregistration.
+        center_modality (CenterModality): The central modality for coregistration.
         moving_modalities (List[Modality]): List of modalities to be coregistered to the central modality.
         registrator (Registrator): The registrator object for coregistration and registration to the atlas.
         brain_extractor (Optional[BrainExtractor]): The brain extractor object for brain extraction.
@@ -44,7 +45,7 @@ class Preprocessor:
 
     def __init__(
         self,
-        center_modality: Modality,
+        center_modality: CenterModality,
         moving_modalities: List[Modality],
         registrator: Registrator = None,
         brain_extractor: Optional[BrainExtractor] = None,
@@ -56,6 +57,13 @@ class Preprocessor:
     ):
         logging_man._setup_logger()
 
+        if not isinstance(center_modality, CenterModality):
+            warnings.warn(
+                "Center modality should be of type CenterModality instead of Modality to allow for more features, e.g. saving bet and deface masks. "
+                "Support for using Modality for the Center Modality will be deprecated in future versions. "
+                "Note: Moving modalities should still be of type Modality.",
+                category=DeprecationWarning,
+            )
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
 

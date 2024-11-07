@@ -1,5 +1,6 @@
 import logging
 import shutil
+import warnings
 from pathlib import Path
 from typing import Optional, Union
 
@@ -346,6 +347,8 @@ class Modality:
         bet_dir_path: Union[str, Path],
     ) -> Path:
         """
+        WARNING: Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.
+
         Extract the brain region using the specified brain extractor.
 
         Args:
@@ -355,6 +358,12 @@ class Modality:
         Returns:
             Path: Path to the extracted brain mask.
         """
+
+        warnings.warn(
+            "Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.",
+            category=DeprecationWarning,
+        )
+
         bet_dir_path = Path(bet_dir_path)
         bet_log = bet_dir_path / "brain-extraction.log"
 
@@ -382,6 +391,8 @@ class Modality:
         defaced_dir_path: Union[str, Path],
     ) -> Path:
         """
+        WARNING: Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.
+
         Deface the current modality using the specified defacer.
 
         Args:
@@ -391,7 +402,10 @@ class Modality:
         Returns:
             Path: Path to the extracted brain mask.
         """
-
+        warnings.warn(
+            "Legacy method. Please Migrate to use the CenterModality class. Will be removed in future versions.",
+            category=DeprecationWarning,
+        )
         if isinstance(defacer, QuickshearDefacer):
 
             defaced_dir_path = Path(defaced_dir_path)
@@ -443,3 +457,179 @@ class Modality:
                 src=str(self.current),
                 dst=str(output_path),
             )
+
+
+class CenterModality(Modality):
+    """
+    Represents a medical image center modality with associated preprocessing information.
+
+    Args:
+        modality_name (str): Name of the modality, e.g., "T1", "T2", "FLAIR".
+        input_path (str or Path): Path to the input modality data.
+        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+        raw_bet_output_path (str or Path, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str or Path, optional): Path to save the raw modality data with skull.
+        raw_defaced_output_path (str or Path, optional): Path to save the raw defaced modality data.
+        normalized_bet_output_path (str or Path, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
+        normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
+        normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
+        atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
+        bet_mask_output_path (str or Path, optional): Path to save the brain extraction mask.
+        defacing_mask_output_path (str or Path, optional): Path to save the defacing mask.
+
+    Attributes:
+        modality_name (str): Name of the modality.
+        input_path (str or Path): Path to the input modality data.
+        normalizer (Normalizer, optional): An optional normalizer for intensity normalization.
+        raw_bet_output_path (str or Path, optional): Path to save the raw brain extracted modality data.
+        raw_skull_output_path (str or Path, optional): Path to save the raw modality data with skull.
+        raw_defaced_output_path (str or Path, optional): Path to save the raw defaced modality data.
+        normalized_bet_output_path (str or Path, optional): Path to save the normalized brain extracted modality data. Requires a normalizer.
+        normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
+        normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
+        bet (bool): Indicates whether brain extraction is enabled.
+        atlas_correction (bool): Indicates whether atlas correction should be performed.
+        bet_mask_output_path (Path, optional): Path to save the brain extraction mask.
+        defacing_mask_output_path (Path, optional): Path to save the defacing mask.
+
+    Example:
+        >>> t1_modality = CenterModality(
+        ...     modality_name="T1",
+        ...     input_path="/path/to/input_t1.nii",
+        ...     normalizer=PercentileNormalizer(),
+        ...     raw_bet_output_path="/path/to/raw_bet_t1.nii",
+        ...     normalized_bet_output_path="/path/to/norm_bet_t1.nii",
+        ...     bet_mask_output_path="/path/to/bet_mask_t1.nii",
+        ... )
+    """
+
+    def __init__(
+        self,
+        modality_name: str,
+        input_path: Union[str, Path],
+        normalizer: Optional[Normalizer] = None,
+        raw_bet_output_path: Optional[Union[str, Path]] = None,
+        raw_skull_output_path: Optional[Union[str, Path]] = None,
+        raw_defaced_output_path: Optional[Union[str, Path]] = None,
+        normalized_bet_output_path: Optional[Union[str, Path]] = None,
+        normalized_skull_output_path: Optional[Union[str, Path]] = None,
+        normalized_defaced_output_path: Optional[Union[str, Path]] = None,
+        atlas_correction: bool = True,
+        bet_mask_output_path: Optional[Union[str, Path]] = None,
+        defacing_mask_output_path: Optional[Union[str, Path]] = None,
+    ) -> None:
+        super().__init__(
+            modality_name=modality_name,
+            input_path=input_path,
+            normalizer=normalizer,
+            raw_bet_output_path=raw_bet_output_path,
+            raw_skull_output_path=raw_skull_output_path,
+            raw_defaced_output_path=raw_defaced_output_path,
+            normalized_bet_output_path=normalized_bet_output_path,
+            normalized_skull_output_path=normalized_skull_output_path,
+            normalized_defaced_output_path=normalized_defaced_output_path,
+            atlas_correction=atlas_correction,
+        )
+        # Only for CenterModality
+        self.bet_mask_output_path = (
+            Path(bet_mask_output_path) if bet_mask_output_path else None
+        )
+        self.defacing_mask_output_path = (
+            Path(defacing_mask_output_path) if defacing_mask_output_path else None
+        )
+
+    def extract_brain_region(
+        self,
+        brain_extractor: BrainExtractor,
+        bet_dir_path: Union[str, Path],
+    ) -> Path:
+        """
+        Extract the brain region using the specified brain extractor.
+
+        Args:
+            brain_extractor (BrainExtractor): The brain extractor object.
+            bet_dir_path (str or Path): Directory to store brain extraction results.
+
+        Returns:
+            Path: Path to the extracted brain mask.
+        """
+        bet_dir_path = Path(bet_dir_path)
+        bet_log = bet_dir_path / "brain-extraction.log"
+
+        atlas_bet_cm = bet_dir_path / f"atlas__{self.modality_name}_bet.nii.gz"
+        mask_path = bet_dir_path / f"atlas__{self.modality_name}_brain_mask.nii.gz"
+
+        brain_extractor.extract(
+            input_image_path=self.current,
+            masked_image_path=atlas_bet_cm,
+            brain_mask_path=mask_path,
+            log_file_path=bet_log,
+        )
+
+        if self.bet_mask_output_path:
+            logger.debug(f"Saving bet mask to {self.bet_mask_output_path}")
+            self.save_mask(mask_path=mask_path, output_path=self.bet_mask_output_path)
+
+        # always temporarily store bet image for center modality, since e.g. quickshear defacing could require it
+        # down the line even if the user does not wish to save the bet image
+        self.steps[PreprocessorSteps.BET] = atlas_bet_cm
+
+        if self.bet:
+            self.current = atlas_bet_cm
+        return mask_path
+
+    def deface(
+        self,
+        defacer,
+        defaced_dir_path: Union[str, Path],
+    ) -> Path:
+        """
+        Deface the current modality using the specified defacer.
+
+        Args:
+            defacer (Defacer): The defacer object.
+            defaced_dir_path (str or Path): Directory to store defacing results.
+
+        Returns:
+            Path: Path to the extracted brain mask.
+        """
+
+        if isinstance(defacer, QuickshearDefacer):
+
+            defaced_dir_path = Path(defaced_dir_path)
+            atlas_mask_path = (
+                defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"
+            )
+
+            defacer.deface(
+                mask_image_path=atlas_mask_path,
+                input_image_path=self.steps[PreprocessorSteps.BET],
+            )
+
+            if self.defacing_mask_output_path:
+                logger.debug(f"Saving deface mask to {self.defacing_mask_output_path}")
+                self.save_mask(
+                    mask_path=atlas_mask_path,
+                    output_path=self.defacing_mask_output_path,
+                )
+
+            return atlas_mask_path
+        else:
+            logger.warning(
+                "Defacing method not implemented yet. Skipping defacing for this modality."
+            )
+            return None
+
+    def save_mask(self, mask_path: Union[str, Path], output_path: Path) -> None:
+        """
+        Save the mask to the specified output path.
+
+        Args:
+            mask_path (Union[str, Path]): Mask NifTI file path.
+            output_path (Path): Output NifTI file path.
+        """
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(
+            src=str(mask_path),
+            dst=str(output_path),
+        )
