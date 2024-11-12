@@ -14,7 +14,7 @@ exclude = [
 ]
 
 name = "brainles_preprocessing"
-version = "0.0.0"               # will be overwritten by poetry-dynamic-versioning but needs to be set
+version = "0.0.0"                                                                                                              # will be overwritten by poetry-dynamic-versioning but needs to be set
 description = "Tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI"
 license = "Apache-2.0"
 
@@ -55,6 +55,9 @@ pathlib = "^1.0.1"
 nibabel = ">=3.2.1"
 numpy = "^1.23.0"
 
+# registration
+antspyx = "^0.4.2"
+
 # hd-bet reqs
 brainles_hd_bet = ">=0.0.8"
 
@@ -64,13 +67,11 @@ auxiliary = ">=0.0.42"
 rich = "^13.6.0"
 
 # optional registration backends
-antspyx = { version = "^0.4.2", optional = true }
 ereg = { version = "^0.0.10", optional = true }
 
 
 [tool.poetry.extras]
-all = ["antspyx", "ereg"]
-ants = ["antspyx"]
+all = ["ereg"]
 ereg = ["ereg"]
 
 
