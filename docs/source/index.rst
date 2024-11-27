@@ -41,3 +41,9 @@ Indices and tables
    :caption: registration:
 
    registration.rst
+
+.. toctree::
+   :maxdepth: 2
+   :caption: defacing:
+
+   defacing.rst
