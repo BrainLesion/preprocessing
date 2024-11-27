@@ -54,8 +54,10 @@ center = CenterModality(
     # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
     raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
     raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
+    raw_defaced_output_path="patient/raw_defaced_dir/t1c_defaced_raw.nii.gz",
     normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
     normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
+    normalized_defaced_output_path="patient/norm_defaced_dir/t1c_defaced_normalized.nii.gz",
     # specify output paths for the brain extraction and defacing masks
     bet_mask_output_path="patient/masks/t1c_bet_mask.nii.gz",
     defacing_mask_output_path="patient/masks/t1c_defacing_mask.nii.gz",
@@ -69,8 +71,10 @@ moving_modalities = [
         # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
         raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
         raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
+        raw_defaced_output_path="patient/raw_defaced_dir/fla_defaced_raw.nii.gz",
         normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
         normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
+        normalized_defaced_output_path="patient/norm_defaced_dir/fla_defaced_normalized.nii.gz",
     )
 ]
 
