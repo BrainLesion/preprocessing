@@ -1,8 +1,8 @@
 ---
 name: Question
 about: Please ask your question, make sure to read the FAQ before
-title: ''
-labels: ''
+title: '[QUESTION] '
+labels: 'question'
 assignees: ''
 
 ---
