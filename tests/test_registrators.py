@@ -15,7 +15,7 @@ class TestANTsRegistrator(RegistratorBase, unittest.TestCase):
         return "ants", "mat"
 
 
-class TestNiftyRegRegistratorRegistrator(RegistratorBase, unittest.TestCase):
+class TestNiftyRegRegistrator(RegistratorBase, unittest.TestCase):
     def get_registrator(self):
         return NiftyRegRegistrator()
 
@@ -23,7 +23,7 @@ class TestNiftyRegRegistratorRegistrator(RegistratorBase, unittest.TestCase):
         return "niftyreg", "txt"
 
 
-class TestEregRegistratorRegistrator(RegistratorBase, unittest.TestCase):
+class TestEregRegistrator(RegistratorBase, unittest.TestCase):
     def get_registrator(self):
         return eRegRegistrator()
 
