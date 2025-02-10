@@ -59,7 +59,7 @@ numpy = "^1.23.0"
 antspyx = "^0.4.2"
 
 # hd-bet reqs
-brainles_hd_bet = ">=0.0.8"
+brainles_hd_bet = ">=0.0.10"
 
 # utils
 tqdm = "^4.64.1"
