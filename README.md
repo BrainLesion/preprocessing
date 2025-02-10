@@ -115,6 +115,12 @@ Please credit the authors by citing their work.
 ### Registration
 We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
 
+> [!NOTE]  
+> For python `3.13` the installation can currently fail with the error `Failed to build antspyx`.
+> This usually means that there is no pre-built wheel for the package and it has to be build locally.
+> This will require cmake (install e.g. with `pip install cmake`) and quite some time.
+> Rerunning the installation with cmake installed should fix the error.
+
 ### Atlas Reference
 We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
 However, custom atlases in NIfTI format are supported.
