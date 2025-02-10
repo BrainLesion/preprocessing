@@ -14,7 +14,7 @@ exclude = [
 ]
 
 name = "brainles_preprocessing"
-version = "0.0.0"                                                                                                              # will be overwritten by poetry-dynamic-versioning but needs to be set
+version = "0.0.0.dev"                                                                                                              # will be overwritten by poetry-dynamic-versioning but needs to be set
 description = "Tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI"
 license = "Apache-2.0"
 
@@ -75,7 +75,7 @@ all = ["ereg"]
 ereg = ["ereg"]
 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"
 
 [tool.poetry.group.docs]
