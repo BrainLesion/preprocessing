@@ -25,7 +25,7 @@ With a Python 3.10+ environment you can install directly from [pypi.org](https:/
 pip install brainles-preprocessing
 ```
 
-We currently recommend using Python `3.10/11/12`.
+We recommend using Python `3.10/11/12`.
 
 > [!NOTE]  
 > For python `3.13` the installation can currently fail with the error `Failed to build antspyx`.
