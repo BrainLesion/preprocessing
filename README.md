@@ -25,6 +25,14 @@ With a Python 3.10+ environment you can install directly from [pypi.org](https:/
 pip install brainles-preprocessing
 ```
 
+We recommend using Python `3.10 / 3.11 / 3.12`.
+
+> [!NOTE]  
+> For python `3.13` the installation can currently fail with the error `Failed to build antspyx`.
+> This usually means that there is no pre-built wheel for the package and it has to be build locally.
+> This will require cmake (install e.g. with `pip install cmake`) and quite some time.
+> Rerunning the installation with cmake installed should fix the error.
+
 
 ## Usage
 A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
@@ -114,12 +122,6 @@ Please credit the authors by citing their work.
 
 ### Registration
 We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux), eReg (experimental)
-
-> [!NOTE]  
-> For python `3.13` the installation can currently fail with the error `Failed to build antspyx`.
-> This usually means that there is no pre-built wheel for the package and it has to be build locally.
-> This will require cmake (install e.g. with `pip install cmake`) and quite some time.
-> Rerunning the installation with cmake installed should fix the error.
 
 ### Atlas Reference
 We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
