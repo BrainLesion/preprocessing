@@ -6,7 +6,6 @@ import shutil
 
 
 class RegistratorBase:
-
     @abstractmethod
     def get_registrator(self):
         pass
