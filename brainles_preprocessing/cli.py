@@ -2,8 +2,8 @@ from typing import Optional
 from pathlib import Path
 import typer
 from typing_extensions import Annotated
+from importlib.metadata import version
 
-# from brainles_preprocessing import __version__
 
 from brainles_preprocessing.modality import Modality, CenterModality
 from brainles_preprocessing.normalization.percentile_normalizer import (
@@ -13,7 +13,7 @@ from brainles_preprocessing.preprocessor import Preprocessor
 
 
 def version_callback(value: bool):
-    __version__ = "0.0.0-dev"  # this needs to be fixed
+    __version__ = version("brainles_preprocessing")
     if value:
         typer.echo(f"Preprocessor CLI v{__version__}")
         raise typer.Exit()
