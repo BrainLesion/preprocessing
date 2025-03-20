@@ -74,7 +74,6 @@ def main(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    
     # specify a normalizer
     percentile_normalizer = PercentileNormalizer(
         lower_percentile=0.1,
@@ -110,9 +109,12 @@ def main(
                 raw_skull_output_path=output_dir / f"{modality}_skull_raw.nii.gz",
                 raw_bet_output_path=output_dir / f"{modality}_bet_raw.nii.gz",
                 raw_defaced_output_path=output_dir / f"{modality}_defaced_raw.nii.gz",
-                normalized_skull_output_path=output_dir / f"{modality}_skull_normalized.nii.gz",
-                normalized_bet_output_path=output_dir / f"{modality}_bet_normalized.nii.gz",
-                normalized_defaced_output_path=output_dir / f"{modality}_defaced_normalized.nii.gz",
+                normalized_skull_output_path=output_dir
+                / f"{modality}_skull_normalized.nii.gz",
+                normalized_bet_output_path=output_dir
+                / f"{modality}_bet_normalized.nii.gz",
+                normalized_defaced_output_path=output_dir
+                / f"{modality}_defaced_normalized.nii.gz",
             )
         ]
 
