@@ -55,6 +55,7 @@ pathlib = "^1.0.1"
 nibabel = ">=3.2.1"
 numpy = "^1.23.0"
 typer = "^0.15.0"
+black = "^22.1.0"
 
 # registration
 antspyx = "^0.4.2"
