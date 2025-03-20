@@ -28,31 +28,41 @@ app = typer.Typer(
 def main(
     input_t1c: Annotated[
         str,
-        typer.Argument(
+        typer.Option(
+            "-t1c",
+            "--input_t1c",
             help="The path to the T1c image",
         ),
     ],
     input_t1: Annotated[
         str,
-        typer.Argument(
+        typer.Option(
+            "-t1",
+            "--input_t1",
             help="The path to the T1 image",
         ),
     ],
     input_t2: Annotated[
         str,
-        typer.Argument(
+        typer.Option(
+            "-t2",
+            "--input_t2",
             help="The path to the T2 image",
         ),
     ],
     input_fla: Annotated[
         str,
-        typer.Argument(
+        typer.Option(
+            "-fl",
+            "--input_fla",
             help="The path to the FLAIR image",
         ),
     ],
     output_dir: Annotated[
         str,
-        typer.Argument(
+        typer.Option(
+            "-o",
+            "--output_dir",
             help="The path to the output directory",
         ),
     ],
@@ -61,9 +71,9 @@ def main(
         typer.Option(
             "-a",
             "--input_atlas",
-            help="The path to the atlas image; defaults to the SRI24 BraTS atlas",
+            help="The path to the atlas image",
         ),
-    ] = None,
+    ] = "SRI24 BraTS atlas",
     version: Annotated[
         Optional[bool],
         typer.Option(
@@ -125,6 +135,10 @@ def main(
                 / f"{modality}_defaced_normalized.nii.gz",
             )
         ]
+
+    # if the input atlas is the SRI24 BraTS atlas, set it to None, because it will be picked up through the package
+    if input_atlas == "SRI24 BraTS atlas":
+        input_atlas = None
 
     # instantiate and run the preprocessor using defaults for registration/ brain extraction/ defacing backends
     preprocessor = Preprocessor(

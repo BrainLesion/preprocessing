@@ -379,9 +379,9 @@ class Preprocessor:
                 dst=str(center_atlas_corrected_path),
             )
             # save step result
-            self.center_modality.steps[PreprocessorSteps.ATLAS_CORRECTED] = (
-                center_atlas_corrected_path
-            )
+            self.center_modality.steps[
+                PreprocessorSteps.ATLAS_CORRECTED
+            ] = center_atlas_corrected_path
 
         self._save_output(
             src=atlas_correction_dir,
