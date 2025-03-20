@@ -56,6 +56,14 @@ def main(
             help="The path to the output directory",
         ),
     ],
+    input_atlas: Annotated[
+        Optional[str],
+        typer.Option(
+            "-a",
+            "--input_atlas",
+            help="The path to the atlas image; defaults to the SRI24 BraTS atlas",
+        ),
+    ] = None,
     version: Annotated[
         Optional[bool],
         typer.Option(
@@ -122,6 +130,8 @@ def main(
     preprocessor = Preprocessor(
         center_modality=center,
         moving_modalities=moving_modalities,
+        temp_folder=output_dir / "temp",
+        input_atlas=input_atlas,
     )
 
     preprocessor.run()
