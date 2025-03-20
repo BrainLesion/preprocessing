@@ -407,7 +407,6 @@ class Modality:
             category=DeprecationWarning,
         )
         if isinstance(defacer, QuickshearDefacer):
-
             defaced_dir_path = Path(defaced_dir_path)
             atlas_mask_path = (
                 defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"
@@ -595,7 +594,6 @@ class CenterModality(Modality):
         """
 
         if isinstance(defacer, QuickshearDefacer):
-
             defaced_dir_path = Path(defaced_dir_path)
             atlas_mask_path = (
                 defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"
