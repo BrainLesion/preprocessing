@@ -9,13 +9,8 @@ from brainles_preprocessing.registration.registrator import Registrator
 class elastixRegistrator(Registrator):
     def __init__(
         self,
-        # TODO define default
-        configuration_file: str | None = None,
     ):
-        """
-        # TODO
-        """
-        self.configuration_file = configuration_file
+        pass
 
     def register(
         self,
