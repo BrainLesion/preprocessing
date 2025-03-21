@@ -3,6 +3,7 @@ from registrator_base import RegistratorBase
 from brainles_preprocessing.registration.ANTs.ANTs import ANTsRegistrator
 from brainles_preprocessing.registration.eReg.eReg import eRegRegistrator
 from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
+from brainles_preprocessing.registration.elastix.elastix import elastixRegistrator
 
 import unittest
 
@@ -29,3 +30,11 @@ class TestEregRegistrator(RegistratorBase, unittest.TestCase):
 
     def get_method_and_extension(self):
         return "ereg", "mat"
+
+
+class TestElastixRegistrator(RegistratorBase, unittest.TestCase):
+    def get_registrator(self):
+        return elastixRegistrator()
+
+    def get_method_and_extension(self):
+        return "elastix", "txt"
