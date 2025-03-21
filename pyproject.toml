@@ -59,6 +59,7 @@ black = "^22.1.0"
 
 # registration
 antspyx = "^0.4.2"
+itk-elastix = "^0.22.0"
 
 # hd-bet reqs
 brainles_hd_bet = ">=0.0.10"
