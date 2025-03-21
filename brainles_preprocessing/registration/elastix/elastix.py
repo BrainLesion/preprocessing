@@ -54,10 +54,12 @@ class elastixRegistrator(Registrator):
 
         # Results of Registration
         result_image = elastix_object.GetOutput()
-        result_transform_parameters = elastix_object.GetTransformParameterObject()
+        parameter_maps = elastix_object.GetTransformParameterMap()
 
         itk.imwrite(result_image, transformed_image_path)
-        result_transform_parameters.WriteParameterFile(matrix_path)
+        for i, para_map in enumerate(parameter_maps):
+            para_map_fn = matrix_path.replace(".txt", f"_{i}.txt")
+            para_map.WriteParameterFile(para_map, para_map_fn)
 
     def transform(
         self,
