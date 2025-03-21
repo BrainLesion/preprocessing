@@ -74,9 +74,9 @@ itk-elastix = { version = "^0.20.0", optional = true }
 
 
 [tool.poetry.extras]
-all = ["ereg", "elastix"]
+all = ["ereg", "itk-elastix"]
 ereg = ["ereg"]
-elastix = ["itk-elastix"]
+itk-elastix = ["itk-elastix"]
 
 
 [tool.poetry.group.dev.dependencies]
