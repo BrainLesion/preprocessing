@@ -45,8 +45,9 @@ class elastixRegistrator(Registrator):
         if log_file_path is None:
             elastix_object.SetLogToConsole(True)
         else:
+            elastix_object.SetOutputDirectory(os.path.dirname(log_file_path))
             elastix_object.SetLogToFile(True)
-            elastix_object.SetLogFileName(log_file_path)
+            elastix_object.SetLogFileName(os.path.basename(log_file_path))
 
         # Update filter object (required)
         elastix_object.UpdateLargestPossibleRegion()
