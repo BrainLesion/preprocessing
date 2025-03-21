@@ -17,3 +17,5 @@ except ImportError:
 
 
 from .niftyreg.niftyreg import NiftyRegRegistrator
+
+from .elastix.elastix import elastixRegistrator
