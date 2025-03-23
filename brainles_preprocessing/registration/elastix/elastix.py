@@ -19,29 +19,28 @@ class elastixRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: str = None,
+        parameter_object: itk.ParameterObject = None,
     ) -> None:
         """
-        Register images using eReg.
+        Register images using elastix.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
-            matrix_path (str): Path to the transformation matrix (output).
+            matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
             log_file_path (str): Path to the log file.
+            parameter_object (itk.ParameterObject): Parameter object for elastix registration.
         """
-
-        fixed_image = itk.imread(fixed_image_path)
-        moving_image = itk.imread(moving_image_path)
-
-        parameter_object = self.__initialize_parameter_object()
-
+        # initialize parameter object
+        if parameter_object is None:
+            parameter_object = self.__initialize_parameter_object()
+        # add .txt suffix to the matrix path if it doesn't have any extension
         matrix_path = _add_txt_suffix(matrix_path)
 
-        if os.path.exists(matrix_path):
-            parameter_object.SetParameter(
-                0, "InitialTransformParametersFileName", matrix_path
-            )
+        # read images as itk images
+        fixed_image = itk.imread(fixed_image_path)
+        moving_image = itk.imread(moving_image_path)
 
         if log_file_path is not None:
             result_image, result_transform_params = itk.elastix_registration_method(
@@ -76,21 +75,30 @@ class elastixRegistrator(Registrator):
         log_file_path: str = None,
     ) -> None:
         """
-        Apply a transformation using eReg.
+        Apply a transformation using elastix.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
-            matrix_path (str): Path to the transformation matrix.
+            matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
             log_file_path (str): Path to the log file.
         """
+        parameter_object = self.__initialize_parameter_object()
+
+        # check if the matrix file exists
+        if os.path.exists(matrix_path):
+            parameter_object.SetParameter(
+                0, "InitialTransformParametersFileName", matrix_path
+            )
+
         self.register(
             fixed_image_path,
             moving_image_path,
             transformed_image_path,
             matrix_path,
             log_file_path,
+            parameter_object,
         )
 
     def __initialize_parameter_object(self):
