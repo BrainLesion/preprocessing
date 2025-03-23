@@ -43,13 +43,15 @@ class elastixRegistrator(Registrator):
         moving_image = itk.imread(moving_image_path)
 
         if log_file_path is not None:
+            # split log_file_path
+            log_path, log_file = os.path.split(log_file_path)
             result_image, result_transform_params = itk.elastix_registration_method(
                 fixed_image,
                 moving_image,
                 parameter_object=parameter_object,
                 log_to_file=True,
-                log_file_name=log_file_path,
-                output_directory=os.path.dirname(log_file_path),
+                log_file_name=log_file,
+                output_directory=log_path,
             )
         else:
             result_image, result_transform_params = itk.elastix_registration_method(
