@@ -36,10 +36,12 @@ class elastixRegistrator(Registrator):
 
         elastix_object = itk.ElastixRegistrationMethod.New(fixed_image, moving_image)
         elastix_object.SetParameterObject(self.__initialize_parameter_object())
+        parameter_maps = elastix_object.GetTransformParameterObject()
 
         if os.path.exists(matrix_path):
-            self.result_transform_parameters.LoadParameterFile(matrix_path)
-            elastix_object.SetTransformParameterObject(self.result_transform_parameters)
+            parameter_maps.SetParameter(
+                0, "InitialTransformParametersFileName", matrix_path
+            )
 
         # Set additional options
         if log_file_path is None:
@@ -56,10 +58,10 @@ class elastixRegistrator(Registrator):
         result_image = elastix_object.GetOutput()
         itk.imwrite(result_image, transformed_image_path)
 
-        parameter_maps = elastix_object.GetTransformParameterObject()
-        parameter_maps.WriteParameterFile(
-            parameter_maps.GetParameterMap(0), matrix_path
-        )
+        if not os.path.exists(matrix_path):
+            parameter_maps.WriteParameterFile(
+                parameter_maps.GetParameterMap(0), matrix_path
+            )
 
     def transform(
         self,
