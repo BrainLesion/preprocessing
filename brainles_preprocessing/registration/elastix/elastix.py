@@ -1,4 +1,5 @@
 # TODO add typing and docs
+from typing import Optional
 import os
 
 import itk
@@ -18,8 +19,8 @@ class elastixRegistrator(Registrator):
         moving_image_path: str,
         transformed_image_path: str,
         matrix_path: str,
-        log_file_path: str = None,
-        parameter_object: itk.ParameterObject = None,
+        log_file_path: Optional[str] = None,
+        parameter_object: Optional[itk.ParameterObject] = None,
     ) -> None:
         """
         Register images using elastix.
@@ -29,8 +30,8 @@ class elastixRegistrator(Registrator):
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
-            log_file_path (str): Path to the log file.
-            parameter_object (itk.ParameterObject): Parameter object for elastix registration.
+            log_file_path (Optional[str]): Path to the log file.
+            parameter_object (Optional[itk.ParameterObject]): The parameter object for elastix registration.
         """
         # initialize parameter object
         if parameter_object is None:
@@ -75,7 +76,7 @@ class elastixRegistrator(Registrator):
         moving_image_path: str,
         transformed_image_path: str,
         matrix_path: str,
-        log_file_path: str = None,
+        log_file_path: Optional[str] = None,
     ) -> None:
         """
         Apply a transformation using elastix.
@@ -85,7 +86,7 @@ class elastixRegistrator(Registrator):
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
-            log_file_path (str): Path to the log file.
+            log_file_path (Optional[str]): Path to the log file.
         """
         parameter_object = self.__initialize_parameter_object()
 
