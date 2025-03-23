@@ -34,33 +34,26 @@ class elastixRegistrator(Registrator):
         fixed_image = itk.imread(fixed_image_path)
         moving_image = itk.imread(moving_image_path)
 
-        elastix_object = itk.ElastixRegistrationMethod.New(fixed_image, moving_image)
-        elastix_object.SetParameterObject(self.__initialize_parameter_object())
-        parameter_maps = elastix_object.GetTransformParameterObject()
+        parameter_object = self.__initialize_parameter_object()
 
         if os.path.exists(matrix_path):
-            parameter_maps.SetParameter(
+            parameter_object.SetParameter(
                 0, "InitialTransformParametersFileName", matrix_path
             )
 
-        # Set additional options
-        if log_file_path is None:
-            elastix_object.SetLogToConsole(True)
-        else:
-            elastix_object.SetOutputDirectory(os.path.dirname(log_file_path))
-            elastix_object.SetLogToFile(True)
-            elastix_object.SetLogFileName(os.path.basename(log_file_path))
+        result_image, result_transform_params = itk.elastix_registration_method(
+            fixed_image,
+            moving_image,
+            parameter_object=parameter_object,
+            log_file_path=log_file_path,
+        )
 
-        # Update filter object (required)
-        elastix_object.UpdateLargestPossibleRegion()
-
-        # Results of Registration
-        result_image = elastix_object.GetOutput()
         itk.imwrite(result_image, transformed_image_path)
 
         if not os.path.exists(matrix_path):
-            parameter_maps.WriteParameterFile(
-                parameter_maps.GetParameterMap(0), matrix_path
+            result_transform_params.WriteParameterFile(
+                result_transform_params.GetParameterMap(0),
+                matrix_path,
             )
 
     def transform(
