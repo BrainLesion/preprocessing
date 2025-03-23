@@ -49,6 +49,7 @@ class elastixRegistrator(Registrator):
                 parameter_object=parameter_object,
                 log_to_file=True,
                 log_file_name=log_file_path,
+                output_directory=os.path.dirname(log_file_path),
             )
         else:
             result_image, result_transform_params = itk.elastix_registration_method(
