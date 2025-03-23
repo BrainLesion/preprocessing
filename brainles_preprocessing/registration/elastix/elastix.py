@@ -36,6 +36,8 @@ class elastixRegistrator(Registrator):
 
         parameter_object = self.__initialize_parameter_object()
 
+        matrix_path = _add_txt_suffix(matrix_path)
+
         if os.path.exists(matrix_path):
             parameter_object.SetParameter(
                 0, "InitialTransformParametersFileName", matrix_path
