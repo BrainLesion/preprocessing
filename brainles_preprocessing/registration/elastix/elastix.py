@@ -41,12 +41,21 @@ class elastixRegistrator(Registrator):
                 0, "InitialTransformParametersFileName", matrix_path
             )
 
-        result_image, result_transform_params = itk.elastix_registration_method(
-            fixed_image,
-            moving_image,
-            parameter_object=parameter_object,
-            log_file_path=log_file_path,
-        )
+        if log_file_path is not None:
+            result_image, result_transform_params = itk.elastix_registration_method(
+                fixed_image,
+                moving_image,
+                parameter_object=parameter_object,
+                log_to_file=True,
+                log_file_name=log_file_path,
+            )
+        else:
+            result_image, result_transform_params = itk.elastix_registration_method(
+                fixed_image,
+                moving_image,
+                parameter_object=parameter_object,
+                log_to_console=True,
+            )
 
         itk.imwrite(result_image, transformed_image_path)
 
