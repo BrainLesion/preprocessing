@@ -35,7 +35,7 @@ class greedyRegistrator(Registrator):
         matrix_path = check_and_add_suffix(matrix_path, ".mat")
 
         registor = Greedy3D()
-        # these parameters are taken from the OG BraTS Pipeline []
+        # these parameters are taken from the OG BraTS Pipeline [https://github.com/CBICA/CaPTk/blob/master/src/applications/BraTSPipeline.cxx]
         registor.execute(
             f"-i {fixed_image_path} {moving_image_path} "
             "-a "  # affine mode
