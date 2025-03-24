@@ -5,6 +5,7 @@ import os
 import itk
 
 from brainles_preprocessing.registration.registrator import Registrator
+from brainles_preprocessing.utils import check_and_add_suffix
 
 
 class elastixRegistrator(Registrator):
@@ -37,7 +38,7 @@ class elastixRegistrator(Registrator):
         if parameter_object is None:
             parameter_object = self.__initialize_parameter_object()
         # add .txt suffix to the matrix path if it doesn't have any extension
-        matrix_path = _add_txt_suffix(matrix_path)
+        matrix_path = check_and_add_suffix(matrix_path, ".txt")
 
         # read images as itk images
         fixed_image = itk.imread(fixed_image_path)
@@ -114,17 +115,3 @@ class elastixRegistrator(Registrator):
         parameter_object.AddParameterMap(default_rigid_parameter_map)
         return parameter_object
 
-
-def _add_txt_suffix(filename: str) -> str:
-    """
-    Adds a ".txt" suffix to the filename if it doesn't have any extension.
-
-    Parameters:
-        filename (str): The filename to check and potentially modify.
-
-    Returns:
-        str: The filename with ".txt" suffix added if needed.
-    """
-    if not filename.endswith(".txt"):
-        filename += ".txt"
-    return filename
