@@ -8,7 +8,7 @@ from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils import check_and_add_suffix
 
 
-class elastixRegistrator(Registrator):
+class ElastixRegistrator(Registrator):
     def __init__(
         self,
     ):
@@ -106,9 +106,12 @@ class elastixRegistrator(Registrator):
             parameter_object,
         )
 
-    def __initialize_parameter_object(self):
+    def __initialize_parameter_object(self) -> itk.ParameterObject:
         """
         Initialize the parameter object for elastix registration.
+
+        Returns:
+            itk.ParameterObject: The parameter object for registration.
         """
         parameter_object = itk.ParameterObject.New()
         default_rigid_parameter_map = parameter_object.GetDefaultParameterMap("rigid")

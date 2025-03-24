@@ -18,4 +18,4 @@ except ImportError:
 
 from .niftyreg.niftyreg import NiftyRegRegistrator
 
-from .elastix.elastix import elastixRegistrator
+from .elastix.elastix import ElastixRegistrator

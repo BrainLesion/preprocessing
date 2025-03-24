@@ -9,7 +9,7 @@ from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils import check_and_add_suffix
 
 
-class greedyRegistrator(Registrator):
+class GreedyRegistrator(Registrator):
     def __init__(
         self,
     ):
