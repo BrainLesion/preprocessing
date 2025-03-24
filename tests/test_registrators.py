@@ -4,6 +4,7 @@ from brainles_preprocessing.registration.ANTs.ANTs import ANTsRegistrator
 from brainles_preprocessing.registration.eReg.eReg import eRegRegistrator
 from brainles_preprocessing.registration.niftyreg.niftyreg import NiftyRegRegistrator
 from brainles_preprocessing.registration.elastix.elastix import elastixRegistrator
+from brainles_preprocessing.registration.greedy.greedy import greedyRegistrator
 
 import unittest
 
@@ -38,3 +39,11 @@ class TestElastixRegistrator(RegistratorBase, unittest.TestCase):
 
     def get_method_and_extension(self):
         return "elastix", "txt"
+
+
+class TestGreedyRegistrator(RegistratorBase, unittest.TestCase):
+    def get_registrator(self):
+        return greedyRegistrator()
+
+    def get_method_and_extension(self):
+        return "greedy", "mat"
