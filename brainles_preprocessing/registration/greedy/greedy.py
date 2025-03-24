@@ -1,5 +1,7 @@
 # TODO add typing and docs
 from typing import Optional
+import contextlib
+import io
 
 from picsl_greedy import Greedy3D
 
@@ -35,16 +37,15 @@ class greedyRegistrator(Registrator):
         matrix_path = check_and_add_suffix(matrix_path, ".mat")
 
         registor = Greedy3D()
+        # these parameters are taken from the OG BraTS Pipeline [https://github.com/CBICA/CaPTk/blob/master/src/applications/BraTSPipeline.cxx]
+        command_to_run = f"-i {fixed_image_path} {moving_image_path} -o {matrix_path} -a -dof 6 -m NMI -n 100x50x5 -ia-image-centers"
 
-        registor.execute(
-            f"-i {fixed_image_path} {moving_image_path} -o {matrix_path} "
-            # these parameters are taken from the OG BraTS Pipeline [https://github.com/CBICA/CaPTk/blob/master/src/applications/BraTSPipeline.cxx]
-            + "-a "  # affine mode
-            + "-dof 6 "  # rigid transformation
-            + "-m NMI "  # mutual information
-            + "-n 100x50x5 "  # number of iterations
-            + "-ia-image-centers"  # use image centers as initial alignment
-        )
+        if log_file_path is not None:
+            with open(log_file_path, "w") as f:
+                with contextlib.redirect_stdout(f):
+                    registor.execute(command_to_run)
+        else:
+            registor.execute(command_to_run)
 
         self.transform(
             fixed_image_path, moving_image_path, transformed_image_path, matrix_path
@@ -75,6 +76,12 @@ class greedyRegistrator(Registrator):
         if "LABEL" in interpolator_upper:
             interpolator_upper += " 0.3vox"
 
-        registor.execute(
-            f"-rf {fixed_image_path} -rm {moving_image_path} {transformed_image_path} -r {matrix_path} -ri {interpolator_upper}"
-        )
+        matrix_path = check_and_add_suffix(matrix_path, ".mat")
+
+        command_to_run = f"-rf {fixed_image_path} -rm {moving_image_path} {transformed_image_path} -r {matrix_path} -ri {interpolator_upper}"
+        if log_file_path is not None:
+            with open(log_file_path, "w") as f:
+                with contextlib.redirect_stdout(f):
+                    registor.execute(command_to_run)
+        else:
+            registor.execute(command_to_run)
