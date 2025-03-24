@@ -114,4 +114,3 @@ class elastixRegistrator(Registrator):
         default_rigid_parameter_map = parameter_object.GetDefaultParameterMap("rigid")
         parameter_object.AddParameterMap(default_rigid_parameter_map)
         return parameter_object
-

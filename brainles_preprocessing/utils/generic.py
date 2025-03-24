@@ -1,4 +1,3 @@
-
 def check_and_add_suffix(filename: str, suffix: str) -> str:
     """
     Adds a suffix to the filename if it doesn't already have it.
