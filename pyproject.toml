@@ -75,7 +75,7 @@ picsl_greedy = { version = "^0.0.6", optional = true }
 
 
 [tool.poetry.extras]
-all = ["ereg", "itk-elastix"]
+all = ["ereg", "itk-elastix", "picsl_greedy"]
 ereg = ["ereg"]
 itk-elastix = ["itk-elastix"]
 picsl_greedy = ["picsl_greedy"]
