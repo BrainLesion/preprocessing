@@ -1,7 +1,7 @@
 # TODO add typing and docs
 from typing import Optional
 import contextlib
-import io
+import os
 
 from picsl_greedy import Greedy3D
 
@@ -41,7 +41,7 @@ class greedyRegistrator(Registrator):
         command_to_run = f"-i {fixed_image_path} {moving_image_path} -o {matrix_path} -a -dof 6 -m NMI -n 100x50x5 -ia-image-centers"
 
         if log_file_path is not None:
-            with open(log_file_path, "w") as f:
+            with open(log_file_path, "a+") as f:
                 with contextlib.redirect_stdout(f):
                     registor.execute(command_to_run)
         else:
@@ -78,9 +78,18 @@ class greedyRegistrator(Registrator):
 
         matrix_path = check_and_add_suffix(matrix_path, ".mat")
 
+        if not os.path.exists(matrix_path):
+            self.register(
+                fixed_image_path,
+                moving_image_path,
+                transformed_image_path,
+                matrix_path,
+                log_file_path,
+            )
+
         command_to_run = f"-rf {fixed_image_path} -rm {moving_image_path} {transformed_image_path} -r {matrix_path} -ri {interpolator_upper}"
         if log_file_path is not None:
-            with open(log_file_path, "w") as f:
+            with open(log_file_path, "a+") as f:
                 with contextlib.redirect_stdout(f):
                     registor.execute(command_to_run)
         else:
