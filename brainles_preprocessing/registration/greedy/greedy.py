@@ -22,7 +22,7 @@ class greedyRegistrator(Registrator):
         log_file_path: Optional[str] = None,
     ) -> None:
         """
-        Register images using greedy. Ref: https://pypi.org/project/picsl-greedy/
+        Register images using greedy. Ref: https://pypi.org/project/picsl-greedy/ and https://greedy.readthedocs.io/en/latest/reference.html#greedy-usage
 
         Args:
             fixed_image_path (str): Path to the fixed image.
@@ -31,17 +31,17 @@ class greedyRegistrator(Registrator):
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
             log_file_path (Optional[str]): Path to the log file, which is not used.
         """
-        # initialize parameter object
-        if parameter_object is None:
-            parameter_object = self.__initialize_parameter_object()
         # add .txt suffix to the matrix path if it doesn't have any extension
         matrix_path = check_and_add_suffix(matrix_path, ".mat")
 
         registor = Greedy3D()
         registor.execute(
             f"-i {fixed_image_path} {moving_image_path} "
-            "-a -dof 6 -n 40x10 -m NMI "
-            "-o {matrix_path}"
+            "-a "  # affine mode
+            + "-dof 6 "  # rigid transformation
+            + "-m NMI "  # mutual information
+            + "-n 100x50x5 "  # number of iterations
+            + "-o {matrix_path}"
         )
 
         self.transform(
@@ -54,6 +54,7 @@ class greedyRegistrator(Registrator):
         moving_image_path: str,
         transformed_image_path: str,
         matrix_path: str,
+        interpolator: Optional[str] = "LINEAR",
         log_file_path: Optional[str] = None,
     ) -> None:
         """
@@ -64,9 +65,14 @@ class greedyRegistrator(Registrator):
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
+            interpolator (Optional[str]): The interpolator to use; one of NN, LINEAR or LABEL.
             log_file_path (Optional[str]): Path to the log file, which is not used.
         """
         registor = Greedy3D()
+        interpolator_upper = interpolator.upper()
+        if "LABEL" in interpolator_upper:
+            interpolator_upper += " 0.3vox"
+
         registor.execute(
-            f"-rf {fixed_image_path} -rm {moving_image_path} {transformed_image_path} -r {matrix_path}"
+            f"-rf {fixed_image_path} -rm {moving_image_path} {transformed_image_path} -r {matrix_path} -ri {interpolator_upper}"
         )
