@@ -11,7 +11,6 @@ from brainles_preprocessing.preprocessor import Preprocessor
 from brainles_preprocessing.registration import (
     ANTsRegistrator,
     # NiftyRegRegistrator,
-    # eRegRegistrator,
 )
 
 
@@ -127,7 +126,6 @@ def preprocess(inputDir):
             # choose the registration backend you want to use
             # registrator=NiftyRegRegistrator(),
             registrator=ANTsRegistrator(),
-            # registrator=eRegRegistrator(),
             brain_extractor=HDBetExtractor(),
             temp_folder="temporary_directory",
             limit_cuda_visible_devices="0",
