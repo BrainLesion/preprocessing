@@ -111,6 +111,7 @@ def _get_zenodo_metadata_and_archive_url() -> Tuple[Dict, str] | None:
             logger.error(
                 f"Cant find atlases on Zenodo ({ZENODO_RECORD_URL}). Exiting..."
             )
+            return None
         data = response.json()
         return data["metadata"], data["links"]["archive"]
 
@@ -138,8 +139,9 @@ def _download_atlases(zenodo_metadata: Dict, archive_url: str) -> Path:
     response = requests.get(archive_url, stream=True)
     # Ensure the request was successful
     if response.status_code != 200:
-        logger.error(f"Failed to download atlases. Status code: {response.status_code}")
-        return
+        raise RuntimeError(
+            f"Failed to download atlases from {archive_url}. Status code: {response.status_code}"
+        )
 
     _extract_archive(response=response, record_folder=record_folder)
 
