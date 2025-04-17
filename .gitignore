@@ -131,3 +131,5 @@ dmypy.json
 .vscode
 
 .DS_Store
+
+brainles_preprocessing/registration/atlases
