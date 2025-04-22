@@ -12,8 +12,9 @@ from pathlib import Path
 from typing import List, Optional, Union
 import warnings
 
-from brainles_preprocessing.constants import PreprocessorSteps
+from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
+from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
 from .modality import Modality, CenterModality
@@ -50,7 +51,7 @@ class Preprocessor:
         registrator: Registrator = None,
         brain_extractor: Optional[BrainExtractor] = None,
         defacer: Optional[Defacer] = None,
-        atlas_image_path: Union[str, Path] = None,
+        atlas_image_path: Union[str, Path, Atlas] = Atlas.BRATS_SRI24,
         temp_folder: Optional[Union[str, Path]] = None,
         use_gpu: Optional[bool] = None,
         limit_cuda_visible_devices: Optional[str] = None,
@@ -67,10 +68,9 @@ class Preprocessor:
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
 
-        if atlas_image_path is None:
-            self.atlas_image_path = (
-                Path(__file__).parent / "registration" / "atlas" / "t1_brats_space.nii"
-            )
+        if isinstance(atlas_image_path, Atlas):
+            atlas_folder = verify_or_download_atlases()
+            self.atlas_image_path = atlas_folder / atlas_image_path.value
         else:
             self.atlas_image_path = Path(atlas_image_path)
 
