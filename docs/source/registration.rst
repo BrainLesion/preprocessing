@@ -14,12 +14,6 @@ registration.ANTs
 .. automodule:: brainles_preprocessing.registration.ANTs.ANTs
 
 
-registration.eReg
---------------------------------------
-
-.. automodule:: brainles_preprocessing.registration.eReg.eReg
-
-
 registration.niftyreg
 --------------------------------------
 
