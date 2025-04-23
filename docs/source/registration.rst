@@ -18,3 +18,15 @@ registration.niftyreg
 --------------------------------------
 
 .. automodule:: brainles_preprocessing.registration.niftyreg.niftyreg
+
+
+registration.greedy
+--------------------------------------
+
+.. automodule:: brainles_preprocessing.registration.greedy.greedy
+
+
+registration.elastix
+--------------------------------------
+
+.. automodule:: brainles_preprocessing.registration.elastix.elastix
