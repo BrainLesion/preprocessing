@@ -1,8 +1,10 @@
 # TODO add typing and docs
+from __future__ import annotations
+
 import datetime
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import ants
 
@@ -122,7 +124,7 @@ class ANTsRegistrator(Registrator):
         fixed_image_path: Union[str, Path],
         moving_image_path: Union[str, Path],
         transformed_image_path: Union[str, Path],
-        matrix_path: Union[str, Path],
+        matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
         **kwargs,
     ) -> None:
@@ -147,7 +149,16 @@ class ANTsRegistrator(Registrator):
         fixed_image_path = Path(fixed_image_path)
         moving_image_path = Path(moving_image_path)
         transformed_image_path = Path(transformed_image_path)
-        matrix_path = Path(matrix_path)
+
+        if not isinstance(matrix_path, list):
+            matrix_path = [matrix_path]
+
+        matrix_path = [str(Path(p).with_suffix(".mat")) for p in matrix_path]
+
+        matrix_path = matrix_path[
+            ::-1
+        ]  # Ants expects the last matrix to be the first one applied
+
         log_file_path = Path(log_file_path)
 
         if not fixed_image_path.is_file():
@@ -161,14 +172,10 @@ class ANTsRegistrator(Registrator):
         # Ensure output directory exist
         transformed_image_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Ensure matrix_path has .mat suffix
-        if matrix_path.suffix != ".mat":
-            matrix_path = matrix_path.with_suffix(".mat")
-
         transformed_image = ants.apply_transforms(
             fixed=fixed_image,
             moving=moving_image,
-            transformlist=[str(matrix_path)],
+            transformlist=matrix_path,
             **transform_kwargs,
         )
         ants.image_write(transformed_image, str(transformed_image_path))
@@ -236,22 +243,22 @@ class ANTsRegistrator(Registrator):
             f.write(f"duration: {duration_formatted}\n")
 
 
-if __name__ == "__main__":
-    # TODO move this into unit tests
-    reg = ANTsRegistrator()
+# if __name__ == "__main__":
+#     # TODO move this into unit tests
+#     reg = ANTsRegistrator()
 
-    reg.register(
-        fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
-        moving_image_path="example/example_data/TCGA-DU-7294/AX_T2_FR-FSE_RF2_150_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T2_FR-FSE_RF2_150_RM_4_t2.nii.gz",
-        transformed_image_path="example/example_ants/transformed_image.nii.gz",
-        matrix_path="example/example_ants_matrix/matrix",
-        log_file_path="example/example_ants/log.txt",
-    )
+#     reg.register(
+#         fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
+#         moving_image_path="example/example_data/TCGA-DU-7294/AX_T2_FR-FSE_RF2_150_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T2_FR-FSE_RF2_150_RM_4_t2.nii.gz",
+#         transformed_image_path="example/example_ants/transformed_image.nii.gz",
+#         matrix_path="example/example_ants_matrix/matrix",
+#         log_file_path="example/example_ants/log.txt",
+#     )
 
-    reg.transform(
-        fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
-        moving_image_path="example/example_data/OtherEXampleFromTCIA/T1_AX_OtherEXampleTCIA_TCGA-FG-6692_Si_TCGA-FG-6692_T1_AX_SE_10_se2d1_t1.nii.gz",
-        transformed_image_path="example/example_ants_transformed/transformed_image.nii.gz",
-        matrix_path="example/example_ants_matrix/matrix.mat",
-        log_file_path="example/example_ants/log.txt",
-    )
+#     reg.transform(
+#         fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
+#         moving_image_path="example/example_data/OtherEXampleFromTCIA/T1_AX_OtherEXampleTCIA_TCGA-FG-6692_Si_TCGA-FG-6692_T1_AX_SE_10_se2d1_t1.nii.gz",
+#         transformed_image_path="example/example_ants_transformed/transformed_image.nii.gz",
+#         matrix_path="example/example_ants_matrix/matrix.mat",
+#         log_file_path="example/example_ants/log.txt",
+#     )
