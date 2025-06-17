@@ -10,6 +10,10 @@ from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.normalization.normalizer_base import Normalizer
 from brainles_preprocessing.registration.registrator import Registrator
+from brainles_preprocessing.registration import (
+    ANTsRegistrator,
+    NiftyRegRegistrator,
+)  # TODO: this will throw warnings if ANTs or NiftyReg are not installed, not ideal
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +46,7 @@ class Modality:
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         bet (bool): Indicates whether brain extraction is enabled.
         atlas_correction (bool): Indicates whether atlas correction should be performed.
+        coregistration_transform_path (str or None): Path to the coregistration transformation matrix, will be set after coregistration.
 
     Example:
         >>> t1_modality = Modality(
@@ -73,6 +78,7 @@ class Modality:
         self.current = self.input_path
         self.normalizer = normalizer
         self.atlas_correction = atlas_correction
+        self.coregistration_transform_path: Path | None = None
 
         # Check that atleast one output is generated
         if not any(
@@ -128,6 +134,7 @@ class Modality:
             self.normalized_defaced_output_path = None
 
         self.steps = {k: None for k in PreprocessorSteps}
+        self.steps[PreprocessorSteps.INPUT] = self.input_path
 
     @property
     def bet(self) -> bool:
@@ -213,6 +220,7 @@ class Modality:
             fixed_image_path (str or Path): Path to the fixed image.
             registration_dir (str or Path): Directory to store registration results.
             moving_image_name (str): Name of the moving image.
+            step (PreprocessorSteps): The current preprocessing step.
 
         Returns:
             Path: Path to the registration matrix.
@@ -235,6 +243,10 @@ class Modality:
         )
         self.current = registered
         self.steps[step] = registered
+
+        if step == PreprocessorSteps.COREGISTERED:
+            self.coregistration_transform_path = registered_matrix
+
         return registered_matrix
 
     def apply_bet_mask(
@@ -320,7 +332,7 @@ class Modality:
             registration_dir_path (str or Path): Directory to store transformation results.
             moving_image_name (str): Name of the moving image.
             transformation_matrix_path (str or Path): Path to the transformation matrix.
-
+            step (PreprocessorSteps): The current preprocessing step.
         Returns:
             None
         """
@@ -331,13 +343,34 @@ class Modality:
         transformed = registration_dir_path / f"{moving_image_name}.nii.gz"
         transformed_log = registration_dir_path / f"{moving_image_name}.log"
 
-        registrator.transform(
-            fixed_image_path=fixed_image_path,
-            moving_image_path=self.current,
-            transformed_image_path=transformed,
-            matrix_path=transformation_matrix_path,
-            log_file_path=transformed_log,
-        )
+        if (
+            isinstance(registrator, (ANTsRegistrator, NiftyRegRegistrator))
+            and step == PreprocessorSteps.ATLAS_REGISTERED
+        ):
+            # we test uniting transforms for these registrators
+            assert (
+                self.coregistration_transform_path is not None
+            ), "Coregistration transform path must be set before applying atlas registration."
+
+            registrator.transform(
+                fixed_image_path=fixed_image_path,
+                moving_image_path=self.steps[PreprocessorSteps.INPUT],
+                transformed_image_path=transformed,
+                matrix_path=[
+                    self.coregistration_transform_path,
+                    transformation_matrix_path,  # atlas registration matrix
+                ],
+                log_file_path=transformed_log,
+            )
+        else:
+            registrator.transform(
+                fixed_image_path=fixed_image_path,
+                moving_image_path=self.current,
+                transformed_image_path=transformed,
+                matrix_path=transformation_matrix_path,
+                log_file_path=transformed_log,
+            )
+
         self.current = transformed
         self.steps[step] = transformed
 
