@@ -2,7 +2,7 @@ import logging
 import shutil
 import warnings
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from auxiliary.nifti.io import read_nifti, write_nifti
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
@@ -78,7 +78,7 @@ class Modality:
         self.current = self.input_path
         self.normalizer = normalizer
         self.atlas_correction = atlas_correction
-        self.coregistration_transform_path: Path | None = None
+        self.transformation_paths: Dict[PreprocessorSteps, Path | None] = {}
 
         # Check that atleast one output is generated
         if not any(
@@ -244,8 +244,7 @@ class Modality:
         self.current = registered
         self.steps[step] = registered
 
-        if step == PreprocessorSteps.COREGISTERED:
-            self.coregistration_transform_path = registered_matrix
+        self.transformation_paths[step] = registered_matrix
 
         return registered_matrix
 
@@ -349,15 +348,18 @@ class Modality:
         ):
             # we test uniting transforms for these registrators
             assert (
-                self.coregistration_transform_path is not None
-            ), "Coregistration transform path must be set before applying atlas registration."
+                self.transformation_paths.get(PreprocessorSteps.COREGISTERED, None)
+                is not None
+            ), "Coregistration must be performed before applying atlas registration."
 
             registrator.transform(
                 fixed_image_path=fixed_image_path,
                 moving_image_path=self.steps[PreprocessorSteps.INPUT],
                 transformed_image_path=transformed,
                 matrix_path=[
-                    self.coregistration_transform_path,
+                    self.transformation_paths[
+                        PreprocessorSteps.COREGISTERED
+                    ],  # coregistration matrix
                     transformation_matrix_path,  # atlas registration matrix
                 ],
                 log_file_path=transformed_log,
