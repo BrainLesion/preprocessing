@@ -5,15 +5,16 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from auxiliary.nifti.io import read_nifti, write_nifti
+
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.normalization.normalizer_base import Normalizer
-from brainles_preprocessing.registration.registrator import Registrator
-from brainles_preprocessing.registration import (
+from brainles_preprocessing.registration import (  # TODO: this will throw warnings if ANTs or NiftyReg are not installed, not ideal
     ANTsRegistrator,
     NiftyRegRegistrator,
-)  # TODO: this will throw warnings if ANTs or NiftyReg are not installed, not ideal
+)
+from brainles_preprocessing.registration.registrator import Registrator
 
 logger = logging.getLogger(__name__)
 
@@ -204,6 +205,26 @@ class Modality:
         else:
             logger.info("No normalizer specified; skipping normalization.")
 
+    def _find_transformation_matrix(
+        self, transform_incomplete_path: Path
+    ) -> Optional[Path]:
+        possible_Files = list(
+            transform_incomplete_path.parent.glob(f"{transform_incomplete_path.stem}.*")
+        )
+        if len(possible_Files) == 0:
+            logger.warning(
+                f"No transformation matrix found for {transform_incomplete_path}. "
+                "Returning None."
+            )
+            return None
+        elif len(possible_Files) > 1:
+            # TODO: Handle this case more gracefully, e.g., try to find proper extension based on the registrator
+            logger.warning(
+                f"Multiple transformation matrices found for {transform_incomplete_path}. "
+                "Returning the first one."
+            )
+        return possible_Files[0]
+
     def register(
         self,
         registrator: Registrator,
@@ -232,7 +253,7 @@ class Modality:
         registered_log = registration_dir / f"{moving_image_name}.log"
 
         # Note, add file ending depending on registration backend!
-        registered_matrix = registration_dir / f"{moving_image_name}"
+        registered_matrix = registration_dir / f"M_{moving_image_name}"
 
         registrator.register(
             fixed_image_path=fixed_image_path,
@@ -244,7 +265,9 @@ class Modality:
         self.current = registered
         self.steps[step] = registered
 
-        self.transformation_paths[step] = registered_matrix
+        self.transformation_paths[step] = self._find_transformation_matrix(
+            transform_incomplete_path=registered_matrix
+        )
 
         return registered_matrix
 
@@ -375,6 +398,9 @@ class Modality:
 
         self.current = transformed
         self.steps[step] = transformed
+        self.transformation_paths[step] = self._find_transformation_matrix(
+            transform_incomplete_path=transformation_matrix_path
+        )
 
     def extract_brain_region(
         self,
