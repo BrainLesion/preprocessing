@@ -29,7 +29,6 @@ class BackToNativeSpace:
             )
         self.registrator: Registrator = registrator or ANTsRegistrator()
 
-    # control over resmpaling methode: ideal neareast neighbor?
     def transform(
         self,
         target_modality_name: str,
@@ -37,17 +36,40 @@ class BackToNativeSpace:
         moving_image: Union[str, Path],
         output_img_path: Union[str, Path],
         log_file_path: Union[str, Path],
-        interpolation: str = "Linear",
+        interpolator: Optional[str] = None,
     ):
         """
         Apply inverse transformation to a moving image to align it with a target modality.
 
         Args:
-            target_modality_name (str): Name of the target modality. Must match the name used to create the transformations
+            target_modality_name (str): Name of the target modality. Must match the name used to create the transformations.
             target_modality_img (Union[str, Path]): Path to the target modality image.
             moving_image (Union[str, Path]): Path to the moving image. E.g., this could be a segmentation in atlas space.
             output_img_path (Union[str, Path]): Path where the transformed image will be saved.
-            interpolation (str): Interpolation method to use for transformation. Default is 'Linear'.
+            log_file_path (Union[str, Path]): Path to the log file where transformation details will be written.
+            interpolator (Optional[str]): Interpolation method used during transformation.
+                Available options depend on the chosen registrator:
+
+                - **ANTsRegistrator**:
+                    - "linear"
+                    - "nearestNeighbor" (default)
+                    - "multiLabel" (deprecated, prefer "genericLabel")
+                    - "gaussian"
+                    - "bSpline"
+                    - "cosineWindowedSinc"
+                    - "welchWindowedSinc"
+                    - "hammingWindowedSinc"
+                    - "lanczosWindowedSinc"
+                    - "genericLabel" (recommended for label images)
+
+                - **NiftyReg**:
+                    - "0": nearest neighbor (NN) (default)
+                    - "1": linear (LIN)
+                    - "3": cubic spline (CUB)
+                    - "4": sinc (SINC)
+
+        Raises:
+            AssertionError: If the transformations directory for the given modality does not exist.
         """
         logger.info(
             f"Applying inverse transformation for {target_modality_name} using {self.registrator.__class__.__name__}."
@@ -66,11 +88,13 @@ class BackToNativeSpace:
         transforms.sort()  # sort by name to get order for forward transform
         transforms = transforms[::-1]  # inverse order for inverse transform
 
-        print(transforms)
-        self.registrator.inverse_transform(
-            fixed_image_path=target_modality_img,
-            moving_image_path=moving_image,
-            transformed_image_path=output_img_path,
-            matrix_path=transforms,
-            log_file_path=str(log_file_path),
-        )
+        kwargs = {
+            "fixed_image_path": target_modality_img,
+            "moving_image_path": moving_image,
+            "transformed_image_path": output_img_path,
+            "matrix_path": transforms,
+            "log_file_path": str(log_file_path),
+        }
+        if interpolator is not None:
+            kwargs["interpolator"] = interpolator
+        self.registrator.inverse_transform(**kwargs)

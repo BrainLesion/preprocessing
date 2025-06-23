@@ -11,7 +11,12 @@ from auxiliary.turbopath import turbopath
 
 from brainles_preprocessing.registration.registrator import Registrator
 
-# from auxiliary import ScriptRunner
+VALID_INTERPOLATORS = {
+    "0": "nearestNeighbor",
+    "1": "linear",
+    "3": "cubicSpline",
+    "4": "sinc",
+}
 
 
 class NiftyRegRegistrator(Registrator):
@@ -145,6 +150,8 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str | Path | List[str | Path],
         log_file_path: str,
+        interpolator: str,
+        **kwargs: dict,
     ) -> None:
         """
         Apply a transformation using NiftyReg.
@@ -155,7 +162,12 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix.
             log_file_path (str): Path to the log file.
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC)
         """
+        assert (
+            interpolator in VALID_INTERPOLATORS
+        ), f"Invalid interpolator: {interpolator}. Valid options are: {', '.join([f'{k} ({v})' for k, v in VALID_INTERPOLATORS.items()])}"
+
         runner = ScriptRunner(
             script_path=self.transformation_script,
             log_path=log_file_path,
@@ -191,7 +203,7 @@ class NiftyRegRegistrator(Registrator):
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
             str(transform_path),
-            # we need to add txt as this is the format for niftyreg matrixes
+            interpolator,  # interpolation method, 3 is Cubic
         ]
 
         # Call the run method to execute the script and capture the output in the log file
@@ -212,6 +224,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: List[str | Path],
         log_file_path: str,
+        interpolator: str = "0",  # Nearest Neighbor
     ) -> None:
         """
         Apply inverse transformation using NiftyReg.
@@ -222,6 +235,7 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path  (str | Path | List[str | Path]): Path(s) to the transformation matrix(es) in inverse order.
             log_file_path (str): Path to the log file.
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC), Default is '0' (Nearest Neighbor).
         """
         matrix_path = matrix_path[
             ::-1
@@ -244,6 +258,7 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path=transformed_image_path,
             matrix_path=transform_path,
             log_file_path=log_file_path,
+            interpolator=interpolator,
         )
 
         transform_path.unlink(missing_ok=True)

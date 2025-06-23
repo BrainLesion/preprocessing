@@ -11,6 +11,20 @@ import ants
 from brainles_preprocessing.registration.registrator import Registrator
 
 
+VALID_INTERPOLATORS = [
+    "linear",
+    "nearestNeighbor",
+    "multiLabel",  # for label images (deprecated, prefer genericLabel)
+    "gaussian",
+    "bSpline",
+    "cosineWindowedSinc",
+    "welchWindowedSinc",
+    "hammingWindowedSinc",
+    "lanczosWindowedSinc",
+    "genericLabel",  # use this for label images
+]
+
+
 class ANTsRegistrator(Registrator):
     def __init__(
         self,
@@ -126,6 +140,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
+        interpolator: str,
         **kwargs,
     ) -> None:
         """
@@ -138,8 +153,16 @@ class ANTsRegistrator(Registrator):
             matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
+        Raises:
+            AssertionError: If the interpolator is not valid.
+            FileNotFoundError: If the fixed or moving image paths do not exist.
         """
         start_time = datetime.datetime.now()
+
+        assert interpolator in VALID_INTERPOLATORS, (
+            f"Invalid interpolator: {interpolator}. "
+            f"Valid options are: {', '.join(VALID_INTERPOLATORS)}."
+        )
 
         # TODO - self.transformation_params
         # we update the transformation parameters with the provided kwargs
@@ -176,6 +199,7 @@ class ANTsRegistrator(Registrator):
             fixed=fixed_image,
             moving=moving_image,
             transformlist=matrix_path,
+            interpolator=interpolator,
             **transform_kwargs,
         )
         ants.image_write(transformed_image, str(transformed_image_path))
@@ -190,6 +214,7 @@ class ANTsRegistrator(Registrator):
             fixed_image_path=fixed_image_path,
             moving_image_path=moving_image_path,
             transformed_image_path=transformed_image_path,
+            interpolator=interpolator,
             matrix_path=matrix_path,
             operation_name="transformation",
             start_time=start_time,
@@ -203,6 +228,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
+        interpolator: str = "nearestNeighbor",
         **kwargs,
     ) -> None:
         """
@@ -225,6 +251,7 @@ class ANTsRegistrator(Registrator):
             matrix_path=matrix_path,
             log_file_path=log_file_path,
             whichtoinvert=[True] * len(matrix_path),  # Invert all matrices
+            interpolator=interpolator,
             **kwargs,
         )
 
@@ -235,6 +262,7 @@ class ANTsRegistrator(Registrator):
         moving_image_path: Union[str, Path],
         transformed_image_path: Union[str, Path],
         matrix_path: Union[str, Path],
+        interpolator: str,
         operation_name: str,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
@@ -270,6 +298,7 @@ class ANTsRegistrator(Registrator):
             f.write(f"fixed image: {fixed_image_path} \n")
             f.write(f"moving image: {moving_image_path} \n")
             f.write(f"transformed image: {transformed_image_path} \n")
+            f.write(f"interpolator: {interpolator} \n")
             f.write(f"matrix: {matrix_path} \n")
             f.write(f"end time: {end_time} \n")
             f.write(f"duration: {duration_formatted}\n")

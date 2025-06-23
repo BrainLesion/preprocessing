@@ -36,6 +36,8 @@ class Registrator(ABC):
         transformed_image_path: Any,
         matrix_path: Any,
         log_file_path: str,
+        interpolator: str,
+        **kwargs
     ):
         """
         Abstract method for transforming images.
@@ -58,6 +60,7 @@ class Registrator(ABC):
         transformed_image_path: Any,
         matrix_path: Any,
         log_file_path: str,
+        interpolator: str,
     ):
         """
         Abstract method for inverse transforming images.

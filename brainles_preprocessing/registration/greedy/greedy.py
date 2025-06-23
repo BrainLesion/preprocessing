@@ -59,6 +59,7 @@ class GreedyRegistrator(Registrator):
         matrix_path: str,
         log_file_path: Optional[str] = None,
         interpolator: str = "LINEAR",
+        **kwargs: Optional[dict],
     ) -> None:
         """
         Apply a transformation using greedy.
@@ -102,5 +103,8 @@ class GreedyRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: Optional[str] = None,
+        interpolator: str = "linear",
     ) -> None:
-        raise NotImplementedError("Inverse transform is not implemented for greedy.")
+        raise NotImplementedError(
+            "Inverse transform is not yet implemented for greedy."
+        )

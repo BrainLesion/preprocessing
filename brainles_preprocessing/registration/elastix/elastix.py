@@ -78,6 +78,8 @@ class ElastixRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: Optional[str] = None,
+        interpolator: str = "linear",
+        **kwargs
     ) -> None:
         """
         Apply a transformation using elastix.
@@ -125,6 +127,7 @@ class ElastixRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: Optional[str] = None,
+        interpolator: str = "linear",
     ) -> None:
         raise NotImplementedError(
             "Inverse transform is not yet implemented for elastix"
