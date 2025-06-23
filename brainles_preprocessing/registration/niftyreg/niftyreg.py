@@ -117,6 +117,27 @@ class NiftyRegRegistrator(Registrator):
         # Save
         np.savetxt(output_path, composed, fmt="%.12f")
 
+    def _invert_affine_transform(
+        self, transform_path: str | Path, output_path: str | Path
+    ) -> None:
+        """
+        Invert a single affine transform matrix (4x4) and save it.
+
+        Args:
+            transform_path (str or Path): Path to the .txt file with the 4x4 affine matrix.
+            output_path (str or Path): Where to save the inverted transform.
+        Returns:
+            None
+        """
+        # Load the matrix
+        matrix = np.loadtxt(transform_path)
+
+        # Invert the matrix
+        inverted_matrix = np.linalg.inv(matrix)
+
+        # Save the inverted matrix
+        np.savetxt(output_path, inverted_matrix, fmt="%.12f")
+
     def transform(
         self,
         fixed_image_path: str,
@@ -183,3 +204,46 @@ class NiftyRegRegistrator(Registrator):
         #     print("Script executed successfully. Check the log file for details.")
         # else:
         #     print("Script execution failed:", error)
+
+    def inverse_transform(
+        self,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: List[str | Path],
+        log_file_path: str,
+    ) -> None:
+        """
+        Apply inverse transformation using NiftyReg.
+
+        Args:
+            fixed_image_path (str): Path to the fixed image.
+            moving_image_path (str): Path to the moving image.
+            transformed_image_path (str): Path to the transformed image (output).
+            matrix_path  (str | Path | List[str | Path]): Path(s) to the transformation matrix(es) in inverse order.
+            log_file_path (str): Path to the log file.
+        """
+        matrix_path = matrix_path[
+            ::-1
+        ]  # revert back to forward order to compute composite and then the inverse of it
+        temp_file = tempfile.NamedTemporaryFile(mode="w+", suffix=".txt", delete=False)
+        transform_path = Path(temp_file.name)
+
+        self._compose_affine_transforms(
+            transform_paths=matrix_path,
+            output_path=transform_path,
+        )
+        self._invert_affine_transform(
+            transform_path=transform_path,
+            output_path=transform_path,
+        )
+
+        self.transform(
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=transform_path,
+            log_file_path=log_file_path,
+        )
+
+        transform_path.unlink(missing_ok=True)

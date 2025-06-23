@@ -57,8 +57,8 @@ class GreedyRegistrator(Registrator):
         moving_image_path: str,
         transformed_image_path: str,
         matrix_path: str,
-        interpolator: Optional[str] = "LINEAR",
         log_file_path: Optional[str] = None,
+        interpolator: str = "LINEAR",
     ) -> None:
         """
         Apply a transformation using greedy.
@@ -68,8 +68,8 @@ class GreedyRegistrator(Registrator):
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
-            interpolator (Optional[str]): The interpolator to use; one of NN, LINEAR or LABEL.
             log_file_path (Optional[str]): Path to the log file, which is not used.
+            interpolator (Optional[str]): The interpolator to use; one of NN, LINEAR or LABEL. Defaults to LINEAR.
         """
         registor = Greedy3D()
         interpolator_upper = interpolator.upper()
@@ -94,3 +94,13 @@ class GreedyRegistrator(Registrator):
                     registor.execute(command_to_run)
         else:
             registor.execute(command_to_run)
+
+    def inverse_transform(
+        self,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: str,
+        log_file_path: Optional[str] = None,
+    ) -> None:
+        raise NotImplementedError("Inverse transform is not implemented for greedy.")

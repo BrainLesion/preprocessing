@@ -117,3 +117,15 @@ class ElastixRegistrator(Registrator):
         default_rigid_parameter_map = parameter_object.GetDefaultParameterMap("rigid")
         parameter_object.AddParameterMap(default_rigid_parameter_map)
         return parameter_object
+
+    def inverse_transform(
+        self,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: str,
+        log_file_path: Optional[str] = None,
+    ) -> None:
+        raise NotImplementedError(
+            "Inverse transform is not yet implemented for elastix"
+        )

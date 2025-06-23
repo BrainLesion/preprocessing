@@ -49,3 +49,25 @@ class Registrator(ABC):
 
         """
         pass
+
+    @abstractmethod
+    def inverse_transform(
+        self,
+        fixed_image_path: Any,
+        moving_image_path: Any,
+        transformed_image_path: Any,
+        matrix_path: Any,
+        log_file_path: str,
+    ):
+        """
+        Abstract method for inverse transforming images.
+
+        Args:
+            fixed_image_path (Any): The fixed image to be transformed.
+            moving_image_path (Any): The moving image to be transformed.
+            transformed_image_path (Any): The resulting transformed image.
+            matrix_path (Any): The transformation matrix applied during transformation.
+            log_file_path (str): The path to the log file for recording transformation details.
+
+        """
+        pass

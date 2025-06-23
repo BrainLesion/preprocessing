@@ -135,7 +135,7 @@ class ANTsRegistrator(Registrator):
             fixed_image_path (str or Path): Path to the fixed image.
             moving_image_path (str or Path): Path to the moving image.
             transformed_image_path (str or Path): Path to the transformed image (output).
-            matrix_path (str or Path): Path to the transformation matrix.
+            matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
         """
@@ -194,6 +194,38 @@ class ANTsRegistrator(Registrator):
             operation_name="transformation",
             start_time=start_time,
             end_time=end_time,
+        )
+
+    def inverse_transform(
+        self,
+        fixed_image_path: Union[str, Path],
+        moving_image_path: Union[str, Path],
+        transformed_image_path: Union[str, Path],
+        matrix_path: str | Path | List[str | Path],
+        log_file_path: Union[str, Path],
+        **kwargs,
+    ) -> None:
+        """
+        Apply an inverse transformation using ANTs.
+
+        Args:
+            fixed_image_path (str or Path): Path to the fixed image.
+            moving_image_path (str or Path): Path to the moving image.
+            transformed_image_path (str or Path): Path to the transformed image (output).
+            matrix_path (str or Path): Path to the transformation matrix.
+            log_file_path (str or Path): Path to the log file.
+            **kwargs: Additional transformation parameters to update the instantiated defaults.
+        """
+        if not isinstance(matrix_path, list):
+            matrix_path = [matrix_path]
+        self.transform(
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=matrix_path,
+            log_file_path=log_file_path,
+            whichtoinvert=[True] * len(matrix_path),  # Invert all matrices
+            **kwargs,
         )
 
     @staticmethod
