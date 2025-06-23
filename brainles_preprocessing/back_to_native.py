@@ -1,27 +1,13 @@
-import logging
-import os
-import shutil
-import signal
-import subprocess
-import sys
-import tempfile
-import traceback
-from datetime import datetime
-from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
-import warnings
 
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
+from brainles_preprocessing.modality import CenterModality, Modality
+from brainles_preprocessing.registration import ANTsRegistrator
+from brainles_preprocessing.registration.registrator import Registrator
+from brainles_preprocessing.utils.logging_utils import LoggingManager
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
-
-from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
-from .modality import Modality, CenterModality
-from .registration import ANTsRegistrator
-from .registration.registrator import Registrator
-
-from .utils.logging_utils import LoggingManager
 
 logging_man = LoggingManager(name=__name__)
 logger = logging_man.get_logger()
@@ -44,7 +30,7 @@ class BackToNativeSpace:
         self.registrator: Registrator = registrator or ANTsRegistrator()
 
     # control over resmpaling methode: ideal neareast neighbor?
-    def inverse_transform(
+    def transform(
         self,
         target_modality_name: str,
         target_modality_img: Union[str, Path],
@@ -81,12 +67,10 @@ class BackToNativeSpace:
         transforms = transforms[::-1]  # inverse order for inverse transform
 
         print(transforms)
-        self.registrator.transform(
+        self.registrator.inverse_transform(
             fixed_image_path=target_modality_img,
             moving_image_path=moving_image,
             transformed_image_path=output_img_path,
             matrix_path=transforms,
-            log_file_path=str(log_file_path),  # No logging for this operation
-            whichtoinvert=[True]
-            * len(transforms),  # TODO: ANts specific, generalize for other registrators
+            log_file_path=str(log_file_path),
         )
