@@ -58,10 +58,12 @@ typer = "^0.15.0"
 black = "^22.1.0"
 
 # registration
-antspyx = "^0.4.2"
+antspyx = ">=0.5.4, <1.0.0"
+scipy = "<1.14"
+
 
 # hd-bet reqs
-brainles_hd_bet = ">=0.0.10"
+brainles_hd_bet = ">=0.0.10, <1.0.0"
 
 # utils
 tqdm = "^4.64.1"
