@@ -10,7 +10,6 @@ import ants
 
 from brainles_preprocessing.registration.registrator import Registrator
 
-
 VALID_INTERPOLATORS = [
     "linear",
     "nearestNeighbor",
@@ -74,6 +73,9 @@ class ANTsRegistrator(Registrator):
             matrix_path (str or Path): Path to the transformation matrix (output).
             log_file_path (str or Path): Path to the log file.
             **kwargs: Additional registration parameters to update the instantiated defaults.
+
+        Raises:
+            FileNotFoundError: If the fixed or moving image paths do not exist.
         """
         start_time = datetime.datetime.now()
 
@@ -140,7 +142,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
-        interpolator: str,
+        interpolator: str = "linear",
         **kwargs,
     ) -> None:
         """
@@ -152,6 +154,7 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str or Path): Path to the transformed image (output).
             matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
+            interpolator (str): Interpolator to use for the transformation. Default is 'linear'.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
         Raises:
             AssertionError: If the interpolator is not valid.
@@ -228,7 +231,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
-        interpolator: str = "nearestNeighbor",
+        interpolator: str = "linear",
         **kwargs,
     ) -> None:
         """
@@ -240,6 +243,7 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str or Path): Path to the transformed image (output).
             matrix_path (str or Path): Path to the transformation matrix.
             log_file_path (str or Path): Path to the log file.
+            interpolator (str): Interpolator to use for the transformation. Default is 'linear'.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
         """
         if not isinstance(matrix_path, list):
@@ -262,10 +266,10 @@ class ANTsRegistrator(Registrator):
         moving_image_path: Union[str, Path],
         transformed_image_path: Union[str, Path],
         matrix_path: Union[str, Path],
-        interpolator: str,
         operation_name: str,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
+        interpolator: Optional[str] = None,
     ) -> None:
         """
         Log the operation details to a file.
@@ -279,6 +283,7 @@ class ANTsRegistrator(Registrator):
             operation_name (str): Name of the operation ('registration' or 'transformation').
             start_time (datetime.datetime): Start time of the operation.
             end_time (datetime.datetime): End time of the operation.
+            interpolator (Optional[str]): Interpolator used for the transformation, if applicable.
         """
 
         # Calculate the duration and make it human readable
@@ -298,7 +303,8 @@ class ANTsRegistrator(Registrator):
             f.write(f"fixed image: {fixed_image_path} \n")
             f.write(f"moving image: {moving_image_path} \n")
             f.write(f"transformed image: {transformed_image_path} \n")
-            f.write(f"interpolator: {interpolator} \n")
+            if interpolator is not None:
+                f.write(f"interpolator: {interpolator} \n")
             f.write(f"matrix: {matrix_path} \n")
             f.write(f"end time: {end_time} \n")
             f.write(f"duration: {duration_formatted}\n")

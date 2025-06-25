@@ -51,8 +51,8 @@ class BackToNativeSpace:
                 Available options depend on the chosen registrator:
 
                 - **ANTsRegistrator**:
-                    - "linear"
-                    - "nearestNeighbor" (default)
+                    - "linear" (default)
+                    - "nearestNeighbor"
                     - "multiLabel" (deprecated, prefer "genericLabel")
                     - "gaussian"
                     - "bSpline"
@@ -63,10 +63,10 @@ class BackToNativeSpace:
                     - "genericLabel" (recommended for label images)
 
                 - **NiftyReg**:
-                    - "0": nearest neighbor (NN) (default)
-                    - "1": linear (LIN)
-                    - "3": cubic spline (CUB)
-                    - "4": sinc (SINC)
+                    - "0": nearest neighbor
+                    - "1": linear (default)
+                    - "3": cubic spline
+                    - "4": sinc
 
         Raises:
             AssertionError: If the transformations directory for the given modality does not exist.

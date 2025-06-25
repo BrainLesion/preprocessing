@@ -48,6 +48,7 @@ class Registrator(ABC):
             transformed_image_path (Any): The resulting transformed image.
             matrix_path (Any): The transformation matrix applied during transformation.
             log_file_path (str): The path to the log file for recording transformation details.
+            interpolator (str): The interpolator to be used during transformation.
 
         """
         pass
@@ -71,6 +72,6 @@ class Registrator(ABC):
             transformed_image_path (Any): The resulting transformed image.
             matrix_path (Any): The transformation matrix applied during transformation.
             log_file_path (str): The path to the log file for recording transformation details.
-
+            interpolator (str): The interpolator to be used during transformation.
         """
         pass

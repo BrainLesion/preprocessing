@@ -150,7 +150,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str | Path | List[str | Path],
         log_file_path: str,
-        interpolator: str,
+        interpolator: str = "1",
         **kwargs: dict,
     ) -> None:
         """
@@ -162,7 +162,9 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix.
             log_file_path (str): Path to the log file.
-            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC)
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC). Default is '1' (linear).
+        Raises:
+            AssertionError: If the interpolator is not valid.
         """
         assert (
             interpolator in VALID_INTERPOLATORS
@@ -224,7 +226,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: List[str | Path],
         log_file_path: str,
-        interpolator: str = "0",  # Nearest Neighbor
+        interpolator: str = "1",
     ) -> None:
         """
         Apply inverse transformation using NiftyReg.
@@ -235,7 +237,7 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path  (str | Path | List[str | Path]): Path(s) to the transformation matrix(es) in inverse order.
             log_file_path (str): Path to the log file.
-            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC), Default is '0' (Nearest Neighbor).
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC), Default is '1' (linear).
         """
         matrix_path = matrix_path[
             ::-1
