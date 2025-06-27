@@ -1,12 +1,27 @@
 # TODO add typing and docs
+from __future__ import annotations
+
 import datetime
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import ants
 
 from brainles_preprocessing.registration.registrator import Registrator
+
+VALID_INTERPOLATORS = [
+    "linear",
+    "nearestNeighbor",
+    "multiLabel",  # for label images (deprecated, prefer genericLabel)
+    "gaussian",
+    "bSpline",
+    "cosineWindowedSinc",
+    "welchWindowedSinc",
+    "hammingWindowedSinc",
+    "lanczosWindowedSinc",
+    "genericLabel",  # use this for label images
+]
 
 
 class ANTsRegistrator(Registrator):
@@ -58,6 +73,9 @@ class ANTsRegistrator(Registrator):
             matrix_path (str or Path): Path to the transformation matrix (output).
             log_file_path (str or Path): Path to the log file.
             **kwargs: Additional registration parameters to update the instantiated defaults.
+
+        Raises:
+            FileNotFoundError: If the fixed or moving image paths do not exist.
         """
         start_time = datetime.datetime.now()
 
@@ -122,8 +140,9 @@ class ANTsRegistrator(Registrator):
         fixed_image_path: Union[str, Path],
         moving_image_path: Union[str, Path],
         transformed_image_path: Union[str, Path],
-        matrix_path: Union[str, Path],
+        matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
+        interpolator: str = "linear",
         **kwargs,
     ) -> None:
         """
@@ -133,11 +152,20 @@ class ANTsRegistrator(Registrator):
             fixed_image_path (str or Path): Path to the fixed image.
             moving_image_path (str or Path): Path to the moving image.
             transformed_image_path (str or Path): Path to the transformed image (output).
-            matrix_path (str or Path): Path to the transformation matrix.
+            matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
+            interpolator (str): Interpolator to use for the transformation. Default is 'linear'.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
+        Raises:
+            AssertionError: If the interpolator is not valid.
+            FileNotFoundError: If the fixed or moving image paths do not exist.
         """
         start_time = datetime.datetime.now()
+
+        assert interpolator in VALID_INTERPOLATORS, (
+            f"Invalid interpolator: {interpolator}. "
+            f"Valid options are: {', '.join(VALID_INTERPOLATORS)}."
+        )
 
         # TODO - self.transformation_params
         # we update the transformation parameters with the provided kwargs
@@ -147,7 +175,16 @@ class ANTsRegistrator(Registrator):
         fixed_image_path = Path(fixed_image_path)
         moving_image_path = Path(moving_image_path)
         transformed_image_path = Path(transformed_image_path)
-        matrix_path = Path(matrix_path)
+
+        if not isinstance(matrix_path, list):
+            matrix_path = [matrix_path]
+
+        matrix_path = [str(Path(p).with_suffix(".mat")) for p in matrix_path]
+
+        matrix_path = matrix_path[
+            ::-1
+        ]  # Ants expects the last matrix to be the first one applied
+
         log_file_path = Path(log_file_path)
 
         if not fixed_image_path.is_file():
@@ -161,14 +198,11 @@ class ANTsRegistrator(Registrator):
         # Ensure output directory exist
         transformed_image_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Ensure matrix_path has .mat suffix
-        if matrix_path.suffix != ".mat":
-            matrix_path = matrix_path.with_suffix(".mat")
-
         transformed_image = ants.apply_transforms(
             fixed=fixed_image,
             moving=moving_image,
-            transformlist=[str(matrix_path)],
+            transformlist=matrix_path,
+            interpolator=interpolator,
             **transform_kwargs,
         )
         ants.image_write(transformed_image, str(transformed_image_path))
@@ -183,10 +217,46 @@ class ANTsRegistrator(Registrator):
             fixed_image_path=fixed_image_path,
             moving_image_path=moving_image_path,
             transformed_image_path=transformed_image_path,
+            interpolator=interpolator,
             matrix_path=matrix_path,
             operation_name="transformation",
             start_time=start_time,
             end_time=end_time,
+        )
+
+    def inverse_transform(
+        self,
+        fixed_image_path: Union[str, Path],
+        moving_image_path: Union[str, Path],
+        transformed_image_path: Union[str, Path],
+        matrix_path: str | Path | List[str | Path],
+        log_file_path: Union[str, Path],
+        interpolator: str = "linear",
+        **kwargs,
+    ) -> None:
+        """
+        Apply an inverse transformation using ANTs.
+
+        Args:
+            fixed_image_path (str or Path): Path to the fixed image.
+            moving_image_path (str or Path): Path to the moving image.
+            transformed_image_path (str or Path): Path to the transformed image (output).
+            matrix_path (str or Path): Path to the transformation matrix.
+            log_file_path (str or Path): Path to the log file.
+            interpolator (str): Interpolator to use for the transformation. Default is 'linear'.
+            **kwargs: Additional transformation parameters to update the instantiated defaults.
+        """
+        if not isinstance(matrix_path, list):
+            matrix_path = [matrix_path]
+        self.transform(
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=matrix_path,
+            log_file_path=log_file_path,
+            whichtoinvert=[True] * len(matrix_path),  # Invert all matrices
+            interpolator=interpolator,
+            **kwargs,
         )
 
     @staticmethod
@@ -199,6 +269,7 @@ class ANTsRegistrator(Registrator):
         operation_name: str,
         start_time: datetime.datetime,
         end_time: datetime.datetime,
+        interpolator: Optional[str] = None,
     ) -> None:
         """
         Log the operation details to a file.
@@ -212,6 +283,7 @@ class ANTsRegistrator(Registrator):
             operation_name (str): Name of the operation ('registration' or 'transformation').
             start_time (datetime.datetime): Start time of the operation.
             end_time (datetime.datetime): End time of the operation.
+            interpolator (Optional[str]): Interpolator used for the transformation, if applicable.
         """
 
         # Calculate the duration and make it human readable
@@ -231,27 +303,29 @@ class ANTsRegistrator(Registrator):
             f.write(f"fixed image: {fixed_image_path} \n")
             f.write(f"moving image: {moving_image_path} \n")
             f.write(f"transformed image: {transformed_image_path} \n")
+            if interpolator is not None:
+                f.write(f"interpolator: {interpolator} \n")
             f.write(f"matrix: {matrix_path} \n")
             f.write(f"end time: {end_time} \n")
             f.write(f"duration: {duration_formatted}\n")
 
 
-if __name__ == "__main__":
-    # TODO move this into unit tests
-    reg = ANTsRegistrator()
+# if __name__ == "__main__":
+#     # TODO move this into unit tests
+#     reg = ANTsRegistrator()
 
-    reg.register(
-        fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
-        moving_image_path="example/example_data/TCGA-DU-7294/AX_T2_FR-FSE_RF2_150_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T2_FR-FSE_RF2_150_RM_4_t2.nii.gz",
-        transformed_image_path="example/example_ants/transformed_image.nii.gz",
-        matrix_path="example/example_ants_matrix/matrix",
-        log_file_path="example/example_ants/log.txt",
-    )
+#     reg.register(
+#         fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
+#         moving_image_path="example/example_data/TCGA-DU-7294/AX_T2_FR-FSE_RF2_150_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T2_FR-FSE_RF2_150_RM_4_t2.nii.gz",
+#         transformed_image_path="example/example_ants/transformed_image.nii.gz",
+#         matrix_path="example/example_ants_matrix/matrix",
+#         log_file_path="example/example_ants/log.txt",
+#     )
 
-    reg.transform(
-        fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
-        moving_image_path="example/example_data/OtherEXampleFromTCIA/T1_AX_OtherEXampleTCIA_TCGA-FG-6692_Si_TCGA-FG-6692_T1_AX_SE_10_se2d1_t1.nii.gz",
-        transformed_image_path="example/example_ants_transformed/transformed_image.nii.gz",
-        matrix_path="example/example_ants_matrix/matrix.mat",
-        log_file_path="example/example_ants/log.txt",
-    )
+#     reg.transform(
+#         fixed_image_path="example/example_data/TCGA-DU-7294/AX_T1_POST_GD_FLAIR_TCGA-DU-7294_TCGA-DU-7294_GE_TCGA-DU-7294_AX_T1_POST_GD_FLAIR_RM_13_t1c.nii.gz",
+#         moving_image_path="example/example_data/OtherEXampleFromTCIA/T1_AX_OtherEXampleTCIA_TCGA-FG-6692_Si_TCGA-FG-6692_T1_AX_SE_10_se2d1_t1.nii.gz",
+#         transformed_image_path="example/example_ants_transformed/transformed_image.nii.gz",
+#         matrix_path="example/example_ants_matrix/matrix.mat",
+#         log_file_path="example/example_ants/log.txt",
+#     )

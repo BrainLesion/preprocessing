@@ -1,11 +1,22 @@
-import os
+from __future__ import annotations
 
+import os
+import tempfile
+from pathlib import Path
+from typing import List
+
+import numpy as np
 from auxiliary.runscript import ScriptRunner
 from auxiliary.turbopath import turbopath
 
 from brainles_preprocessing.registration.registrator import Registrator
 
-# from auxiliary import ScriptRunner
+VALID_INTERPOLATORS = {
+    "0": "nearestNeighbor",
+    "1": "linear",
+    "3": "cubicSpline",
+    "4": "sinc",
+}
 
 
 class NiftyRegRegistrator(Registrator):
@@ -44,7 +55,7 @@ class NiftyRegRegistrator(Registrator):
         fixed_image_path: str,
         moving_image_path: str,
         transformed_image_path: str,
-        matrix_path: str,
+        matrix_path: str | Path,
         log_file_path: str,
     ) -> None:
         """
@@ -63,19 +74,17 @@ class NiftyRegRegistrator(Registrator):
         )
 
         niftyreg_executable = str(
-            turbopath(__file__).parent + "/niftyreg_scripts/reg_aladin",
+            Path(__file__).parent.absolute() / "niftyreg_scripts" / "reg_aladin",
         )
 
-        turbopath(matrix_path)
-        if matrix_path.suffix != ".txt":
-            matrix_path = matrix_path.with_suffix(".txt")
+        matrix_path = Path(matrix_path).with_suffix(".txt")
 
         input_params = [
             turbopath(niftyreg_executable),
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
-            turbopath(matrix_path),
+            str(matrix_path),
         ]
 
         # Call the run method to execute the script and capture the output in the log file
@@ -86,13 +95,63 @@ class NiftyRegRegistrator(Registrator):
         # else:
         #     print("Script execution failed:", error)
 
+    def _compose_affine_transforms(
+        self, transform_paths: List[str | Path], output_path: str | Path
+    ) -> None:
+        """
+        Compose a list of affine transform matrices (4x4), applied in order.
+        i.e., output = Tn @ Tn-1 @ ... @ T1
+
+        Args:
+            transform_paths (list of str or Path): Paths to .txt files with 4x4 affine matrices.
+            output_path (str or Path): Where to save the composed transform.
+        Returns:
+            None
+        """
+        # Ensure all paths are Path objects
+        transform_paths = [Path(p).with_suffix(".txt") for p in transform_paths]
+
+        # Load all matrices
+        matrices = [np.loadtxt(p) for p in transform_paths]
+
+        # Compose in order: Tn @ ... @ T1
+        composed = matrices[0]
+        for mat in matrices[1:]:
+            composed = mat @ composed
+
+        # Save
+        np.savetxt(output_path, composed, fmt="%.12f")
+
+    def _invert_affine_transform(
+        self, transform_path: str | Path, output_path: str | Path
+    ) -> None:
+        """
+        Invert a single affine transform matrix (4x4) and save it.
+
+        Args:
+            transform_path (str or Path): Path to the .txt file with the 4x4 affine matrix.
+            output_path (str or Path): Where to save the inverted transform.
+        Returns:
+            None
+        """
+        # Load the matrix
+        matrix = np.loadtxt(transform_path)
+
+        # Invert the matrix
+        inverted_matrix = np.linalg.inv(matrix)
+
+        # Save the inverted matrix
+        np.savetxt(output_path, inverted_matrix, fmt="%.12f")
+
     def transform(
         self,
         fixed_image_path: str,
         moving_image_path: str,
         transformed_image_path: str,
-        matrix_path: str,
+        matrix_path: str | Path | List[str | Path],
         log_file_path: str,
+        interpolator: str = "1",
+        **kwargs: dict,
     ) -> None:
         """
         Apply a transformation using NiftyReg.
@@ -103,33 +162,105 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix.
             log_file_path (str): Path to the log file.
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC). Default is '1' (linear).
+        Raises:
+            AssertionError: If the interpolator is not valid.
         """
+        assert (
+            interpolator in VALID_INTERPOLATORS
+        ), f"Invalid interpolator: {interpolator}. Valid options are: {', '.join([f'{k} ({v})' for k, v in VALID_INTERPOLATORS.items()])}"
+
         runner = ScriptRunner(
             script_path=self.transformation_script,
             log_path=log_file_path,
         )
 
         niftyreg_executable = str(
-            turbopath(__file__).parent + "/niftyreg_scripts/reg_resample",
+            Path(__file__).parent.absolute() / "niftyreg_scripts" / "reg_resample"
         )
 
-        turbopath(matrix_path)
-        if matrix_path.suffix != ".txt":
-            matrix_path = matrix_path.with_suffix(".txt")
+        transform_path = None
+        is_tmpfile = False
+        if isinstance(matrix_path, list):
+            # If matrix_path is a list,we need to compute the combined transformation
+            if len(matrix_path) == 1:
+                # If only one matrix is provided, we can use it directly
+                transform_path = Path(matrix_path[0]).with_suffix(".txt")
+            else:
+                is_tmpfile = True
+                temp_File = tempfile.NamedTemporaryFile(
+                    mode="w+", suffix=".txt", delete=False
+                )
+                transform_path = Path(temp_File.name)
+                self._compose_affine_transforms(
+                    transform_paths=matrix_path,
+                    output_path=transform_path,
+                )
+        else:
+            transform_path = Path(matrix_path).with_suffix(".txt")
 
         input_params = [
             turbopath(niftyreg_executable),
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
-            turbopath(matrix_path),
-            # we need to add txt as this is the format for niftyreg matrixes
+            str(transform_path),
+            interpolator,  # interpolation method, 3 is Cubic
         ]
 
         # Call the run method to execute the script and capture the output in the log file
         success, error = runner.run(input_params)
 
+        if is_tmpfile:
+            transform_path.unlink(missing_ok=True)
+
         # if success:
         #     print("Script executed successfully. Check the log file for details.")
         # else:
         #     print("Script execution failed:", error)
+
+    def inverse_transform(
+        self,
+        fixed_image_path: str,
+        moving_image_path: str,
+        transformed_image_path: str,
+        matrix_path: List[str | Path],
+        log_file_path: str,
+        interpolator: str = "1",
+    ) -> None:
+        """
+        Apply inverse transformation using NiftyReg.
+
+        Args:
+            fixed_image_path (str): Path to the fixed image.
+            moving_image_path (str): Path to the moving image.
+            transformed_image_path (str): Path to the transformed image (output).
+            matrix_path  (str | Path | List[str | Path]): Path(s) to the transformation matrix(es) in inverse order.
+            log_file_path (str): Path to the log file.
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC), Default is '1' (linear).
+        """
+        matrix_path = matrix_path[
+            ::-1
+        ]  # revert back to forward order to compute composite and then the inverse of it
+        temp_file = tempfile.NamedTemporaryFile(mode="w+", suffix=".txt", delete=False)
+        transform_path = Path(temp_file.name)
+
+        self._compose_affine_transforms(
+            transform_paths=matrix_path,
+            output_path=transform_path,
+        )
+        self._invert_affine_transform(
+            transform_path=transform_path,
+            output_path=transform_path,
+        )
+
+        self.transform(
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=transform_path,
+            log_file_path=log_file_path,
+            interpolator=interpolator,
+        )
+
+        transform_path.unlink(missing_ok=True)

@@ -2,13 +2,18 @@ import logging
 import shutil
 import warnings
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from auxiliary.nifti.io import read_nifti, write_nifti
+
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.normalization.normalizer_base import Normalizer
+from brainles_preprocessing.registration import (  # TODO: this will throw warnings if ANTs or NiftyReg are not installed, not ideal
+    ANTsRegistrator,
+    NiftyRegRegistrator,
+)
 from brainles_preprocessing.registration.registrator import Registrator
 
 logger = logging.getLogger(__name__)
@@ -42,6 +47,7 @@ class Modality:
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         bet (bool): Indicates whether brain extraction is enabled.
         atlas_correction (bool): Indicates whether atlas correction should be performed.
+        coregistration_transform_path (str or None): Path to the coregistration transformation matrix, will be set after coregistration.
 
     Example:
         >>> t1_modality = Modality(
@@ -73,6 +79,7 @@ class Modality:
         self.current = self.input_path
         self.normalizer = normalizer
         self.atlas_correction = atlas_correction
+        self.transformation_paths: Dict[PreprocessorSteps, Path | None] = {}
 
         # Check that atleast one output is generated
         if not any(
@@ -128,6 +135,7 @@ class Modality:
             self.normalized_defaced_output_path = None
 
         self.steps = {k: None for k in PreprocessorSteps}
+        self.steps[PreprocessorSteps.INPUT] = self.input_path
 
     @property
     def bet(self) -> bool:
@@ -197,6 +205,26 @@ class Modality:
         else:
             logger.info("No normalizer specified; skipping normalization.")
 
+    def _find_transformation_matrix(
+        self, transform_incomplete_path: Path
+    ) -> Optional[Path]:
+        possible_Files = list(
+            transform_incomplete_path.parent.glob(f"{transform_incomplete_path.stem}.*")
+        )
+        if len(possible_Files) == 0:
+            logger.warning(
+                f"No transformation matrix found for {transform_incomplete_path}. "
+                "Returning None."
+            )
+            return None
+        elif len(possible_Files) > 1:
+            # TODO: Handle this case more gracefully, e.g., try to find proper extension based on the registrator
+            logger.warning(
+                f"Multiple transformation matrices found for {transform_incomplete_path}. "
+                "Returning the first one."
+            )
+        return possible_Files[0]
+
     def register(
         self,
         registrator: Registrator,
@@ -213,6 +241,7 @@ class Modality:
             fixed_image_path (str or Path): Path to the fixed image.
             registration_dir (str or Path): Directory to store registration results.
             moving_image_name (str): Name of the moving image.
+            step (PreprocessorSteps): The current preprocessing step.
 
         Returns:
             Path: Path to the registration matrix.
@@ -224,7 +253,7 @@ class Modality:
         registered_log = registration_dir / f"{moving_image_name}.log"
 
         # Note, add file ending depending on registration backend!
-        registered_matrix = registration_dir / f"{moving_image_name}"
+        registered_matrix = registration_dir / f"M_{moving_image_name}"
 
         registrator.register(
             fixed_image_path=fixed_image_path,
@@ -235,6 +264,11 @@ class Modality:
         )
         self.current = registered
         self.steps[step] = registered
+
+        self.transformation_paths[step] = self._find_transformation_matrix(
+            transform_incomplete_path=registered_matrix
+        )
+
         return registered_matrix
 
     def apply_bet_mask(
@@ -320,7 +354,7 @@ class Modality:
             registration_dir_path (str or Path): Directory to store transformation results.
             moving_image_name (str): Name of the moving image.
             transformation_matrix_path (str or Path): Path to the transformation matrix.
-
+            step (PreprocessorSteps): The current preprocessing step.
         Returns:
             None
         """
@@ -331,15 +365,42 @@ class Modality:
         transformed = registration_dir_path / f"{moving_image_name}.nii.gz"
         transformed_log = registration_dir_path / f"{moving_image_name}.log"
 
-        registrator.transform(
-            fixed_image_path=fixed_image_path,
-            moving_image_path=self.current,
-            transformed_image_path=transformed,
-            matrix_path=transformation_matrix_path,
-            log_file_path=transformed_log,
-        )
+        if (
+            isinstance(registrator, (ANTsRegistrator, NiftyRegRegistrator))
+            and step == PreprocessorSteps.ATLAS_REGISTERED
+        ):
+            # we test uniting transforms for these registrators
+            assert (
+                self.transformation_paths.get(PreprocessorSteps.COREGISTERED, None)
+                is not None
+            ), "Coregistration must be performed before applying atlas registration."
+
+            registrator.transform(
+                fixed_image_path=fixed_image_path,
+                moving_image_path=self.steps[PreprocessorSteps.INPUT],
+                transformed_image_path=transformed,
+                matrix_path=[
+                    self.transformation_paths[
+                        PreprocessorSteps.COREGISTERED
+                    ],  # coregistration matrix
+                    transformation_matrix_path,  # atlas registration matrix
+                ],
+                log_file_path=transformed_log,
+            )
+        else:
+            registrator.transform(
+                fixed_image_path=fixed_image_path,
+                moving_image_path=self.current,
+                transformed_image_path=transformed,
+                matrix_path=transformation_matrix_path,
+                log_file_path=transformed_log,
+            )
+
         self.current = transformed
         self.steps[step] = transformed
+        self.transformation_paths[step] = self._find_transformation_matrix(
+            transform_incomplete_path=transformation_matrix_path
+        )
 
     def extract_brain_region(
         self,

@@ -164,6 +164,7 @@ class Preprocessor:
         save_dir_atlas_correction: Optional[Union[str, Path]] = None,
         save_dir_brain_extraction: Optional[Union[str, Path]] = None,
         save_dir_defacing: Optional[Union[str, Path]] = None,
+        save_dir_transformations: Optional[Union[str, Path]] = None,
         log_file: Optional[Union[str, Path]] = None,
     ):
         """
@@ -176,6 +177,7 @@ class Preprocessor:
             save_dir_atlas_correction (str or Path, optional): Directory path to save intermediate atlas correction results.
             save_dir_brain_extraction (str or Path, optional): Directory path to save intermediate brain extraction results.
             save_dir_defacing (str or Path, optional): Directory path to save intermediate defacing results.
+            save_dir_transformations (str or Path, optional): Directory path to save transformation matrices. Defaults to None.
             log_file (str or Path, optional): Path to save the log file. Defaults to a timestamped file in the current directory.
 
         This method orchestrates the entire preprocessing workflow by sequentially performing:
@@ -249,6 +251,28 @@ class Preprocessor:
         self.run_defacing(
             save_dir_defacing=save_dir_defacing,
         )
+
+        # move to separate method
+        if save_dir_transformations:
+            save_dir_transformations = Path(save_dir_transformations)
+
+            # Save transformation matrices
+            logger.info(f"Saving transformation matrices to {save_dir_transformations}")
+            for modality in self.all_modalities:
+
+                modality_transformations_dir = (
+                    save_dir_transformations / modality.modality_name
+                )
+                modality_transformations_dir.mkdir(exist_ok=True, parents=True)
+                for step, path in modality.transformation_paths.items():
+                    if path is not None:
+                        shutil.copyfile(
+                            src=str(path.absolute()),
+                            dst=str(
+                                modality_transformations_dir
+                                / f"{step.value}_{path.name}"
+                            ),
+                        )
 
         # End
         logger.info(f"{' Preprocessing complete ':=^80}")
