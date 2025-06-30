@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union
 
-from auxiliary.nifti.io import read_nifti, write_nifti
+from auxiliary.io import read_image, write_image
 
 
 class Defacer(ABC):
@@ -52,8 +52,8 @@ class Defacer(ABC):
 
         try:
             # Read data
-            input_data = read_nifti(str(input_image_path))
-            mask_data = read_nifti(str(mask_path))
+            input_data = read_image(str(input_image_path))
+            mask_data = read_image(str(mask_path))
         except Exception as e:
             raise RuntimeError(
                 f"An error occurred while reading input files: {e}"
@@ -67,9 +67,9 @@ class Defacer(ABC):
         masked_data = input_data * mask_data
 
         # Save the defaced image
-        write_nifti(
+        write_image(
             input_array=masked_data,
-            output_nifti_path=str(defaced_image_path),
-            reference_nifti_path=str(input_image_path),
+            output_path=str(defaced_image_path),
+            reference_path=str(input_image_path),
             create_parent_directory=True,
         )

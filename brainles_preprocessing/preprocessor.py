@@ -6,21 +6,23 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import warnings
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
-import warnings
+
+from auxiliary.io import write_image
 
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
-from .modality import Modality, CenterModality
+from .modality import CenterModality, Modality
+from .n4_bias_correction import n4_bias_corrector
 from .registration import ANTsRegistrator
 from .registration.registrator import Registrator
-
 from .utils.logging_utils import LoggingManager
 
 logging_man = LoggingManager(name=__name__)
@@ -162,6 +164,7 @@ class Preprocessor:
         save_dir_coregistration: Optional[Union[str, Path]] = None,
         save_dir_atlas_registration: Optional[Union[str, Path]] = None,
         save_dir_atlas_correction: Optional[Union[str, Path]] = None,
+        save_dir_n4_bias_correction: Optional[Union[str, Path]] = None,
         save_dir_brain_extraction: Optional[Union[str, Path]] = None,
         save_dir_defacing: Optional[Union[str, Path]] = None,
         save_dir_transformations: Optional[Union[str, Path]] = None,
@@ -175,6 +178,7 @@ class Preprocessor:
             save_dir_coregistration (str or Path, optional): Directory path to save intermediate coregistration results.
             save_dir_atlas_registration (str or Path, optional): Directory path to save intermediate atlas registration results.
             save_dir_atlas_correction (str or Path, optional): Directory path to save intermediate atlas correction results.
+            save_dir_n4_bias_correction (str or Path, optional): Directory path to save intermediate N4 bias correction results.
             save_dir_brain_extraction (str or Path, optional): Directory path to save intermediate brain extraction results.
             save_dir_defacing (str or Path, optional): Directory path to save intermediate defacing results.
             save_dir_transformations (str or Path, optional): Directory path to save transformation matrices. Defaults to None.
@@ -184,9 +188,10 @@ class Preprocessor:
 
         1. Co-registration: Aligning moving modalities to the central modality.
         2. Atlas Registration: Aligning the central modality to a predefined atlas.
-        3. Atlas Correction: Applying additional correction in atlas space if specified.
-        4. Brain Extraction: Optionally extracting brain regions using specified masks. Only executed if any modality requires a brain extraction output (or a defacing output that requires prior brain extraction).
-        5. Defacing: Optionally deface images to remove facial features. Only executed if any modality requires a defacing output.
+        3. (Optional) Atlas Correction: Applying additional correction in atlas space if specified.
+        4. (Optional) N4 Bias Correction: Applying N4 bias field correction if specified.
+        5. Brain Extraction: Optionally extracting brain regions using specified masks. Only executed if any modality requires a brain extraction output (or a defacing output that requires prior brain extraction).
+        6. Defacing: Optionally deface images to remove facial features. Only executed if any modality requires a defacing output.
 
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
@@ -224,6 +229,12 @@ class Preprocessor:
         logger.info(f"{' Checking optional atlas correction ':-^80}")
         self.run_atlas_correction(
             save_dir_atlas_correction=save_dir_atlas_correction,
+        )
+
+        # Optional: N4 bias correction
+        logger.info(f"{' Checking optional N4 bias correction ':-^80}")
+        self.run_n4_bias_correction(
+            save_dir_n4_bias_correction=save_dir_n4_bias_correction,
         )
 
         # Now we save images that are not skullstripped (current image = atlas registered or atlas registered + corrected)
@@ -410,6 +421,52 @@ class Preprocessor:
         self._save_output(
             src=atlas_correction_dir,
             save_dir=save_dir_atlas_correction,
+        )
+
+    def run_n4_bias_correction(
+        self,
+        save_dir_n4_bias_correction: Optional[Union[str, Path]] = None,
+    ) -> None:
+        """
+        Apply optional N4 bias correction to moving modalities.
+
+        Args:
+            save_dir__n4_bias_correction (Optional[Union[str, Path]], optional): Directory path to save intermediate N4 bias correction results. Defaults to None.
+        """
+
+        n4_bias_correction_dir = self.temp_folder / "n4-bias-correction"
+        n4_bias_correction_dir.mkdir(exist_ok=True, parents=True)
+
+        for modality in self.all_modalities:
+            if modality.n4_bias_correction:
+                logger.info(
+                    f"Applying optional N4 bias correction for modality {modality.modality_name}"
+                )
+                bias_corrected_img = n4_bias_corrector(
+                    input_image=str(modality.current),
+                    input_mask=None,  # No mask provided
+                )
+                output_path = (
+                    n4_bias_correction_dir
+                    / f"N4_bias_corrected__{modality.modality_name}.nii.gz"
+                )
+
+                write_image(
+                    input_array=bias_corrected_img,
+                    output_path=str(output_path),
+                    reference_path=str(modality.current),
+                )
+
+                modality.steps[PreprocessorSteps.N4_BIAS_CORRECTED] = output_path
+                modality.current = output_path
+            else:
+                logger.info(
+                    f"Skipping optional N4 bias correction for Modality {modality.modality_name}."
+                )
+
+        self._save_output(
+            src=n4_bias_correction_dir,
+            save_dir=save_dir_n4_bias_correction,
         )
 
     def run_brain_extraction(

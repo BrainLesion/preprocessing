@@ -4,7 +4,7 @@ import warnings
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from auxiliary.nifti.io import read_nifti, write_nifti
+from auxiliary.io import read_image, write_image
 
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import PreprocessorSteps
@@ -34,6 +34,7 @@ class Modality:
         normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
+        n4_bias_correction (bool, optional): Indicates whether N4 bias correction should be performed.
 
     Attributes:
         modality_name (str): Name of the modality.
@@ -47,6 +48,7 @@ class Modality:
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         bet (bool): Indicates whether brain extraction is enabled.
         atlas_correction (bool): Indicates whether atlas correction should be performed.
+        n4_bias_correction (bool): Indicates whether N4 bias correction should be performed.
         coregistration_transform_path (str or None): Path to the coregistration transformation matrix, will be set after coregistration.
 
     Example:
@@ -72,6 +74,7 @@ class Modality:
         normalized_skull_output_path: Optional[Union[str, Path]] = None,
         normalized_defaced_output_path: Optional[Union[str, Path]] = None,
         atlas_correction: bool = True,
+        n4_bias_correction: bool = False,
     ) -> None:
         # Basics
         self.modality_name = modality_name
@@ -79,6 +82,7 @@ class Modality:
         self.current = self.input_path
         self.normalizer = normalizer
         self.atlas_correction = atlas_correction
+        self.n4_bias_correction = n4_bias_correction
         self.transformation_paths: Dict[PreprocessorSteps, Path | None] = {}
 
         # Check that atleast one output is generated
@@ -195,12 +199,12 @@ class Modality:
 
         # Normalize the image
         if self.normalizer:
-            image = read_nifti(str(self.current))
+            image = read_image(str(self.current))
             normalized_image = self.normalizer.normalize(image=image)
-            write_nifti(
+            write_image(
                 input_array=normalized_image,
-                output_nifti_path=str(self.current),
-                reference_nifti_path=str(self.current),
+                output_path=str(self.current),
+                reference_path=str(self.current),
             )
         else:
             logger.info("No normalizer specified; skipping normalization.")
@@ -505,12 +509,12 @@ class Modality:
         if normalization:
             if self.normalizer is None:
                 raise ValueError("Normalizer is required for normalization.")
-            image = read_nifti(str(self.current))
+            image = read_image(str(self.current))
             normalized_image = self.normalizer.normalize(image=image)
-            write_nifti(
+            write_image(
                 input_array=normalized_image,
-                output_nifti_path=str(output_path),
-                reference_nifti_path=str(self.current),
+                output_path=str(output_path),
+                reference_path=str(self.current),
             )
         else:
             shutil.copyfile(
@@ -534,6 +538,7 @@ class CenterModality(Modality):
         normalized_skull_output_path (str or Path, optional): Path to save the normalized modality data with skull. Requires a normalizer.
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         atlas_correction (bool, optional): Indicates whether atlas correction should be performed.
+        n4_bias_correction (bool, optional): Indicates whether N4 bias correction should be performed.
         bet_mask_output_path (str or Path, optional): Path to save the brain extraction mask.
         defacing_mask_output_path (str or Path, optional): Path to save the defacing mask.
 
@@ -549,6 +554,7 @@ class CenterModality(Modality):
         normalized_defaced_output_path (str or Path, optional): Path to save the normalized defaced modality data. Requires a normalizer.
         bet (bool): Indicates whether brain extraction is enabled.
         atlas_correction (bool): Indicates whether atlas correction should be performed.
+        n4_bias_correction (bool): Indicates whether N4 bias correction should be performed.
         bet_mask_output_path (Path, optional): Path to save the brain extraction mask.
         defacing_mask_output_path (Path, optional): Path to save the defacing mask.
 
@@ -575,6 +581,7 @@ class CenterModality(Modality):
         normalized_skull_output_path: Optional[Union[str, Path]] = None,
         normalized_defaced_output_path: Optional[Union[str, Path]] = None,
         atlas_correction: bool = True,
+        n4_bias_correction: bool = False,
         bet_mask_output_path: Optional[Union[str, Path]] = None,
         defacing_mask_output_path: Optional[Union[str, Path]] = None,
     ) -> None:
@@ -589,6 +596,7 @@ class CenterModality(Modality):
             normalized_skull_output_path=normalized_skull_output_path,
             normalized_defaced_output_path=normalized_defaced_output_path,
             atlas_correction=atlas_correction,
+            n4_bias_correction=n4_bias_correction,
         )
         # Only for CenterModality
         self.bet_mask_output_path = (
