@@ -15,7 +15,7 @@ class N4BiasOptions:
         A class to hold options for N4 bias correction.
 
         Args
-            mask_func (Optional[Callable]): A function that takes `img_itk` as its first argument. Defaults to.: `lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200)
+            mask_func (Optional[Callable]): A function that takes `img_itk` as its first argument. Defaults to.: `lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200)`
             n_max_iterations (Optional[Union[int, List[int]]]): The maximum number of iterations.
             n_fitting_levels (int): The number of fitting levels for the N4 bias correction algorithm. Default is 3.
             `
@@ -43,7 +43,7 @@ def n4_bias_corrector(
         n4_bias_opts (N4BiasOptions): Options for N4 bias correction.
 
     Returns:
-        itk.image: The output image with corrected bias field.
+        NDArray: The bias-corrected image as a NumPy array.
     """
     img_itk = sitk.ReadImage(input_image)
 
