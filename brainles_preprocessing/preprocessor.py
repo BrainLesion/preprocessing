@@ -1,29 +1,28 @@
-import logging
 import os
 import shutil
-import signal
 import subprocess
-import sys
 import tempfile
-import traceback
 import warnings
-from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
 
 from auxiliary.io import write_image
+import SimpleITK as sitk
 
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
-from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
-from .modality import CenterModality, Modality
-from .n4_bias_correction import n4_bias_corrector
-from .registration import ANTsRegistrator
-from .registration.registrator import Registrator
-from .utils.logging_utils import LoggingManager
+from brainles_preprocessing.brain_extraction.brain_extractor import (
+    BrainExtractor,
+    HDBetExtractor,
+)
+from brainles_preprocessing.modality import CenterModality, Modality
+from brainles_preprocessing.n4_bias_correction import N4BiasOptions, n4_bias_corrector
+from brainles_preprocessing.registration import ANTsRegistrator
+from brainles_preprocessing.registration.registrator import Registrator
+from brainles_preprocessing.utils.logging_utils import LoggingManager
 
 logging_man = LoggingManager(name=__name__)
 logger = logging_man.get_logger()
@@ -40,6 +39,13 @@ class Preprocessor:
         brain_extractor (Optional[BrainExtractor]): The brain extractor object for brain extraction.
         defacer (Optional[Defacer]): The defacer object for defacing images.
         atlas_image_path (Optional[str or Path]): Path to the atlas image for registration (default is the T1 atlas).
+        n4_bias_opts (Optional[N4BiasOptions]): Function to compute the mask for N4 bias correction. Defaults to otsu thresholding.
+            Example:
+            ```
+            n4_bias_opts = N4BiasOptions(
+                mask_func=lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200)
+            )
+            ```
         temp_folder (Optional[str or Path]): Path to a folder for storing intermediate results.
         use_gpu (Optional[bool]): Use GPU for processing if True, CPU if False, or automatically detect if None.
         limit_cuda_visible_devices (Optional[str]): Limit CUDA visible devices to a specific GPU ID.
@@ -54,6 +60,7 @@ class Preprocessor:
         brain_extractor: Optional[BrainExtractor] = None,
         defacer: Optional[Defacer] = None,
         atlas_image_path: Union[str, Path, Atlas] = Atlas.BRATS_SRI24,
+        n4_bias_opts: Optional[N4BiasOptions] = None,
         temp_folder: Optional[Union[str, Path]] = None,
         use_gpu: Optional[bool] = None,
         limit_cuda_visible_devices: Optional[str] = None,
@@ -75,6 +82,12 @@ class Preprocessor:
             self.atlas_image_path = atlas_folder / atlas_image_path.value
         else:
             self.atlas_image_path = Path(atlas_image_path)
+
+        if n4_bias_opts is None:
+            n4_bias_opts = N4BiasOptions(
+                mask_func=lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200)
+            )
+        self.n4_bias_opts = n4_bias_opts
 
         self.registrator = registrator
         if self.registrator is None:
@@ -442,9 +455,10 @@ class Preprocessor:
                 logger.info(
                     f"Applying optional N4 bias correction for modality {modality.modality_name}"
                 )
+
                 bias_corrected_img = n4_bias_corrector(
                     input_image=str(modality.current),
-                    input_mask=None,  # No mask provided
+                    n4_bias_opts=self.n4_bias_opts,
                 )
                 output_path = (
                     n4_bias_correction_dir
