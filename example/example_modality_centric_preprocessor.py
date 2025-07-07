@@ -1,4 +1,5 @@
 # This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
+from brainles_preprocessing.n4_bias_correction import N4BiasOptions
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
@@ -12,6 +13,7 @@ from brainles_preprocessing.registration import (
     ANTsRegistrator,
     NiftyRegRegistrator,
 )
+import SimpleITK as sitk
 
 
 def preprocess(inputDir):
@@ -128,6 +130,10 @@ def preprocess(inputDir):
             # choose the registration backend you want to use
             # registrator=NiftyRegRegistrator(),
             registrator=ANTsRegistrator(),
+            n4_bias_opts=N4BiasOptions(
+                n_max_iterations=10,
+                n_fitting_levels=3,
+            ),
             # registrator=NiftyRegRegistrator(),
             # brain_extractor=HDBetExtractor(),
             # temp_folder="temporary_directory",
