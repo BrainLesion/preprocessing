@@ -39,11 +39,13 @@ class Preprocessor:
         brain_extractor (Optional[BrainExtractor]): The brain extractor object for brain extraction.
         defacer (Optional[Defacer]): The defacer object for defacing images.
         atlas_image_path (Optional[str or Path]): Path to the atlas image for registration (default is the T1 atlas).
-        n4_bias_opts (Optional[N4BiasOptions]): Function to compute the mask for N4 bias correction. Defaults to otsu thresholding.
+        n4_bias_opts (Optional[N4BiasOptions]): Options for N4 bias correction.
             Example:
             ```
             n4_bias_opts = N4BiasOptions(
-                mask_func=lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200)
+                mask_func=lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200),
+                n_max_iterations=50,
+                n_fitting_levels=3,
             )
             ```
         temp_folder (Optional[str or Path]): Path to a folder for storing intermediate results.
