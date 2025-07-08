@@ -54,15 +54,15 @@ def preprocess(inputDir):
         center = CenterModality(
             modality_name="t1c",
             input_path=t1cFile,
-            raw_bet_output_path=raw_bet_dir / inputDir.name + "_t1c_bet_raw.nii.gz",
-            raw_skull_output_path=raw_skull_dir / inputDir.name
-            + "_t1c_skull_raw.nii.gz",
+            raw_bet_output_path=raw_bet_dir / f"{inputDir.name}_t1c_bet_raw.nii.gz",
+            raw_skull_output_path=raw_skull_dir
+            / f"{inputDir.name}_t1c_skull_raw.nii.gz",
             # normalized_bet_output_path=norm_bet_dir / inputDir.name
             # + "_t1c_bet_normalized.nii.gz",
-            normalized_skull_output_path=norm_skull_dir / inputDir.name
-            + "_t1c_skull_normalized.nii.gz",
-            raw_defaced_output_path=raw_deface_dir / inputDir.name
-            + "_t1c_defaced_raw.nii.gz",
+            normalized_skull_output_path=norm_skull_dir
+            / f"{inputDir.name}_t1c_skull_normalized.nii.gz",
+            raw_defaced_output_path=raw_deface_dir
+            / f"{inputDir.name}_t1c_defaced_raw.nii.gz",
             # normalized_defaced_output_path=norm_deface_dir
             # / "_t1c_defaced_normalized.nii.gz",
             atlas_correction=True,
@@ -73,15 +73,15 @@ def preprocess(inputDir):
             Modality(
                 modality_name="t1",
                 input_path=t1File,
-                raw_bet_output_path=raw_bet_dir / inputDir.name + "_t1_bet_raw.nii.gz",
-                raw_skull_output_path=raw_skull_dir / inputDir.name
-                + "_t1_skull_raw.nii.gz",
+                raw_bet_output_path=raw_bet_dir / f"{inputDir.name}_t1_bet_raw.nii.gz",
+                raw_skull_output_path=raw_skull_dir
+                / f"{inputDir.name}_t1_skull_raw.nii.gz",
                 # normalized_bet_output_path=norm_bet_dir / inputDir.name
                 # + "_t1_bet_normalized.nii.gz",
-                normalized_skull_output_path=norm_skull_dir / inputDir.name
-                + "_t1_skull_normalized.nii.gz",
-                raw_defaced_output_path=raw_deface_dir / inputDir.name
-                + "_t1_defaced_raw.nii.gz",
+                normalized_skull_output_path=norm_skull_dir
+                / f"{inputDir.name}_t1_skull_normalized.nii.gz",
+                raw_defaced_output_path=raw_deface_dir
+                / f"{inputDir.name}_t1_defaced_raw.nii.gz",
                 # normalized_defaced_output_path=norm_deface_dir / inputDir.name
                 # + "_t1_defaced_normalized.nii.gz",
                 atlas_correction=True,
@@ -91,13 +91,13 @@ def preprocess(inputDir):
             Modality(
                 modality_name="t2",
                 input_path=t2File,
-                raw_bet_output_path=raw_bet_dir / inputDir.name + "_t2_bet_raw.nii.gz",
-                raw_skull_output_path=raw_skull_dir / inputDir.name
-                + "_t2_skull_raw.nii.gz",
+                raw_bet_output_path=raw_bet_dir / f"{inputDir.name}_t2_bet_raw.nii.gz",
+                raw_skull_output_path=raw_skull_dir
+                / f"{inputDir.name}_t2_skull_raw.nii.gz",
                 # normalized_bet_output_path=norm_bet_dir / inputDir.name
                 # + "_t2_bet_normalized.nii.gz",
-                normalized_skull_output_path=norm_skull_dir / inputDir.name
-                + "_t2_skull_normalized.nii.gz",
+                normalized_skull_output_path=norm_skull_dir
+                / f"{inputDir.name}_t2_skull_normalized.nii.gz",
                 # raw_defaced_output_path=raw_deface_dir / inputDir.name
                 # + "_t2_defaced_raw.nii.gz",
                 # normalized_defaced_output_path=norm_deface_dir / inputDir.name
@@ -108,13 +108,13 @@ def preprocess(inputDir):
             Modality(
                 modality_name="flair",
                 input_path=flaFile,
-                raw_bet_output_path=raw_bet_dir / inputDir.name + "_fla_bet_raw.nii.gz",
-                raw_skull_output_path=raw_skull_dir / inputDir.name
-                + "_fla_skull_raw.nii.gz",
+                raw_bet_output_path=raw_bet_dir / f"{inputDir.name}_fla_bet_raw.nii.gz",
+                raw_skull_output_path=raw_skull_dir
+                / f"{inputDir.name}_fla_skull_raw.nii.gz",
                 # normalized_bet_output_path=norm_bet_dir / inputDir.name
                 # + "_fla_bet_normalized.nii.gz",
-                normalized_skull_output_path=norm_skull_dir / inputDir.name
-                + "_fla_skull_normalized.nii.gz",
+                normalized_skull_output_path=norm_skull_dir
+                / f"{inputDir.name}_fla_skull_normalized.nii.gz",
                 # raw_defaced_output_path=raw_deface_dir / inputDir.name
                 # + "_fla_defaced_raw.nii.gz",
                 # normalized_defaced_output_path=norm_deface_dir / inputDir.name

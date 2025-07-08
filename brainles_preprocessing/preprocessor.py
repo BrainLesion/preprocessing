@@ -446,7 +446,7 @@ class Preprocessor:
         Apply optional N4 bias correction to modalities.
 
         Args:
-            save_dir__n4_bias_correction (Optional[Union[str, Path]], optional): Directory path to save intermediate N4 bias correction results. Defaults to None.
+            save_dir_n4_bias_correction (Optional[Union[str, Path]], optional): Directory path to save intermediate N4 bias correction results. Defaults to None.
         """
 
         n4_bias_correction_dir = self.temp_folder / "n4-bias-correction"
