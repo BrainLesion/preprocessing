@@ -6,21 +6,21 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import warnings
+from collections import Counter
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
-import warnings
 
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 from .brain_extraction.brain_extractor import BrainExtractor, HDBetExtractor
-from .modality import Modality, CenterModality
+from .modality import CenterModality, Modality
 from .registration import ANTsRegistrator
 from .registration.registrator import Registrator
-
 from .utils.logging_utils import LoggingManager
 
 logging_man = LoggingManager(name=__name__)
@@ -68,6 +68,8 @@ class Preprocessor:
         self.center_modality = center_modality
         self.moving_modalities = moving_modalities
 
+        self._check_for_name_conflicts()
+
         if isinstance(atlas_image_path, Atlas):
             atlas_folder = verify_or_download_atlases()
             self.atlas_image_path = atlas_folder / atlas_image_path.value
@@ -96,6 +98,19 @@ class Preprocessor:
         else:
             storage = tempfile.TemporaryDirectory()
             self.temp_folder = Path(storage.name)
+
+    def _check_for_name_conflicts(self):
+        """
+        Checks for name conflicts in the provided modalities.
+
+        Raises:
+            ValueError: If any modality name is non-unique.
+        """
+
+        name_counts = Counter(mod.modality_name for mod in self.all_modalities)
+        duplicates = [name for name, count in name_counts.items() if count > 1]
+        if duplicates:
+            raise ValueError(f"Duplicate modality names found: {', '.join(duplicates)}")
 
     def _configure_gpu(
         self, use_gpu: Optional[bool], limit_cuda_visible_devices: Optional[str] = None
