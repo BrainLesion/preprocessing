@@ -7,22 +7,21 @@ from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
 
-from auxiliary.io import write_image
-import SimpleITK as sitk
-
-from brainles_preprocessing.constants import Atlas, PreprocessorSteps
-from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
-from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
-
 from brainles_preprocessing.brain_extraction.brain_extractor import (
     BrainExtractor,
     HDBetExtractor,
 )
+from brainles_preprocessing.constants import Atlas, PreprocessorSteps
+from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.modality import CenterModality, Modality
-from brainles_preprocessing.n4_bias_correction import N4BiasOptions, n4_bias_corrector
+from brainles_preprocessing.n4_bias_correction import (
+    N4BiasCorrector,
+    SitkN4BiasCorrector,
+)
 from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils.logging_utils import LoggingManager
+from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 logging_man = LoggingManager(name=__name__)
 logger = logging_man.get_logger()
@@ -39,15 +38,7 @@ class Preprocessor:
         brain_extractor (Optional[BrainExtractor]): The brain extractor object for brain extraction.
         defacer (Optional[Defacer]): The defacer object for defacing images.
         atlas_image_path (Optional[str or Path]): Path to the atlas image for registration (default is the T1 atlas).
-        n4_bias_opts (Optional[N4BiasOptions]): Options for N4 bias correction.
-            Example:
-            ```
-            n4_bias_opts = N4BiasOptions(
-                mask_func=lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200),
-                n_max_iterations=50,
-                n_fitting_levels=3,
-            )
-            ```
+        n4_bias_corrector (Optional[N4BiasCorrector]): The N4 bias corrector object for bias field correction. Defaults to SitkN4BiasCorrector with Otsu Thresholding.
         temp_folder (Optional[str or Path]): Path to a folder for storing intermediate results.
         use_gpu (Optional[bool]): Use GPU for processing if True, CPU if False, or automatically detect if None.
         limit_cuda_visible_devices (Optional[str]): Limit CUDA visible devices to a specific GPU ID.
@@ -62,7 +53,7 @@ class Preprocessor:
         brain_extractor: Optional[BrainExtractor] = None,
         defacer: Optional[Defacer] = None,
         atlas_image_path: Union[str, Path, Atlas] = Atlas.BRATS_SRI24,
-        n4_bias_opts: Optional[N4BiasOptions] = None,
+        n4_bias_corrector: Optional[N4BiasCorrector] = None,
         temp_folder: Optional[Union[str, Path]] = None,
         use_gpu: Optional[bool] = None,
         limit_cuda_visible_devices: Optional[str] = None,
@@ -85,11 +76,9 @@ class Preprocessor:
         else:
             self.atlas_image_path = Path(atlas_image_path)
 
-        if n4_bias_opts is None:
-            n4_bias_opts = N4BiasOptions(
-                mask_func=lambda img_itk: sitk.OtsuThreshold(img_itk, 0, 1, 200)
-            )
-        self.n4_bias_opts = n4_bias_opts
+        if n4_bias_corrector is None:
+            n4_bias_corrector = SitkN4BiasCorrector()
+        self.n4_bias_corrector = n4_bias_corrector
 
         self.registrator = registrator
         if self.registrator is None:
@@ -458,19 +447,14 @@ class Preprocessor:
                     f"Applying optional N4 bias correction for modality {modality.modality_name}"
                 )
 
-                bias_corrected_img = n4_bias_corrector(
-                    input_image=str(modality.current),
-                    n4_bias_opts=self.n4_bias_opts,
-                )
                 output_path = (
                     n4_bias_correction_dir
                     / f"N4_bias_corrected__{modality.modality_name}.nii.gz"
                 )
 
-                write_image(
-                    input_array=bias_corrected_img,
-                    output_path=str(output_path),
-                    reference_path=str(modality.current),
+                self.n4_bias_corrector.correct(
+                    input_img_path=str(modality.current),
+                    output_img_path=str(output_path),
                 )
 
                 modality.steps[PreprocessorSteps.N4_BIAS_CORRECTED] = output_path
