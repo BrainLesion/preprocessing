@@ -77,7 +77,7 @@ class TestTransform(unittest.TestCase):
     @patch("brainles_preprocessing.transform.Path.exists", return_value=True)
     def test_transform_called_with_correct_args(self, mock_exists, mock_iterdir):
         mock_registrator = MagicMock(spec=Registrator)
-        back = Transform(
+        forward = Transform(
             transformations_dir=self.transform_dir,
             registrator=mock_registrator,
         )
@@ -89,7 +89,7 @@ class TestTransform(unittest.TestCase):
         ]
         mock_iterdir.return_value = fake_transforms
 
-        back.apply(
+        forward.apply(
             target_modality_name=self.target_modality_name,
             target_modality_img=self.target_modality_img,
             moving_image=self.moving_image,
