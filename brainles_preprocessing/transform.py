@@ -47,7 +47,7 @@ class Transform:
         inverse: bool = False,
     ) -> None:
         """
-        Apply inverse transformation to a moving image to align it with a target modality.
+        Apply forward/ inverse transformation to a moving image to align it with a target modality.
 
         Args:
             target_modality_name (str): Name of the target modality. Must match the name used to create the transformations.

@@ -99,7 +99,7 @@ class TestTransform(unittest.TestCase):
             inverse=False,  # Test inverse transformation
         )
 
-        # Check if inverse_transform was called with correct parameters
+        # Check if transform was called with correct parameters
         expected_kwargs = {
             "fixed_image_path": self.target_modality_img,
             "moving_image_path": self.moving_image,
