@@ -84,8 +84,8 @@ class TestTransform(unittest.TestCase):
 
         # Mock Transformation files
         fake_transforms = [
-            Path("/tmp/fake_transform1.txt"),
             Path("/tmp/fake_transform2.txt"),
+            Path("/tmp/fake_transform1.txt"),
         ]
         mock_iterdir.return_value = fake_transforms
 
