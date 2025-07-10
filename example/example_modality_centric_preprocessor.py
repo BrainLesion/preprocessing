@@ -1,19 +1,17 @@
 # This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
-from brainles_preprocessing.n4_bias_correction import N4BiasOptions
-from brainles_preprocessing.normalization.percentile_normalizer import (
-    PercentileNormalizer,
-)
 from auxiliary.turbopath import turbopath
 from tqdm import tqdm
 
 from brainles_preprocessing.brain_extraction import HDBetExtractor
-from brainles_preprocessing.modality import Modality, CenterModality
-from brainles_preprocessing.preprocessor import Preprocessor
-from brainles_preprocessing.registration import (
-    ANTsRegistrator,
-    NiftyRegRegistrator,
+from brainles_preprocessing.modality import CenterModality, Modality
+from brainles_preprocessing.n4_bias_correction.sitk.sitk_n4_bias_corrector import (
+    SitkN4BiasCorrector,
 )
-import SimpleITK as sitk
+from brainles_preprocessing.normalization.percentile_normalizer import (
+    PercentileNormalizer,
+)
+from brainles_preprocessing.preprocessor import Preprocessor
+from brainles_preprocessing.registration import ANTsRegistrator, NiftyRegRegistrator
 
 
 def preprocess(inputDir):
@@ -66,7 +64,7 @@ def preprocess(inputDir):
             # normalized_defaced_output_path=norm_deface_dir
             # / "_t1c_defaced_normalized.nii.gz",
             atlas_correction=True,
-            n4_bias_correction=True,
+            # n4_bias_correction=True,
             normalizer=percentile_normalizer,
         )
         moving_modalities = [
@@ -85,7 +83,7 @@ def preprocess(inputDir):
                 # normalized_defaced_output_path=norm_deface_dir / inputDir.name
                 # + "_t1_defaced_normalized.nii.gz",
                 atlas_correction=True,
-                n4_bias_correction=True,
+                # n4_bias_correction=True,
                 normalizer=percentile_normalizer,
             ),
             Modality(
@@ -130,10 +128,7 @@ def preprocess(inputDir):
             # choose the registration backend you want to use
             # registrator=NiftyRegRegistrator(),
             registrator=ANTsRegistrator(),
-            n4_bias_opts=N4BiasOptions(
-                n_max_iterations=10,
-                n_fitting_levels=3,
-            ),
+            # n4_bias_corrector=SitkN4BiasCorrector(),
             # registrator=NiftyRegRegistrator(),
             # brain_extractor=HDBetExtractor(),
             # temp_folder="temporary_directory",

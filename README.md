@@ -10,7 +10,7 @@
 
 `BrainLes preprocessing` is a comprehensive tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI. It can be used to build modular preprocessing pipelines:
 
-This includes **normalization**, **co-registration**, **atlas registration**, **skulstripping / brain extraction**, **N4 Bias correction** and **defacing**.
+This includes **normalization**, **co-registration**, **atlas registration**, **skullstripping / brain extraction**, **N4 Bias correction** and **defacing**.
 We provide means to transform images and segmentations in both directions between native and atlas space.
 
 BrainLes is written modular and `backend-agnostic` meaning it allows to skip or swap registration, brain extraction, N4 bias correction and defacing tools.
