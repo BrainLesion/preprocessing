@@ -10,9 +10,10 @@
 
 `BrainLes preprocessing` is a comprehensive tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI. It can be used to build modular preprocessing pipelines:
 
-This includes **normalization**, **co-registration**, **atlas registration** and **skulstripping / brain extraction**.
+This includes **normalization**, **co-registration**, **atlas registration**, **skulstripping / brain extraction**, **N4 Bias correction** and **defacing**.
+We provide means to transform images and segmentations in both directions between native and atlas space.
 
-BrainLes is written `backend-agnostic` meaning it allows to swap the registration, brain extraction tools and defacing tools.
+BrainLes is written modular and `backend-agnostic` meaning it allows to skip or swap registration, brain extraction, N4 bias correction and defacing tools.
 
 <!-- TODO include image here -->
 
@@ -86,7 +87,7 @@ moving_modalities = [
     )
 ]
 
-# instantiate and run the preprocessor using defaults for registration/ brain extraction/ defacing backends
+# instantiate and run the preprocessor using defaults for backends (registration, brain extraction, bias correction, defacing)
 preprocessor = Preprocessor(
     center_modality=center,
     moving_modalities=moving_modalities,
@@ -126,6 +127,9 @@ We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default)
 ### Atlas Reference
 We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
 However, custom atlases in NIfTI format are supported.
+
+### N4 Bias correction
+We currently provide support for N4 Bias correction based on [SimpleITK](https://simpleitk.org/)
 
 ### Brain extraction
 We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
