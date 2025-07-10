@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional, Union
 from enum import Enum
 
-from auxiliary.nifti.io import read_nifti, write_nifti
+from auxiliary.io import read_image, write_image
 from brainles_hd_bet import run_hd_bet
 
 
@@ -55,8 +55,8 @@ class BrainExtractor:
 
         try:
             # Read data
-            input_data = read_nifti(str(input_image_path))
-            mask_data = read_nifti(str(mask_path))
+            input_data = read_image(str(input_image_path))
+            mask_data = read_image(str(mask_path))
         except FileNotFoundError as e:
             raise FileNotFoundError(f"File not found: {e.filename}") from e
         except Exception as e:
@@ -70,10 +70,10 @@ class BrainExtractor:
         masked_data = input_data * mask_data
 
         try:
-            write_nifti(
+            write_image(
                 input_array=masked_data,
-                output_nifti_path=str(bet_image_path),
-                reference_nifti_path=str(input_image_path),
+                output_path=str(bet_image_path),
+                reference_path=str(input_image_path),
                 create_parent_directory=True,
             )
         except Exception as e:

@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import Union
 
 import nibabel as nib
+from auxiliary.io import read_image, write_image
 
 from brainles_preprocessing.defacing.defacer import Defacer
 from brainles_preprocessing.defacing.quickshear.nipy_quickshear import run_quickshear
-from auxiliary.nifti.io import write_nifti
 
 
 class QuickshearDefacer(Defacer):
@@ -56,8 +56,11 @@ class QuickshearDefacer(Defacer):
 
         bet_img = nib.load(str(input_image_path))
         mask = run_quickshear(bet_img=bet_img, buffer=self.buffer)
-        write_nifti(
+
+        # transpose to match simpletik order
+        mask = mask.transpose(2, 1, 0)
+        write_image(
             input_array=mask,
-            output_nifti_path=str(mask_image_path),
-            reference_nifti_path=str(input_image_path),
+            output_path=str(mask_image_path),
+            reference_path=str(input_image_path),
         )

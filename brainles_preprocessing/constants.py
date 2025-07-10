@@ -6,8 +6,9 @@ class PreprocessorSteps(IntEnum):
     COREGISTERED = 1
     ATLAS_REGISTERED = 2
     ATLAS_CORRECTED = 3
-    BET = 4
-    DEFACED = 5
+    N4_BIAS_CORRECTED = 4
+    BET = 5
+    DEFACED = 6
 
 
 class Atlas(str, Enum):
