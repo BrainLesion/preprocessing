@@ -142,7 +142,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
-        interpolator: str = "linear",
+        interpolator: str = "nearestNeighbor",
         **kwargs,
     ) -> None:
         """
@@ -231,7 +231,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
-        interpolator: str = "linear",
+        interpolator: str = "nearestNeighbor",
         **kwargs,
     ) -> None:
         """

@@ -60,8 +60,8 @@ class Transform:
                 Available options depend on the chosen registrator:
 
                 - **ANTsRegistrator**:
-                    - "linear" (default)
-                    - "nearestNeighbor"
+                    - "linear"
+                    - "nearestNeighbor" (default)
                     - "multiLabel" (deprecated, prefer "genericLabel")
                     - "gaussian"
                     - "bSpline"
@@ -72,8 +72,8 @@ class Transform:
                     - "genericLabel" (recommended for label images)
 
                 - **NiftyReg**:
-                    - "0": nearest neighbor
-                    - "1": linear (default)
+                    - "0": nearest neighbor (default)
+                    - "1": linear
                     - "3": cubic spline
                     - "4": sinc
 
