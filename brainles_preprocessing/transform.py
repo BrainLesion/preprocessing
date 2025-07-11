@@ -1,25 +1,32 @@
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from brainles_preprocessing.constants import Atlas, PreprocessorSteps
-from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
-from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils.logging_utils import LoggingManager
-from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 logging_man = LoggingManager(name=__name__)
 logger = logging_man.get_logger()
 
 
-class BackToNativeSpace:
+class Transform:
+    """
+    Class to apply precomputed transformations based on the registration process.
+    Common use case is to apply inverse transformations to transform e.g. segmentations in atlas space back to native space or transform existing labels in native space to atlas space.
+    """
 
     def __init__(
         self,
         transformations_dir: Union[str, Path],
         registrator: Optional[Registrator] = None,
-    ):
+    ) -> None:
+        """
+        Initialize the Transform class.
+
+        Args:
+            transformations_dir (Union[str, Path]): Directory containing precomputed transformations for each modality.
+            registrator (Optional[Registrator], optional): Registrator instance to use for applying transformations. If None, defaults to ANTsRegistrator.
+        """
 
         self.transformations_dir = Path(transformations_dir)
 
@@ -29,7 +36,7 @@ class BackToNativeSpace:
             )
         self.registrator: Registrator = registrator or ANTsRegistrator()
 
-    def transform(
+    def apply(
         self,
         target_modality_name: str,
         target_modality_img: Union[str, Path],
@@ -37,9 +44,10 @@ class BackToNativeSpace:
         output_img_path: Union[str, Path],
         log_file_path: Union[str, Path],
         interpolator: Optional[str] = None,
-    ):
+        inverse: bool = False,
+    ) -> None:
         """
-        Apply inverse transformation to a moving image to align it with a target modality.
+        Apply forward/ inverse transformation to a moving image to align it with a target modality.
 
         Args:
             target_modality_name (str): Name of the target modality. Must match the name used to create the transformations.
@@ -48,11 +56,12 @@ class BackToNativeSpace:
             output_img_path (Union[str, Path]): Path where the transformed image will be saved.
             log_file_path (Union[str, Path]): Path to the log file where transformation details will be written.
             interpolator (Optional[str]): Interpolation method used during transformation.
+            inverse (bool): If True, applies the inverse transformation. Default is False.
                 Available options depend on the chosen registrator:
 
                 - **ANTsRegistrator**:
-                    - "linear" (default)
-                    - "nearestNeighbor"
+                    - "linear"
+                    - "nearestNeighbor" (default)
                     - "multiLabel" (deprecated, prefer "genericLabel")
                     - "gaussian"
                     - "bSpline"
@@ -63,8 +72,8 @@ class BackToNativeSpace:
                     - "genericLabel" (recommended for label images)
 
                 - **NiftyReg**:
-                    - "0": nearest neighbor
-                    - "1": linear (default)
+                    - "0": nearest neighbor (default)
+                    - "1": linear
                     - "3": cubic spline
                     - "4": sinc
 
@@ -72,7 +81,7 @@ class BackToNativeSpace:
             AssertionError: If the transformations directory for the given modality does not exist.
         """
         logger.info(
-            f"Applying inverse transformation for {target_modality_name} using {self.registrator.__class__.__name__}."
+            f"Applying {'inverse' if inverse else ''} transformation for {target_modality_name} using {self.registrator.__class__.__name__}."
         )
 
         # assert modality name eixsts in transformations_dir
@@ -86,7 +95,9 @@ class BackToNativeSpace:
 
         transforms = list(modality_transformations_dir.iterdir())
         transforms.sort()  # sort by name to get order for forward transform
-        transforms = transforms[::-1]  # inverse order for inverse transform
+
+        if inverse:
+            transforms = transforms[::-1]  # inverse order for inverse transform
 
         kwargs = {
             "fixed_image_path": target_modality_img,
@@ -97,4 +108,8 @@ class BackToNativeSpace:
         }
         if interpolator is not None:
             kwargs["interpolator"] = interpolator
-        self.registrator.inverse_transform(**kwargs)
+
+        if inverse:
+            self.registrator.inverse_transform(**kwargs)
+        else:
+            self.registrator.transform(**kwargs)
