@@ -2,7 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from brainles_preprocessing.preprocessor import CenterModality, Modality, Preprocessor
+from brainles_preprocessing.modality import CenterModality, Modality
+from brainles_preprocessing.preprocessor import AtlasCentricPreprocessor
 
 
 # --- Dummy classes for testing ---
@@ -40,7 +41,7 @@ def test_no_name_conflicts(dummy_registrator, dummy_brain_extractor, dummy_defac
         Modality("FLAIR", input_path="", raw_skull_output_path="tmp"),
     ]
     # Should not raise
-    Preprocessor(
+    AtlasCentricPreprocessor(
         center_modality=center,
         moving_modalities=moving,
         registrator=dummy_registrator,
@@ -59,7 +60,7 @@ def test_single_duplicate_name_raises(
     ]
 
     with pytest.raises(ValueError, match=r"Duplicate modality names found: T1"):
-        Preprocessor(
+        AtlasCentricPreprocessor(
             center_modality=center,
             moving_modalities=moving,
             registrator=dummy_registrator,
@@ -79,7 +80,7 @@ def test_multiple_duplicate_names_raises(
     ]
 
     with pytest.raises(ValueError) as exc_info:
-        Preprocessor(
+        AtlasCentricPreprocessor(
             center_modality=center,
             moving_modalities=moving,
             registrator=dummy_registrator,
