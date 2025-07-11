@@ -10,7 +10,7 @@ from brainles_preprocessing.n4_bias_correction.sitk.sitk_n4_bias_corrector impor
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import Preprocessor
+from brainles_preprocessing.preprocessor import AtlasCentricPreprocessor
 from brainles_preprocessing.registration import ANTsRegistrator, NiftyRegRegistrator
 
 
@@ -122,7 +122,7 @@ def preprocess(inputDir):
             ),
         ]
 
-        preprocessor = Preprocessor(
+        preprocessor = AtlasCentricPreprocessor(
             center_modality=center,
             moving_modalities=moving_modalities,
             # choose the registration backend you want to use
