@@ -4,7 +4,9 @@ from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import NativeSpacePreprocessor
+from brainles_preprocessing.preprocessor import (
+    NativeSpacePreprocessor,
+)
 
 
 def preprocess(input_dir: Path, output_dir: Path):
@@ -82,11 +84,13 @@ def preprocess(input_dir: Path, output_dir: Path):
 
 
 if __name__ == "__main__":
+
+    subject = "OtherEXampleFromTCIA"  # "TCGA-DU-7294"
     preprocess(
         input_dir=Path(
-            "/home/marcelrosier/preprocessing/example/example_data/TCGA-DU-7294"
+            f"/home/marcelrosier/preprocessing/example/example_data/{subject}"
         ),
         output_dir=Path(
-            "/home/marcelrosier/preprocessing/example/example_data/native_space_preprocessed_TCGA-DU-7294"
+            f"/home/marcelrosier/preprocessing/example/example_data/native_space_preprocessed_{subject}"
         ),
     )
