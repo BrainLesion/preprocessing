@@ -152,7 +152,7 @@ class BasePreprocessor(ABC):
                 return func(*args, **kwargs)
             finally:
                 self = args[0]
-                if isinstance(self, Preprocessor):
+                if isinstance(self, BasePreprocessor):
                     logging_man.remove_log_file_handler()
 
         return wrapper
