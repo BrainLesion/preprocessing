@@ -42,8 +42,7 @@ class NativeSpacePreprocessor(BasePreprocessor):
         log_file: Optional[Union[str, Path]] = None,
     ):
         """
-        Execute the preprocessing pipeline, encompassing coregistration, atlas-based registration,
-        atlas correction, and optional brain extraction.
+        Execute the non-atlas centric native space preprocessing pipeline
 
         Args:
             save_dir_coregistration (str or Path, optional): Directory path to save intermediate coregistration results.

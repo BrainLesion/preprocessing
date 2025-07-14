@@ -30,9 +30,7 @@ logging_man = LoggingManager(name=__name__)
 logger = logging_man.get_logger()
 
 
-class AtlasCentricPreprocessor(
-    BasePreprocessor
-):  # TODO add alias for Preprocessor to ensure backward compatibility
+class AtlasCentricPreprocessor(BasePreprocessor):
     """
     Preprocesses medical image modalities using coregistration, atlas-registration, atlas-correction, normalization, brain extraction, and more.
 
@@ -93,8 +91,7 @@ class AtlasCentricPreprocessor(
         log_file: Optional[Union[str, Path]] = None,
     ):
         """
-        Execute the preprocessing pipeline, encompassing coregistration, atlas-based registration,
-        atlas correction, and optional brain extraction.
+        Execute the atlas-centric preprocessing pipeline
 
         Args:
             save_dir_coregistration (str or Path, optional): Directory path to save intermediate coregistration results.
