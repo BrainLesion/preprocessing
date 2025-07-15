@@ -169,8 +169,13 @@ class NativeSpacePreprocessor(BasePreprocessor):
             self.defacer = QuickshearDefacer()
 
         deface_mask = self.center_modality.deface(
-            defacer=self.defacer, defaced_dir_path=deface_dir
+            defacer=self.defacer,
+            defaced_dir_path=deface_dir,
+            force_atlas_registration=True,
         )
+        if deface_mask is None:
+            return
+
         for mod in self.all_modalities:
             logger.info(f"Applying deface mask to {mod.modality_name}...")
 
@@ -184,7 +189,7 @@ class NativeSpacePreprocessor(BasePreprocessor):
             src=deface_dir,
             save_dir=save_dir_defacing,
         )
-        
+
         # now we save images that are skull-stripped
         logger.info("Saving defaced images...")
         for modality in self.all_modalities:
