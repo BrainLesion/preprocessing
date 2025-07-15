@@ -419,6 +419,7 @@ class Modality:
         bet_dir_path: Union[str, Path],
     ) -> Path:
         """
+        WARNING: Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.
 
         Extract the brain region using the specified brain extractor.
 
@@ -430,6 +431,10 @@ class Modality:
             Path: Path to the extracted brain mask.
         """
 
+        warnings.warn(
+            "Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.",
+            category=DeprecationWarning,
+        )
         bet_dir_path = Path(bet_dir_path)
         bet_log = bet_dir_path / "brain-extraction.log"
 
@@ -457,6 +462,7 @@ class Modality:
         defaced_dir_path: Union[str, Path],
     ) -> Path:
         """
+        WARNING: Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.
         Deface the current modality using the specified defacer.
 
         Args:
@@ -466,6 +472,10 @@ class Modality:
         Returns:
             Path: Path to the extracted brain mask.
         """
+        warnings.warn(
+            "Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.",
+            category=DeprecationWarning,
+        )
         if isinstance(defacer, QuickshearDefacer):
             defaced_dir_path = Path(defaced_dir_path)
             mask_path = defaced_dir_path / f"{self.modality_name}_deface_mask.nii.gz"
@@ -604,6 +614,80 @@ class CenterModality(Modality):
         self.defacing_mask_output_path = (
             Path(defacing_mask_output_path) if defacing_mask_output_path else None
         )
+
+    def extract_brain_region(
+        self,
+        brain_extractor: BrainExtractor,
+        bet_dir_path: Union[str, Path],
+    ) -> Path:
+        """
+
+        Extract the brain region using the specified brain extractor.
+
+        Args:
+            brain_extractor (BrainExtractor): The brain extractor object.
+            bet_dir_path (str or Path): Directory to store brain extraction results.
+
+        Returns:
+            Path: Path to the extracted brain mask.
+        """
+
+        bet_dir_path = Path(bet_dir_path)
+        bet_log = bet_dir_path / "brain-extraction.log"
+
+        bet = bet_dir_path / f"{self.modality_name}_bet.nii.gz"
+        mask_path = bet_dir_path / f"{self.modality_name}_brain_mask.nii.gz"
+
+        brain_extractor.extract(
+            input_image_path=self.current,
+            masked_image_path=bet,
+            brain_mask_path=mask_path,
+            log_file_path=bet_log,
+        )
+
+        # always temporarily store bet image for center modality, since e.g. quickshear defacing could require it
+        # down the line even if the user does not wish to save the bet image
+        self.steps[PreprocessorSteps.BET] = bet
+
+        if self.bet:
+            self.current = bet
+        return mask_path
+
+    def deface(
+        self,
+        defacer,
+        defaced_dir_path: Union[str, Path],
+    ) -> Path:
+        """
+        Deface the current modality using the specified defacer.
+
+        Args:
+            defacer (Defacer): The defacer object.
+            defaced_dir_path (str or Path): Directory to store defacing results.
+
+        Returns:
+            Path: Path to the extracted brain mask.
+        """
+        if isinstance(defacer, QuickshearDefacer):
+            defaced_dir_path = Path(defaced_dir_path)
+            mask_path = defaced_dir_path / f"{self.modality_name}_deface_mask.nii.gz"
+
+            if self.steps.get(PreprocessorSteps.BET, None) is None:
+                raise ValueError(
+                    "Brain extraction must be performed before defacing. "
+                    "Please run brain extraction first."
+                )
+
+            defacer.deface(
+                input_image_path=self.steps[PreprocessorSteps.BET],
+                mask_image_path=mask_path,
+            )
+            return mask_path
+        else:
+            logger.warning(
+                "Defacing method not implemented yet. Skipping defacing for this modality."
+            )
+            return None
 
     def save_mask(self, mask_path: Union[str, Path], output_path: Path) -> None:
         """
