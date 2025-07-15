@@ -138,76 +138,6 @@ class NativeSpacePreprocessor(BasePreprocessor):
         # End
         logger.info(f"{' Preprocessing complete ':=^80}")
 
-    def run_brain_extraction(
-        self, save_dir_brain_extraction: Optional[Union[str, Path]] = None
-    ) -> None:
-        """Extract brain regions using specified BrainExtractor.
-
-        Args:
-            save_dir_brain_extraction (Optional[str or Path], optional): Directory path to save intermediate brain extraction results. Defaults to None.
-        """
-        # Check if any bet output paths are requested
-        brain_extraction = any(modality.bet for modality in self.all_modalities)
-
-        # Check if any downstream task (e.g. QuickShear) requires brain extraction.
-        # Quickshear is the default defacer so we also require bet if no defacer is specified
-        required_downstream = self.requires_defacing and (
-            isinstance(self.defacer, QuickshearDefacer) or self.defacer is None
-        )
-
-        # Skip if no brain extraction is required
-        if not brain_extraction and not required_downstream:
-            logger.info("Skipping brain extraction.")
-            return
-
-        logger.info(
-            f"Starting brain extraction{' (for downstream defacing task)' if (required_downstream and not brain_extraction) else ''}..."
-        )
-
-        # Setup output dirs
-        bet_dir = self.temp_folder / "brain-extraction"
-        bet_dir.mkdir(exist_ok=True, parents=True)
-
-        logger.info("Extracting brain region for center modality...")
-
-        # Assert that a brain extractor is specified (since the arg is optional)
-        if self.brain_extractor is None:
-            logger.warning(
-                "Brain extraction is required to compute specified outputs but no brain extractor was specified during class initialization."
-                + " Using default `brainles_preprocessing.brain_extraction.HDBetExtractor`"
-            )
-            self.brain_extractor = HDBetExtractor()
-
-        for mod in self.all_modalities:
-            mask = mod.extract_brain_region(
-                brain_extractor=self.brain_extractor, bet_dir_path=bet_dir
-            )
-            logger.info(f"Applying brain mask to {mod.modality_name}...")
-            mod.apply_bet_mask(
-                brain_extractor=self.brain_extractor,
-                mask_path=mask,
-                bet_dir=bet_dir,
-            )
-
-        self._save_output(
-            src=bet_dir,
-            save_dir=save_dir_brain_extraction,
-        )
-
-        # now we save images that are skullstripped
-        logger.info("Saving brain extracted (bet), i.e. skull-stripped images...")
-        for modality in self.all_modalities:
-            if modality.raw_bet_output_path:
-                modality.save_current_image(
-                    modality.raw_bet_output_path,
-                    normalization=False,
-                )
-            if modality.normalized_bet_output_path:
-                modality.save_current_image(
-                    modality.normalized_bet_output_path,
-                    normalization=True,
-                )
-
     def run_defacing(
         self, save_dir_defacing: Optional[Union[str, Path]] = None
     ) -> None:
@@ -238,13 +168,15 @@ class NativeSpacePreprocessor(BasePreprocessor):
             )
             self.defacer = QuickshearDefacer()
 
+        deface_mask = self.center_modality.deface(
+            defacer=self.defacer, defaced_dir_path=deface_dir
+        )
         for mod in self.all_modalities:
             logger.info(f"Applying deface mask to {mod.modality_name}...")
 
-            mask = mod.deface(defacer=self.defacer, defaced_dir_path=deface_dir)
             mod.apply_deface_mask(
                 defacer=self.defacer,
-                mask_path=mask,
+                mask_path=deface_mask,
                 deface_dir=deface_dir,
             )
 
@@ -252,6 +184,7 @@ class NativeSpacePreprocessor(BasePreprocessor):
             src=deface_dir,
             save_dir=save_dir_defacing,
         )
+        
         # now we save images that are skull-stripped
         logger.info("Saving defaced images...")
         for modality in self.all_modalities:
