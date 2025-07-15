@@ -4,9 +4,7 @@ from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import (
-    NativeSpacePreprocessor,
-)
+from brainles_preprocessing.preprocessor import NativeSpacePreprocessor
 
 
 def preprocess(input_dir: Path, output_dir: Path):
