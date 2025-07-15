@@ -31,6 +31,48 @@ logger = logging_man.get_logger()
 
 
 class NativeSpacePreprocessor(BasePreprocessor):
+    """
+    Preprocesses medical image modalities using coregistration, atlas-registration, atlas-correction, normalization, brain extraction, and more.
+
+    Args:
+        center_modality (CenterModality): The central modality for coregistration.
+        moving_modalities (List[Modality]): List of modalities to be coregistered to the central modality.
+        registrator (Registrator): The registrator object for coregistration and registration to the atlas.
+        brain_extractor (Optional[BrainExtractor]): The brain extractor object for brain extraction.
+        defacer (Optional[Defacer]): The defacer object for defacing images.
+        force_atlas_reg_for_defacing (bool): If True, forces atlas registration before defacing to boost performance. Defaults to True.
+        n4_bias_corrector (Optional[N4BiasCorrector]): The N4 bias corrector object for bias field correction. Defaults to SitkN4BiasCorrector with Otsu Thresholding.
+        temp_folder (Optional[str or Path]): Path to a folder for storing intermediate results.
+        use_gpu (Optional[bool]): Use GPU for processing if True, CPU if False, or automatically detect if None.
+        limit_cuda_visible_devices (Optional[str]): Limit CUDA visible devices to a specific GPU ID.
+
+    """
+
+    def __init__(
+        self,
+        center_modality: CenterModality,
+        moving_modalities: List[Modality],
+        registrator: Registrator = None,
+        brain_extractor: Optional[BrainExtractor] = None,
+        defacer: Optional[Defacer] = None,
+        force_atlas_reg_for_defacing: bool = True,
+        n4_bias_corrector: Optional[N4BiasCorrector] = None,
+        temp_folder: Optional[Union[str, Path]] = None,
+        use_gpu: Optional[bool] = None,
+        limit_cuda_visible_devices: Optional[str] = None,
+    ):
+        super().__init__(
+            center_modality=center_modality,
+            moving_modalities=moving_modalities,
+            registrator=registrator,
+            brain_extractor=brain_extractor,
+            defacer=defacer,
+            n4_bias_corrector=n4_bias_corrector,
+            temp_folder=temp_folder,
+            use_gpu=use_gpu,
+            limit_cuda_visible_devices=limit_cuda_visible_devices,
+        )
+        self.force_atlas_reg_for_defacing = force_atlas_reg_for_defacing
 
     def run(
         self,
@@ -171,7 +213,7 @@ class NativeSpacePreprocessor(BasePreprocessor):
         deface_mask = self.center_modality.deface(
             defacer=self.defacer,
             defaced_dir_path=deface_dir,
-            force_atlas_registration=True,
+            force_atlas_registration=self.force_atlas_reg_for_defacing,
         )
         if deface_mask is None:
             return
