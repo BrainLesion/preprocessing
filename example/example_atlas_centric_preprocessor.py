@@ -98,11 +98,10 @@ def preprocess(input_dir: Path, output_dir: Path):
 if __name__ == "__main__":
 
     subject = "TCGA-DU-7294"  # "OtherEXampleFromTCIA"
+    base_dir = Path(__file__).parent
     preprocess(
-        input_dir=Path(
-            f"/home/marcelrosier/preprocessing/example/example_data/{subject}"
-        ),
+        input_dir=Path(base_dir / f"example_data/{subject}"),
         output_dir=Path(
-            f"/home/marcelrosier/preprocessing/example/example_data/atlas_centric_preprocessed_{subject}"
+            base_dir / f"example_data/atlas_centric_preprocessed_{subject}"
         ),
     )
