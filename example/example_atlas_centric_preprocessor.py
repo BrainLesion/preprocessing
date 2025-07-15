@@ -1,12 +1,13 @@
+# # This script is an example of how to use the ModalityCentricPreprocessor class to preprocess a set of MR images. It is only here for quick development and testing purposes. It is not intended to be used in a production environment.
+
+
 from pathlib import Path
 
 from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import (
-    NativeSpacePreprocessor,
-)
+from brainles_preprocessing.preprocessor import AtlasCentricPreprocessor
 
 
 def preprocess(input_dir: Path, output_dir: Path):
@@ -28,7 +29,12 @@ def preprocess(input_dir: Path, output_dir: Path):
     raw_deface_dir = output_dir / "raw_defaced"
     raw_deface_dir.mkdir(parents=True, exist_ok=True)
 
-    percentile_normalizer = PercentileNormalizer()
+    percentile_normalizer = PercentileNormalizer(
+        lower_percentile=0.1,
+        upper_percentile=99.9,
+        lower_limit=0,
+        upper_limit=1,
+    )
 
     center = CenterModality(
         modality_name="t1c",
@@ -38,6 +44,7 @@ def preprocess(input_dir: Path, output_dir: Path):
         normalized_skull_output_path=norm_skull_dir / f"t1c_skull_normalized.nii.gz",
         raw_defaced_output_path=raw_deface_dir / f"t1c_defaced_raw.nii.gz",
         normalizer=percentile_normalizer,
+        atlas_correction=True,
     )
     moving_modalities = [
         Modality(
@@ -48,6 +55,7 @@ def preprocess(input_dir: Path, output_dir: Path):
             normalized_skull_output_path=norm_skull_dir / f"t1_skull_normalized.nii.gz",
             raw_defaced_output_path=raw_deface_dir / f"t1_defaced_raw.nii.gz",
             normalizer=percentile_normalizer,
+            atlas_correction=True,
         ),
         Modality(
             modality_name="t2",
@@ -56,6 +64,7 @@ def preprocess(input_dir: Path, output_dir: Path):
             raw_skull_output_path=raw_skull_dir / f"t2_skull_raw.nii.gz",
             normalized_skull_output_path=norm_skull_dir / f"t2_skull_normalized.nii.gz",
             normalizer=percentile_normalizer,
+            atlas_correction=True,
         ),
         Modality(
             modality_name="flair",
@@ -66,10 +75,11 @@ def preprocess(input_dir: Path, output_dir: Path):
             / f"fla_skull_normalized.nii.gz",
             raw_defaced_output_path=raw_deface_dir / f"fla_defaced_raw.nii.gz",
             normalizer=percentile_normalizer,
+            atlas_correction=True,
         ),
     ]
 
-    preprocessor = NativeSpacePreprocessor(
+    preprocessor = AtlasCentricPreprocessor(
         center_modality=center,
         moving_modalities=moving_modalities,
         limit_cuda_visible_devices="0",
@@ -77,6 +87,8 @@ def preprocess(input_dir: Path, output_dir: Path):
 
     preprocessor.run(
         save_dir_coregistration=output_dir / "coregistration",
+        save_dir_atlas_registration=output_dir / "atlas-registration",
+        save_dir_atlas_correction=output_dir / "atlas-correction",
         save_dir_n4_bias_correction=output_dir / "n4_bias_correction",
         save_dir_brain_extraction=output_dir / "brain_extraction",
         save_dir_defacing=output_dir / "defacing",
@@ -91,6 +103,6 @@ if __name__ == "__main__":
             f"/home/marcelrosier/preprocessing/example/example_data/{subject}"
         ),
         output_dir=Path(
-            f"/home/marcelrosier/preprocessing/example/example_data/native_space_preprocessed_{subject}"
+            f"/home/marcelrosier/preprocessing/example/example_data/atlas_centric_preprocessed_{subject}"
         ),
     )
