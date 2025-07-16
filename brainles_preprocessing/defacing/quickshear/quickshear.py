@@ -29,14 +29,16 @@ class QuickshearDefacer(Defacer):
             ```
     """
 
-    def __init__(self, buffer: float = 10.0):
+    def __init__(self, buffer: float = 10.0, force_atlas_registration: bool = True):
         """Initialize Quickshear defacer
 
         Args:
             buffer (float, optional): buffer parameter from quickshear algorithm. Defaults to 10.0.
+            force_atlas_registration (bool, optional): If True, forces atlas registration of the BET mask before defacing to potentially boost quickshear performance. Defaults to True.
         """
         super().__init__()
         self.buffer = buffer
+        self.force_atlas_registration = force_atlas_registration
 
     def deface(
         self,
