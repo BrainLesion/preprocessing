@@ -224,7 +224,7 @@ class NiftyRegRegistrator(Registrator):
         fixed_image_path: str,
         moving_image_path: str,
         transformed_image_path: str,
-        matrix_path: List[str | Path],
+        matrix_path: str | Path | List[str | Path],
         log_file_path: str,
         interpolator: str = "0",
     ) -> None:
@@ -239,6 +239,8 @@ class NiftyRegRegistrator(Registrator):
             log_file_path (str): Path to the log file.
             interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC), Default is '1' (linear).
         """
+        if not isinstance(matrix_path, list):
+            matrix_path = [matrix_path]
         matrix_path = matrix_path[
             ::-1
         ]  # revert back to forward order to compute composite and then the inverse of it
