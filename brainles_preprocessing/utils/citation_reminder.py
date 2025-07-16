@@ -6,7 +6,7 @@ CITATION_LINK = "https://github.com/BrainLesion/preprocessing#citation"
 
 
 def citation_reminder(func):
-    """Decorator to remind users to cite panoptica."""
+    """Decorator to remind users to cite brainles-preprocessing."""
 
     def wrapper(*args, **kwargs):
         if (
