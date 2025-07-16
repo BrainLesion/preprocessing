@@ -111,9 +111,25 @@ For further information please have a look at our [Jupyter Notebook tutorials](h
 
 
 
+## Citation
+
+> [!IMPORTANT]
+> If you use `brainles-preprocessing` in your research, please cite it to support the development!
+
+Kofler, F., Rosier, M., Astaraki, M., Möller, H., Mekki, I. I., Buchner, J. A., Schmick, A., Pfiffer, A., Oswald, E., Zimmer, L., Rosa, E. de la, Pati, S., Canisius, J., Piffer, A., Baid, U., Valizadeh, M., Linardos, A., Peeken, J. C., Shit, S., … Menze, B. (2025). *BrainLesion Suite: A Flexible and User-Friendly Framework for Modular Brain Lesion Image Analysis* [arXiv preprint arXiv:2507.09036](https://doi.org/10.48550/arXiv.2507.09036)
 
 
-<!-- TODO citation -->
+```
+@misc{kofler2025brainlesionsuiteflexibleuserfriendly,
+      title={BrainLesion Suite: A Flexible and User-Friendly Framework for Modular Brain Lesion Image Analysis}, 
+      author={Florian Kofler and Marcel Rosier and Mehdi Astaraki and Hendrik Möller and Ilhem Isra Mekki and Josef A. Buchner and Anton Schmick and Arianna Pfiffer and Eva Oswald and Lucas Zimmer and Ezequiel de la Rosa and Sarthak Pati and Julian Canisius and Arianna Piffer and Ujjwal Baid and Mahyar Valizadeh and Akis Linardos and Jan C. Peeken and Surprosanna Shit and Felix Steinbauer and Daniel Rueckert and Rolf Heckemann and Spyridon Bakas and Jan Kirschke and Constantin von See and Ivan Ezhov and Marie Piraud and Benedikt Wiestler and Bjoern Menze},
+      year={2025},
+      eprint={2507.09036},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2507.09036}, 
+}
+```
 
 ## Documentation
 We provide a (WIP) documentation. Have a look [here](https://brainles-preprocessing.readthedocs.io/en/latest/?badge=latest)
