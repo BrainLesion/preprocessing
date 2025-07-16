@@ -213,7 +213,7 @@ class NativeSpacePreprocessor(BasePreprocessor):
         deface_mask = self.center_modality.deface(
             defacer=self.defacer,
             defaced_dir_path=deface_dir,
-            force_atlas_registration=self.force_atlas_reg_for_defacing,
+            registrator=self.registrator,
         )
         if deface_mask is None:
             return
