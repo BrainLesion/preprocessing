@@ -24,3 +24,6 @@ class Atlas(str, Enum):
 
     BRATS_MNI152 = "brats_MNI152lin_T1_1mm.nii.gz"
     """Slightly modified MNI152 atlas as found in the BraTS challenges"""
+
+    MNI152 = "mni_icbm152_t1_tal_nlin_sym_09c.nii"
+    """MNI_ICBM_2009c_Nonlinear_Symmetric atlas from https://nist.mni.mcgill.ca/icbm-152-nonlinear-atlases-2009/"""
