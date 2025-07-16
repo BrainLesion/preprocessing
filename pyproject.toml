@@ -54,7 +54,6 @@ pathlib = "^1.0.1"
 nibabel = ">=3.2.1"
 numpy = "^1.23.0"
 typer = "^0.15.0"
-black = "^24.3.0"
 simpleitk = ">=2.2.1"
 
 # registration
@@ -83,6 +82,7 @@ picsl_greedy = ["picsl_greedy"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.1.1"
+black = "^24.3.0"
 
 [tool.poetry.group.docs]
 optional = true
