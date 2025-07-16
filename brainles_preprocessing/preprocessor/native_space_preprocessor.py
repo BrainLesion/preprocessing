@@ -84,7 +84,7 @@ class NativeSpacePreprocessor(BasePreprocessor):
         log_file: Optional[Union[str, Path]] = None,
     ):
         """
-        Execute the non-atlas centric native space preprocessing pipeline
+        Execute the native space preprocessing pipeline
 
         Args:
             save_dir_coregistration (str or Path, optional): Directory path to save intermediate coregistration results.
