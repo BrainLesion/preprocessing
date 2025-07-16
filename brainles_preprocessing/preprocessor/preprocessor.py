@@ -22,6 +22,7 @@ from brainles_preprocessing.n4_bias_correction import (
 )
 from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
+from brainles_preprocessing.utils.citation_reminder import citation_reminder
 from brainles_preprocessing.utils.logging_utils import LoggingManager
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
@@ -46,6 +47,7 @@ class BasePreprocessor(ABC):
 
     """
 
+    @citation_reminder
     def __init__(
         self,
         center_modality: CenterModality,
