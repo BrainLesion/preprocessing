@@ -461,19 +461,15 @@ class Modality:
         self,
         defacer,
         defaced_dir_path: Union[str, Path],
-    ) -> Path:
+        registrator: Optional[Registrator] = None,
+    ) -> Path | None:
         """
         WARNING: Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.
-        Deface the current modality using the specified defacer.
-
-        Args:
-            defacer (Defacer): The defacer object.
-            defaced_dir_path (str or Path): Directory to store defacing results.
-
-        Returns:
-            Path: Path to the extracted brain mask.
         """
-        raise NotImplementedError("Method has been moved to CenterModality Class.")
+        raise RuntimeError(
+            "The 'deface' method has been deprecated and moved to the CenterModality class as its only supposed to be called once from the CenterModality. "
+            "Please update your code to use the CenterModality class instead"
+        )
 
     def save_current_image(
         self,
@@ -633,9 +629,9 @@ class CenterModality(Modality):
 
     def deface(
         self,
-        defacer,
+        defacer: Defacer,
         defaced_dir_path: Union[str, Path],
-        force_atlas_registration: bool = False,
+        registrator: Optional[Registrator] = None,
     ) -> Path | None:
         """
         Deface the current modality using the specified defacer.
@@ -643,7 +639,6 @@ class CenterModality(Modality):
         Args:
             defacer (Defacer): The defacer object.
             defaced_dir_path (str or Path): Directory to store defacing results.
-            force_atlas_registration (bool, optional): If True, forces atlas registration of the the BET mask before defacing to potentially boost quickshear performance. Defaults to False.
 
         Returns:
             Path | None: Path to the defacing mask if successful, None otherwise.
@@ -658,11 +653,10 @@ class CenterModality(Modality):
                     "Please run brain extraction first."
                 )
 
-            if force_atlas_registration:
+            if defacer.force_atlas_registration and registrator is not None:
                 logger.info("Forcing atlas registration before defacing as requested.")
-                registrator = ANTsRegistrator()
                 atlas_bet = defaced_dir_path / "atlas_bet.nii.gz"
-                atlas_bet_M = defaced_dir_path / "M_atlas_bet.mat"
+                atlas_bet_M = defaced_dir_path / "M_atlas_bet"
 
                 atlas_folder = verify_or_download_atlases()
                 atlas_image_path = atlas_folder / Atlas.BRATS_SRI24.value
