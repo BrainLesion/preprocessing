@@ -340,6 +340,12 @@ class Modality:
                 or self.steps[PreprocessorSteps.COREGISTERED]
             )
 
+            if input_img is None:
+                raise ValueError(
+                    "Input image for defacing is missing. Ensure that the required preprocessing steps "
+                    "have been performed before defacing."
+                )
+
             defacer.apply_mask(
                 input_image_path=input_img,
                 mask_path=mask_path,
