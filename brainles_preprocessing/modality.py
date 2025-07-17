@@ -645,6 +645,7 @@ class CenterModality(Modality):
         Args:
             defacer (Defacer): The defacer object.
             defaced_dir_path (str or Path): Directory to store defacing results.
+            registrator (Registrator, optional): The registrator object for atlas registration.
 
         Returns:
             Path | None: Path to the defacing mask if successful, None otherwise.
@@ -664,8 +665,12 @@ class CenterModality(Modality):
                 atlas_bet = defaced_dir_path / "atlas_bet.nii.gz"
                 atlas_bet_M = defaced_dir_path / "M_atlas_bet"
 
-                atlas_folder = verify_or_download_atlases()
-                atlas_image_path = atlas_folder / Atlas.BRATS_SRI24.value
+                # resolve atlas image path
+                if isinstance(defacer.atlas_image_path, Atlas):
+                    atlas_folder = verify_or_download_atlases()
+                    atlas_image_path = atlas_folder / defacer.atlas_image_path.value
+                else:
+                    atlas_image_path = Path(defacer.atlas_image_path)
 
                 registrator.register(
                     fixed_image_path=atlas_image_path,
