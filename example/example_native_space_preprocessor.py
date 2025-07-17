@@ -91,6 +91,6 @@ if __name__ == "__main__":
     preprocess(
         input_dir=Path(base_dir / f"example_data/{subject}"),
         output_dir=Path(
-            base_dir / f"example_data/mni_native_space_preprocessed_{subject}"
+            base_dir / f"example_data/native_space_preprocessed_{subject}"
         ),
     )
