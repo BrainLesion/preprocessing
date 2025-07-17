@@ -241,7 +241,7 @@ class ANTsRegistrator(Registrator):
             fixed_image_path (str or Path): Path to the fixed image.
             moving_image_path (str or Path): Path to the moving image.
             transformed_image_path (str or Path): Path to the transformed image (output).
-           matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
+            matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
             interpolator (str): Interpolator to use for the transformation. Default is 'nearestNeighbor'.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
