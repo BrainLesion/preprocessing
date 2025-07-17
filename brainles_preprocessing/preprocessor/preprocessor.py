@@ -13,7 +13,7 @@ from brainles_preprocessing.brain_extraction.brain_extractor import (
     BrainExtractor,
     HDBetExtractor,
 )
-from brainles_preprocessing.constants import Atlas, PreprocessorSteps
+from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.n4_bias_correction import (
@@ -24,7 +24,6 @@ from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils.citation_reminder import citation_reminder
 from brainles_preprocessing.utils.logging_utils import LoggingManager
-from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 logging_man = LoggingManager(name=__name__)
 logger = logging_man.get_logger()

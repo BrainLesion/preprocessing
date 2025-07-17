@@ -1,10 +1,12 @@
 from pathlib import Path
 
+from brainles_preprocessing.constants import Atlas
 from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
 from brainles_preprocessing.preprocessor import NativeSpacePreprocessor
+from brainles_preprocessing.defacing import QuickshearDefacer
 
 
 def preprocess(input_dir: Path, output_dir: Path):
@@ -71,6 +73,7 @@ def preprocess(input_dir: Path, output_dir: Path):
         center_modality=center,
         moving_modalities=moving_modalities,
         limit_cuda_visible_devices="0",
+        defacer=QuickshearDefacer(atlas_image_path=Atlas.MNI152),
     )
 
     preprocessor.run(
@@ -87,5 +90,7 @@ if __name__ == "__main__":
     base_dir = Path(__file__).parent
     preprocess(
         input_dir=Path(base_dir / f"example_data/{subject}"),
-        output_dir=Path(base_dir / f"example_data/native_space_preprocessed_{subject}"),
+        output_dir=Path(
+            base_dir / f"example_data/native_space_preprocessed_{subject}"
+        ),
     )
