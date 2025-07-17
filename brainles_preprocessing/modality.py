@@ -474,7 +474,7 @@ class Modality:
         """
         raise RuntimeError(
             "The 'deface' method has been deprecated and moved to the CenterModality class as its only supposed to be called once from the CenterModality. "
-            "Please update your code to use the CenterModality class instead"
+            "Please update your code to use the 'CenterModality.deface()' method instead."
         )
 
     def save_current_image(
