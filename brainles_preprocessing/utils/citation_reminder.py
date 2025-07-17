@@ -27,9 +27,6 @@ def citation_reminder(func):
             )
             console.rule()
             console.line()
-            os.environ["BRAINLES_PREPROCESSING_CITATION_REMINDER"] = (
-                "false"  # Show only once
-            )
         return func(*args, **kwargs)
 
     return wrapper
