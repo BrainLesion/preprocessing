@@ -7,7 +7,7 @@ from typing import Dict, Optional, Union
 from auxiliary.io import read_image, write_image
 
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
-from brainles_preprocessing.constants import PreprocessorSteps
+from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.normalization.normalizer_base import Normalizer
 from brainles_preprocessing.registration import (  # TODO: this will throw warnings if ANTs or NiftyReg are not installed, not ideal
@@ -15,6 +15,7 @@ from brainles_preprocessing.registration import (  # TODO: this will throw warni
     NiftyRegRegistrator,
 )
 from brainles_preprocessing.registration.registrator import Registrator
+from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
 
 logger = logging.getLogger(__name__)
 
@@ -295,7 +296,7 @@ class Modality:
         if self.bet:
             mask_path = Path(mask_path)
             bet_dir = Path(bet_dir)
-            bet_img = bet_dir / f"atlas__{self.modality_name}_bet.nii.gz"
+            bet_img = bet_dir / f"{self.modality_name}_bet.nii.gz"
 
             brain_extractor.apply_mask(
                 input_image_path=self.current,
@@ -324,14 +325,27 @@ class Modality:
         if self.requires_deface:
             mask_path = Path(mask_path)
             deface_dir = Path(deface_dir)
-            defaced_img = deface_dir / f"atlas__{self.modality_name}_defaced.nii.gz"
-            input_img = self.steps[
-                (
-                    PreprocessorSteps.ATLAS_CORRECTED
-                    if self.atlas_correction
-                    else PreprocessorSteps.ATLAS_REGISTERED
+            defaced_img = deface_dir / f"{self.modality_name}_defaced.nii.gz"
+
+            # For Atlas centric preprocessing, we use the atlas corrected or registered image as input
+            # For Native space preprocessing, we use the coregistered image as input
+            input_img = (
+                self.steps[
+                    (
+                        PreprocessorSteps.ATLAS_CORRECTED
+                        if self.atlas_correction
+                        else PreprocessorSteps.ATLAS_REGISTERED
+                    )
+                ]
+                or self.steps[PreprocessorSteps.COREGISTERED]
+            )
+
+            if input_img is None:
+                raise ValueError(
+                    "Input image for defacing is missing. Ensure that the required preprocessing steps "
+                    "have been performed before defacing."
                 )
-            ]
+
             defacer.apply_mask(
                 input_image_path=input_img,
                 mask_path=mask_path,
@@ -428,65 +442,40 @@ class Modality:
             "Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.",
             category=DeprecationWarning,
         )
-
         bet_dir_path = Path(bet_dir_path)
         bet_log = bet_dir_path / "brain-extraction.log"
 
-        atlas_bet_cm = bet_dir_path / f"atlas__{self.modality_name}_bet.nii.gz"
-        mask_path = bet_dir_path / f"atlas__{self.modality_name}_brain_mask.nii.gz"
+        bet = bet_dir_path / f"{self.modality_name}_bet.nii.gz"
+        mask_path = bet_dir_path / f"{self.modality_name}_brain_mask.nii.gz"
 
         brain_extractor.extract(
             input_image_path=self.current,
-            masked_image_path=atlas_bet_cm,
+            masked_image_path=bet,
             brain_mask_path=mask_path,
             log_file_path=bet_log,
         )
 
         # always temporarily store bet image for center modality, since e.g. quickshear defacing could require it
         # down the line even if the user does not wish to save the bet image
-        self.steps[PreprocessorSteps.BET] = atlas_bet_cm
+        self.steps[PreprocessorSteps.BET] = bet
 
         if self.bet:
-            self.current = atlas_bet_cm
+            self.current = bet
         return mask_path
 
     def deface(
         self,
         defacer,
         defaced_dir_path: Union[str, Path],
-    ) -> Path:
+        registrator: Optional[Registrator] = None,
+    ) -> Path | None:
         """
         WARNING: Legacy method. Please Migrate to use the CenterModality Class. Will be removed in future versions.
-
-        Deface the current modality using the specified defacer.
-
-        Args:
-            defacer (Defacer): The defacer object.
-            defaced_dir_path (str or Path): Directory to store defacing results.
-
-        Returns:
-            Path: Path to the extracted brain mask.
         """
-        warnings.warn(
-            "Legacy method. Please Migrate to use the CenterModality class. Will be removed in future versions.",
-            category=DeprecationWarning,
+        raise RuntimeError(
+            "The 'deface' method has been deprecated and moved to the CenterModality class as its only supposed to be called once from the CenterModality. "
+            "Please update your code to use the 'CenterModality.deface()' method instead."
         )
-        if isinstance(defacer, QuickshearDefacer):
-            defaced_dir_path = Path(defaced_dir_path)
-            atlas_mask_path = (
-                defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"
-            )
-
-            defacer.deface(
-                mask_image_path=atlas_mask_path,
-                input_image_path=self.steps[PreprocessorSteps.BET],
-            )
-            return atlas_mask_path
-        else:
-            logger.warning(
-                "Defacing method not implemented yet. Skipping defacing for this modality."
-            )
-            return None
 
     def save_current_image(
         self,
@@ -612,6 +601,7 @@ class CenterModality(Modality):
         bet_dir_path: Union[str, Path],
     ) -> Path:
         """
+
         Extract the brain region using the specified brain extractor.
 
         Args:
@@ -621,66 +611,95 @@ class CenterModality(Modality):
         Returns:
             Path: Path to the extracted brain mask.
         """
+
         bet_dir_path = Path(bet_dir_path)
         bet_log = bet_dir_path / "brain-extraction.log"
 
-        atlas_bet_cm = bet_dir_path / f"atlas__{self.modality_name}_bet.nii.gz"
-        mask_path = bet_dir_path / f"atlas__{self.modality_name}_brain_mask.nii.gz"
+        bet = bet_dir_path / f"{self.modality_name}_bet.nii.gz"
+        mask_path = bet_dir_path / f"{self.modality_name}_brain_mask.nii.gz"
 
         brain_extractor.extract(
             input_image_path=self.current,
-            masked_image_path=atlas_bet_cm,
+            masked_image_path=bet,
             brain_mask_path=mask_path,
             log_file_path=bet_log,
         )
 
-        if self.bet_mask_output_path:
-            logger.debug(f"Saving bet mask to {self.bet_mask_output_path}")
-            self.save_mask(mask_path=mask_path, output_path=self.bet_mask_output_path)
-
         # always temporarily store bet image for center modality, since e.g. quickshear defacing could require it
         # down the line even if the user does not wish to save the bet image
-        self.steps[PreprocessorSteps.BET] = atlas_bet_cm
+        self.steps[PreprocessorSteps.BET] = bet
 
         if self.bet:
-            self.current = atlas_bet_cm
+            self.current = bet
         return mask_path
 
     def deface(
         self,
-        defacer,
+        defacer: Defacer,
         defaced_dir_path: Union[str, Path],
-    ) -> Path:
+        registrator: Optional[Registrator] = None,
+    ) -> Path | None:
         """
         Deface the current modality using the specified defacer.
 
         Args:
             defacer (Defacer): The defacer object.
             defaced_dir_path (str or Path): Directory to store defacing results.
+            registrator (Registrator, optional): The registrator object for atlas registration.
 
         Returns:
-            Path: Path to the extracted brain mask.
+            Path | None: Path to the defacing mask if successful, None otherwise.
         """
-
         if isinstance(defacer, QuickshearDefacer):
             defaced_dir_path = Path(defaced_dir_path)
-            atlas_mask_path = (
-                defaced_dir_path / f"atlas__{self.modality_name}_deface_mask.nii.gz"
-            )
+            mask_path = defaced_dir_path / f"{self.modality_name}_deface_mask.nii.gz"
 
-            defacer.deface(
-                mask_image_path=atlas_mask_path,
-                input_image_path=self.steps[PreprocessorSteps.BET],
-            )
-
-            if self.defacing_mask_output_path:
-                logger.debug(f"Saving deface mask to {self.defacing_mask_output_path}")
-                self.save_mask(
-                    mask_path=atlas_mask_path,
-                    output_path=self.defacing_mask_output_path,
+            if self.steps.get(PreprocessorSteps.BET, None) is None:
+                raise ValueError(
+                    "Brain extraction must be performed before defacing. "
+                    "Please run brain extraction first."
                 )
 
-            return atlas_mask_path
+            if defacer.force_atlas_registration and registrator is not None:
+                logger.info("Forcing atlas registration before defacing as requested.")
+                atlas_bet = defaced_dir_path / "atlas_bet.nii.gz"
+                atlas_bet_M = defaced_dir_path / "M_atlas_bet"
+
+                # resolve atlas image path
+                if isinstance(defacer.atlas_image_path, Atlas):
+                    atlas_folder = verify_or_download_atlases()
+                    atlas_image_path = atlas_folder / defacer.atlas_image_path.value
+                else:
+                    atlas_image_path = Path(defacer.atlas_image_path)
+
+                registrator.register(
+                    fixed_image_path=atlas_image_path,
+                    moving_image_path=self.steps[PreprocessorSteps.BET],
+                    transformed_image_path=atlas_bet,
+                    matrix_path=atlas_bet_M,
+                    log_file_path=defaced_dir_path / "atlas_bet.log",
+                )
+
+                deface_mask_atlas = defaced_dir_path / "deface_mask_atlas.nii.gz"
+                defacer.deface(
+                    input_image_path=atlas_bet,
+                    mask_image_path=deface_mask_atlas,
+                )
+
+                registrator.inverse_transform(
+                    fixed_image_path=self.steps[PreprocessorSteps.BET],
+                    moving_image_path=deface_mask_atlas,
+                    transformed_image_path=mask_path,
+                    matrix_path=atlas_bet_M,
+                    log_file_path=defaced_dir_path / "inverse_transform.log",
+                )
+            else:
+                defacer.deface(
+                    input_image_path=self.steps[PreprocessorSteps.BET],
+                    mask_image_path=mask_path,
+                )
+
+            return mask_path
         else:
             logger.warning(
                 "Defacing method not implemented yet. Skipping defacing for this modality."

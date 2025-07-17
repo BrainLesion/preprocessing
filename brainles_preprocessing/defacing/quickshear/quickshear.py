@@ -6,6 +6,7 @@ from auxiliary.io import read_image, write_image
 
 from brainles_preprocessing.defacing.defacer import Defacer
 from brainles_preprocessing.defacing.quickshear.nipy_quickshear import run_quickshear
+from brainles_preprocessing.constants import Atlas
 
 
 class QuickshearDefacer(Defacer):
@@ -29,14 +30,23 @@ class QuickshearDefacer(Defacer):
             ```
     """
 
-    def __init__(self, buffer: float = 10.0):
+    def __init__(
+        self,
+        buffer: float = 10.0,
+        force_atlas_registration: bool = True,
+        atlas_image_path: Union[str, Path, Atlas] = Atlas.SRI24,
+    ):
         """Initialize Quickshear defacer
 
         Args:
             buffer (float, optional): buffer parameter from quickshear algorithm. Defaults to 10.0.
+            force_atlas_registration (bool, optional): If True, forces atlas registration of the BET mask before defacing to potentially boost quickshear performance. Defaults to True.
+            atlas_image_path (Union[str, Path, Atlas], optional): Path to the atlas image or an Atlas enum value that will be used for the optional atlas registrations. Defaults to Atlas.SRI24.
         """
         super().__init__()
         self.buffer = buffer
+        self.force_atlas_registration = force_atlas_registration
+        self.atlas_image_path = atlas_image_path
 
     def deface(
         self,
