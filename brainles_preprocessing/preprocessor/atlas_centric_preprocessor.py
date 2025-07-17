@@ -1,27 +1,13 @@
-import os
 import shutil
-import subprocess
-import tempfile
-import warnings
-from abc import ABC
-from collections import Counter
-from functools import wraps
 from pathlib import Path
 from typing import List, Optional, Union
 
-from brainles_preprocessing.brain_extraction.brain_extractor import (
-    BrainExtractor,
-    HDBetExtractor,
-)
+from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.modality import CenterModality, Modality
-from brainles_preprocessing.n4_bias_correction import (
-    N4BiasCorrector,
-    SitkN4BiasCorrector,
-)
+from brainles_preprocessing.n4_bias_correction import N4BiasCorrector
 from brainles_preprocessing.preprocessor.preprocessor import BasePreprocessor
-from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils.logging_utils import LoggingManager
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases

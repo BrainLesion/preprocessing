@@ -160,7 +160,7 @@ class NiftyRegRegistrator(Registrator):
             fixed_image_path (str): Path to the fixed image.
             moving_image_path (str): Path to the moving image.
             transformed_image_path (str): Path to the transformed image (output).
-            matrix_path (str): Path to the transformation matrix.
+            matrix_path (str | Path | List[str | Path]): Path(s) to the transformation matrix(es).
             log_file_path (str): Path to the log file.
             interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC). Default is '1' (linear).
         Raises:
