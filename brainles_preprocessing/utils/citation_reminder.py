@@ -8,6 +8,7 @@ CITATION_LINK = "https://github.com/BrainLesion/preprocessing#citation"
 def citation_reminder(func):
     """Decorator to remind users to cite brainles-preprocessing."""
 
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if (
             os.environ.get("BRAINLES_PREPROCESSING_CITATION_REMINDER", "true").lower()
