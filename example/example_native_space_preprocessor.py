@@ -90,7 +90,5 @@ if __name__ == "__main__":
     base_dir = Path(__file__).parent
     preprocess(
         input_dir=Path(base_dir / f"example_data/{subject}"),
-        output_dir=Path(
-            base_dir / f"example_data/native_space_preprocessed_{subject}"
-        ),
+        output_dir=Path(base_dir / f"example_data/native_space_preprocessed_{subject}"),
     )
