@@ -7,8 +7,16 @@ CITATION_LINK = "https://github.com/BrainLesion/preprocessing#citation"
 
 
 def citation_reminder(func):
-    """Decorator to remind users to cite brainles-preprocessing."""
-
+    """
+    Decorator to remind users to cite brainles-preprocessing.
+    
+    The reminder is shown when the environment variable 
+    `BRAINLES_PREPROCESSING_CITATION_REMINDER` is set to "true" (default).
+    To disable the reminder, set the environment variable to "false".
+    
+    Environment variable used:
+    - BRAINLES_PREPROCESSING_CITATION_REMINDER: Controls whether the reminder is shown.
+    """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if (
