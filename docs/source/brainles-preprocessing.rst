@@ -20,3 +20,12 @@ Preprocessor
 .. automodule:: brainles_preprocessing.preprocessor.native_space_preprocessor
 
 
+Constants
+--------------------------------------------
+.. automodule:: brainles_preprocessing.constants
+
+
+Transform
+--------------------------------------------
+.. automodule:: brainles_preprocessing.transform
+
