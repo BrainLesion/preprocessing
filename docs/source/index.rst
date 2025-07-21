@@ -31,6 +31,13 @@ Indices and tables
 
 .. toctree::
    :maxdepth: 2
+   :caption: N4 Bias Correction:
+
+   n4-bias-correction.rst
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: brain_extraction:
 
    brain-extraction.rst
