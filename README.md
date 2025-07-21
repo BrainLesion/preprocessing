@@ -138,11 +138,17 @@ We provide a (WIP) documentation. Have a look [here](https://brainles-preprocess
 Please credit the authors by citing their work.
 
 ### Registration
-We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux).
+We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux). We also offer basic support for [greedy](https://greedy.readthedocs.io/en/latest/reference.html#greedy-usage) and [elastix](https://pypi.org/project/itk-elastix/0.13.0/).
 
 ### Atlas Reference
-We provide the SRI-24 atlas from this [publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2915788/).
-However, custom atlases in NIfTI format are supported.
+We provide a range of different atlases, namely:
+-  [SRI24](https://www.nitrc.org/frs/download.php/4502/sri24_anatomy_unstripped_nifti.zip) and its [skull-stripped version](https://www.nitrc.org/frs/download.php/4499/sri24_anatomy_nifti.zip)
+-  A slightly modified SRI24 atlas as found in the BraTS challenges (also with a skull-stripped version)
+-  MNI152: [MNI_ICBM_2009c_Nonlinear_Symmetric](https://nist.mni.mcgill.ca/icbm-152-nonlinear-atlases-2009/)
+-  A slightly modified MNI152 atlas as found in the BraTS challenge 
+
+We also support supplying a custom atlas in NIfTI format
+
 
 ### N4 Bias correction
 We currently provide support for N4 Bias correction based on [SimpleITK](https://simpleitk.org/)
