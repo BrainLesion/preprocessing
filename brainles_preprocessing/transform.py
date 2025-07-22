@@ -1,12 +1,10 @@
 from pathlib import Path
 from typing import Optional, Union
 
+from loguru import logger
+
 from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
-from brainles_preprocessing.utils.logging_utils import LoggingManager
-
-logging_man = LoggingManager(name=__name__)
-logger = logging_man.get_logger()
 
 
 class Transform:
