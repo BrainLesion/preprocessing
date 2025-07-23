@@ -5,9 +5,11 @@ import tempfile
 import warnings
 from abc import ABC, abstractmethod
 from collections import Counter
-from functools import wraps
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Union
+
+from loguru import logger
 
 from brainles_preprocessing.brain_extraction.brain_extractor import (
     BrainExtractor,
@@ -23,10 +25,6 @@ from brainles_preprocessing.n4_bias_correction import (
 from brainles_preprocessing.registration import ANTsRegistrator
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils.citation_reminder import citation_reminder
-from brainles_preprocessing.utils.logging_utils import LoggingManager
-
-logging_man = LoggingManager(name=__name__)
-logger = logging_man.get_logger()
 
 
 class BasePreprocessor(ABC):
@@ -46,6 +44,28 @@ class BasePreprocessor(ABC):
 
     """
 
+    def _add_log_file_handler(self, log_file: Optional[Path | str]) -> int:
+        """
+        Add a log file handler to the logger.
+
+        Args:
+            log_file (Optional[Path | str]): Path to the log file. If None, a default log file will be created (brainles_preprocessing_{timestamp}.log).
+
+        Returns:
+            int: The logger id
+        """
+        log_file = Path(
+            log_file
+            if log_file
+            else f"brainles_preprocessing_{datetime.now().strftime('%Y-%m-%d_T%H-%M-%S.%f')}.log"
+        )
+        logger_id = logger.add(log_file, level="DEBUG", catch=True)
+        logger.info(
+            f"Logging console logs and further debug information to: {log_file.absolute()}"
+        )
+
+        return logger_id
+
     @citation_reminder
     def __init__(
         self,
@@ -59,7 +79,6 @@ class BasePreprocessor(ABC):
         use_gpu: Optional[bool] = None,
         limit_cuda_visible_devices: Optional[str] = None,
     ):
-        logging_man._setup_logger()
 
         if not isinstance(center_modality, CenterModality):
             warnings.warn(
@@ -146,18 +165,6 @@ class BasePreprocessor(ABC):
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
-    def ensure_remove_log_file_handler(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            finally:
-                self = args[0]
-                if isinstance(self, BasePreprocessor):
-                    logging_man.remove_log_file_handler()
-
-        return wrapper
-
     @property
     def all_modalities(self) -> List[Modality]:
         """
@@ -173,7 +180,6 @@ class BasePreprocessor(ABC):
         return any(modality.requires_deface for modality in self.all_modalities)
 
     @abstractmethod
-    @ensure_remove_log_file_handler
     def run(self, *args, **kwargs):
         """
         Execute the preprocessing pipeline, encompassing

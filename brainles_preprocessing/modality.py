@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 from auxiliary.io import read_image, write_image
+from loguru import logger
 
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
@@ -16,8 +17,6 @@ from brainles_preprocessing.registration import (  # TODO: this will throw warni
 )
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
-
-logger = logging.getLogger(__name__)
 
 
 class Modality:
