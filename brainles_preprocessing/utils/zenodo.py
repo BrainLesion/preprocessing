@@ -8,13 +8,8 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import requests
+from loguru import logger
 from rich.progress import Progress, SpinnerColumn, TextColumn
-
-from brainles_preprocessing.utils.logging_utils import LoggingManager
-
-
-logging_man = LoggingManager(name=__name__)
-logger = logging_man.get_logger()
 
 ZENODO_RECORD_URL = "https://zenodo.org/api/records/15236131"
 ATLASES_FOLDER = Path(__file__).parent.parent / "registration" / "atlases"

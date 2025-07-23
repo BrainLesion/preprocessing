@@ -2,6 +2,8 @@ import shutil
 from pathlib import Path
 from typing import List, Optional, Union
 
+from loguru import logger
+
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
 from brainles_preprocessing.constants import Atlas, PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
@@ -9,11 +11,7 @@ from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.n4_bias_correction import N4BiasCorrector
 from brainles_preprocessing.preprocessor.preprocessor import BasePreprocessor
 from brainles_preprocessing.registration.registrator import Registrator
-from brainles_preprocessing.utils.logging_utils import LoggingManager
 from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
-
-logging_man = LoggingManager(name=__name__)
-logger = logging_man.get_logger()
 
 
 class AtlasCentricPreprocessor(BasePreprocessor):
@@ -101,97 +99,102 @@ class AtlasCentricPreprocessor(BasePreprocessor):
         Results are saved in the specified directories, allowing for modular and configurable output storage.
         """
 
-        logging_man._set_log_file(log_file)
-        logger.info(f"{' Starting preprocessing ':=^80}")
-        logger.info(f"Logs are saved to {logging_man.log_file_handler.baseFilename}")
-        modality_names = ", ".join(
-            [modality.modality_name for modality in self.moving_modalities]
-        )
-        logger.info(
-            f"Received center modality: {self.center_modality.modality_name} "
-            f"and moving modalities: {modality_names}"
-        )
+        logger_id = self._add_log_file_handler(log_file)
+        try:
+            logger.info(f"{' Starting preprocessing ':=^80}")
+            modality_names = ", ".join(
+                [modality.modality_name for modality in self.moving_modalities]
+            )
+            logger.info(
+                f"Received center modality: {self.center_modality.modality_name} "
+                f"and moving modalities: {modality_names}"
+            )
 
-        # Co-register moving modalities to center modality
-        logger.info(f"{' Starting Coregistration ':-^80}")
-        self.run_coregistration(
-            save_dir_coregistration=save_dir_coregistration,
-        )
-        logger.info(
-            f"Coregistration complete. Output saved to {save_dir_coregistration}"
-        )
+            # Co-register moving modalities to center modality
+            logger.info(f"{' Starting Coregistration ':-^80}")
+            self.run_coregistration(
+                save_dir_coregistration=save_dir_coregistration,
+            )
+            logger.info(
+                f"Coregistration complete. Output saved to {save_dir_coregistration}"
+            )
 
-        # Register center modality to atlas
-        logger.info(f"{' Starting atlas registration ':-^80}")
-        self.run_atlas_registration(
-            save_dir_atlas_registration=save_dir_atlas_registration,
-        )
-        logger.info(
-            f"Transformations complete. Output saved to {save_dir_atlas_registration}"
-        )
+            # Register center modality to atlas
+            logger.info(f"{' Starting atlas registration ':-^80}")
+            self.run_atlas_registration(
+                save_dir_atlas_registration=save_dir_atlas_registration,
+            )
+            logger.info(
+                f"Transformations complete. Output saved to {save_dir_atlas_registration}"
+            )
 
-        # Optional: additional correction in atlas space
-        logger.info(f"{' Checking optional atlas correction ':-^80}")
-        self.run_atlas_correction(
-            save_dir_atlas_correction=save_dir_atlas_correction,
-        )
+            # Optional: additional correction in atlas space
+            logger.info(f"{' Checking optional atlas correction ':-^80}")
+            self.run_atlas_correction(
+                save_dir_atlas_correction=save_dir_atlas_correction,
+            )
 
-        # Optional: N4 bias correction
-        logger.info(f"{' Checking optional N4 bias correction ':-^80}")
-        self.run_n4_bias_correction(
-            save_dir_n4_bias_correction=save_dir_n4_bias_correction,
-        )
+            # Optional: N4 bias correction
+            logger.info(f"{' Checking optional N4 bias correction ':-^80}")
+            self.run_n4_bias_correction(
+                save_dir_n4_bias_correction=save_dir_n4_bias_correction,
+            )
 
-        # Now we save images that are not skullstripped (current image = atlas registered or atlas registered + corrected)
-        logger.info("Saving non skull-stripped images...")
-        for modality in self.all_modalities:
-            if modality.raw_skull_output_path:
-                modality.save_current_image(
-                    modality.raw_skull_output_path,
-                    normalization=False,
-                )
-            if modality.normalized_skull_output_path:
-                modality.save_current_image(
-                    modality.normalized_skull_output_path,
-                    normalization=True,
-                )
-
-        # Optional: Brain extraction
-        logger.info(f"{' Checking optional brain extraction ':-^80}")
-        self.run_brain_extraction(
-            save_dir_brain_extraction=save_dir_brain_extraction,
-        )
-
-        # Defacing
-        logger.info(f"{' Checking optional defacing ':-^80}")
-        self.run_defacing(
-            save_dir_defacing=save_dir_defacing,
-        )
-
-        # move to separate method
-        if save_dir_transformations:
-            save_dir_transformations = Path(save_dir_transformations)
-
-            # Save transformation matrices
-            logger.info(f"Saving transformation matrices to {save_dir_transformations}")
+            # Now we save images that are not skullstripped (current image = atlas registered or atlas registered + corrected)
+            logger.info("Saving non skull-stripped images...")
             for modality in self.all_modalities:
+                if modality.raw_skull_output_path:
+                    modality.save_current_image(
+                        modality.raw_skull_output_path,
+                        normalization=False,
+                    )
+                if modality.normalized_skull_output_path:
+                    modality.save_current_image(
+                        modality.normalized_skull_output_path,
+                        normalization=True,
+                    )
 
-                modality_transformations_dir = (
-                    save_dir_transformations / modality.modality_name
+            # Optional: Brain extraction
+            logger.info(f"{' Checking optional brain extraction ':-^80}")
+            self.run_brain_extraction(
+                save_dir_brain_extraction=save_dir_brain_extraction,
+            )
+
+            # Defacing
+            logger.info(f"{' Checking optional defacing ':-^80}")
+            self.run_defacing(
+                save_dir_defacing=save_dir_defacing,
+            )
+
+            # move to separate method
+            if save_dir_transformations:
+                save_dir_transformations = Path(save_dir_transformations)
+
+                # Save transformation matrices
+                logger.info(
+                    f"Saving transformation matrices to {save_dir_transformations}"
                 )
-                modality_transformations_dir.mkdir(exist_ok=True, parents=True)
-                for step, path in modality.transformation_paths.items():
-                    if path is not None:
-                        shutil.copyfile(
-                            src=str(path.absolute()),
-                            dst=str(
-                                modality_transformations_dir
-                                / f"{step.value}_{path.name}"
-                            ),
-                        )
+                for modality in self.all_modalities:
 
-        # End
-        logger.info(f"{' Preprocessing complete ':=^80}")
+                    modality_transformations_dir = (
+                        save_dir_transformations / modality.modality_name
+                    )
+                    modality_transformations_dir.mkdir(exist_ok=True, parents=True)
+                    for step, path in modality.transformation_paths.items():
+                        if path is not None:
+                            shutil.copyfile(
+                                src=str(path.absolute()),
+                                dst=str(
+                                    modality_transformations_dir
+                                    / f"{step.value}_{path.name}"
+                                ),
+                            )
+
+            # End
+            logger.info(f"{' Preprocessing complete ':=^80}")
+        finally:
+            # Remove log file handler if it was added
+            logger.remove(logger_id)
 
     def run_atlas_registration(
         self, save_dir_atlas_registration: Optional[Union[str, Path]] = None
