@@ -16,12 +16,22 @@ from nipreps.synthstrip.model import StripModel
 from nitransforms.linear import Affine
 
 from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
+from brainles_preprocessing.utils.zenodo import fetch_synthstrip
 
 
-class SynthstripExtractor(BrainExtractor):
-    """
-    Brain extraction using SynthStrip with preprocessing conforming to model requirements.
-    """
+class SynthStripExtractor(BrainExtractor):
+
+    def __init__(self, border: int = 1):
+        """
+        Brain extraction using SynthStrip with preprocessing conforming to model requirements.
+        Adapted from https://github.com/nipreps/synthstrip
+
+        Args:
+            border (int): Mask border threshold in mm. Defaults to 1.
+        """
+
+        super().__init__()
+        self.border = border
 
     def _setup_model(self, device: torch.device) -> StripModel:
         """
@@ -43,9 +53,7 @@ class SynthstripExtractor(BrainExtractor):
             model.eval()
 
         # Load the model weights
-        weights = Path(
-            "/home/marcelrosier/preprocessing/brainles_preprocessing/brain_extraction/weights/synthstrip.1.pt"
-        )  # TODO: download dynamically
+        weights = fetch_synthstrip()
         checkpoint = torch.load(weights, map_location=device)
         model.load_state_dict(checkpoint["model_state_dict"])
 
@@ -150,7 +158,6 @@ class SynthstripExtractor(BrainExtractor):
         brain_mask_path: Union[str, Path],
         device: Union[torch.device, str] = "cuda",
         num_threads: int = 1,
-        border: int = 1,
         **kwargs,
     ) -> None:
         """
@@ -162,7 +169,6 @@ class SynthstripExtractor(BrainExtractor):
             brain_mask_path (Union[str, Path]): Path to the output brain mask.
             device (Union[torch.device, str], optional): Device to use for computation. Defaults to "cuda".
             num_threads (int, optional): Number of threads to use for computation in CPU mode. Defaults to 1.
-            border (int, optional): Mask border threshold in mm. Defaults to 1.
 
         Returns:
             None: The function saves the masked image and brain mask to the specified paths.
@@ -198,7 +204,7 @@ class SynthstripExtractor(BrainExtractor):
         sdt_data = np.asanyarray(sdt_target.dataobj).astype("int16")
 
         # find largest CC (just do this to be safe for now)
-        components = scipy.ndimage.label(sdt_data.squeeze() < border)[0]
+        components = scipy.ndimage.label(sdt_data.squeeze() < self.border)[0]
         bincount = np.bincount(components.flatten())[1:]
         mask = components == (np.argmax(bincount) + 1)
         mask = scipy.ndimage.morphology.binary_fill_holes(mask)

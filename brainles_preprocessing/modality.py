@@ -17,7 +17,7 @@ from brainles_preprocessing.registration import (  # TODO: this will throw warni
     NiftyRegRegistrator,
 )
 from brainles_preprocessing.registration.registrator import Registrator
-from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
+from brainles_preprocessing.utils.zenodo import fetch_atlases
 
 
 class Modality:
@@ -674,7 +674,7 @@ class CenterModality(Modality):
 
                 # resolve atlas image path
                 if isinstance(defacer.atlas_image_path, Atlas):
-                    atlas_folder = verify_or_download_atlases()
+                    atlas_folder = fetch_atlases()
                     atlas_image_path = atlas_folder / defacer.atlas_image_path.value
                 else:
                     atlas_image_path = Path(defacer.atlas_image_path)
