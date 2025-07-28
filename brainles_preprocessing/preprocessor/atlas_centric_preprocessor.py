@@ -11,7 +11,7 @@ from brainles_preprocessing.modality import CenterModality, Modality
 from brainles_preprocessing.n4_bias_correction import N4BiasCorrector
 from brainles_preprocessing.preprocessor.preprocessor import BasePreprocessor
 from brainles_preprocessing.registration.registrator import Registrator
-from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
+from brainles_preprocessing.utils.zenodo import fetch_atlases
 
 
 class AtlasCentricPreprocessor(BasePreprocessor):
@@ -42,7 +42,7 @@ class AtlasCentricPreprocessor(BasePreprocessor):
         atlas_image_path: Union[str, Path, Atlas] = Atlas.BRATS_SRI24,
         n4_bias_corrector: Optional[N4BiasCorrector] = None,
         temp_folder: Optional[Union[str, Path]] = None,
-        use_gpu: Optional[bool] = None,
+        use_gpu: bool = True,
         limit_cuda_visible_devices: Optional[str] = None,
     ):
         super().__init__(
@@ -58,7 +58,7 @@ class AtlasCentricPreprocessor(BasePreprocessor):
         )
 
         if isinstance(atlas_image_path, Atlas):
-            atlas_folder = verify_or_download_atlases()
+            atlas_folder = fetch_atlases()
             self.atlas_image_path = atlas_folder / atlas_image_path.value
         else:
             self.atlas_image_path = Path(atlas_image_path)

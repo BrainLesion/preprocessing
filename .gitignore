@@ -133,3 +133,4 @@ dmypy.json
 .DS_Store
 
 brainles_preprocessing/registration/atlases
+brainles_preprocessing/brain_extraction/weights

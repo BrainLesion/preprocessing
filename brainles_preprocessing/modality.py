@@ -4,6 +4,7 @@ import warnings
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+import torch
 from auxiliary.io import read_image, write_image
 from loguru import logger
 
@@ -16,7 +17,7 @@ from brainles_preprocessing.registration import (  # TODO: this will throw warni
     NiftyRegRegistrator,
 )
 from brainles_preprocessing.registration.registrator import Registrator
-from brainles_preprocessing.utils.zenodo import verify_or_download_atlases
+from brainles_preprocessing.utils.zenodo import fetch_atlases
 
 
 class Modality:
@@ -598,6 +599,7 @@ class CenterModality(Modality):
         self,
         brain_extractor: BrainExtractor,
         bet_dir_path: Union[str, Path],
+        use_gpu: bool = True,
     ) -> Path:
         """
 
@@ -606,6 +608,7 @@ class CenterModality(Modality):
         Args:
             brain_extractor (BrainExtractor): The brain extractor object.
             bet_dir_path (str or Path): Directory to store brain extraction results.
+            use_gpu (bool): Whether to use GPU for brain extraction if available.
 
         Returns:
             Path: Path to the extracted brain mask.
@@ -617,11 +620,16 @@ class CenterModality(Modality):
         bet = bet_dir_path / f"{self.modality_name}_bet.nii.gz"
         mask_path = bet_dir_path / f"{self.modality_name}_brain_mask.nii.gz"
 
+        device = torch.device(
+            "cuda" if use_gpu and torch.cuda.is_available() else "cpu"
+        )
+
         brain_extractor.extract(
             input_image_path=self.current,
             masked_image_path=bet,
             brain_mask_path=mask_path,
             log_file_path=bet_log,
+            device=device,
         )
 
         # always temporarily store bet image for center modality, since e.g. quickshear defacing could require it
@@ -666,7 +674,7 @@ class CenterModality(Modality):
 
                 # resolve atlas image path
                 if isinstance(defacer.atlas_image_path, Atlas):
-                    atlas_folder = verify_or_download_atlases()
+                    atlas_folder = fetch_atlases()
                     atlas_image_path = atlas_folder / defacer.atlas_image_path.value
                 else:
                     atlas_image_path = Path(defacer.atlas_image_path)

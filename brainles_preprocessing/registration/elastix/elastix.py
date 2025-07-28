@@ -26,6 +26,8 @@ class ElastixRegistrator(Registrator):
         """
         Register images using elastix.
 
+        This is an optional dependency - to use this registrator, you need to install the `brainles_preprocessing` package with the `itk-elastix` extra: `pip install brainles_preprocessing[itk-elastix]`.
+
         Args:
             fixed_image_path (str): Path to the fixed image.
             moving_image_path (str): Path to the moving image.
