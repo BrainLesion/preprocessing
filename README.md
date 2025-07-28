@@ -138,7 +138,15 @@ We provide a (WIP) documentation. Have a look [here](https://brainles-preprocess
 Please credit the authors by citing their work.
 
 ### Registration
-We currently provide support for [ANTs](https://github.com/ANTsX/ANTs) (default), [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux). We also offer basic support for [greedy](https://greedy.readthedocs.io/en/latest/reference.html#greedy-usage) and [elastix](https://pypi.org/project/itk-elastix/0.13.0/).
+We currently fully support:
+- [ANTs](https://github.com/ANTsX/ANTs) (default)
+- [Niftyreg](https://github.com/KCL-BMEIS/niftyreg) (Linux)
+
+We also offer basic support for:
+- [greedy](https://greedy.readthedocs.io/en/latest/reference.html#greedy-usage) (Optional dependency, install via: `pip install brainles_preprocessing[picsl_greedy]`)
+- [elastix](https://pypi.org/project/itk-elastix/0.13.0/) (Optional dependency, install via: `pip install brainles_preprocessing[itk-elastix]`)
+
+As of now we do not offer inverse transforms for greedy and elastix. Please resort to ANTs or Niftyreg for this.
 
 ### Atlas Reference
 We provide a range of different atlases, namely:
@@ -154,7 +162,9 @@ We also support supplying a custom atlas in NIfTI format
 We currently provide support for N4 Bias correction based on [SimpleITK](https://simpleitk.org/)
 
 ### Brain extraction
-We currently provide support for [HD-BET](https://github.com/MIC-DKFZ/HD-BET).
+We currently support:
+- [HD-BET](https://github.com/MIC-DKFZ/HD-BET)
+- [SynthStrip](https://surfer.nmr.mgh.harvard.edu/docs/synthstrip/) (Optional dependency, install via: `pip install brainles_preprocessing[synthstrip]`)
 
 ### Defacing
 We currently provide support for [Quickshear](https://github.com/nipy/quickshear).
