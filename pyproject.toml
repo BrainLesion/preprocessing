@@ -50,7 +50,6 @@ classifiers = [
 python = "^3.10"
 # core
 ttictoc = "^0.5.6"
-pathlib = "^1.0.1"
 nibabel = ">=3.2.1"
 numpy = "^1.23.0"
 typer = "^0.15.0"
