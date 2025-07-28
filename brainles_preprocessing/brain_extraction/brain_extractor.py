@@ -87,7 +87,6 @@ class HDBetExtractor(BrainExtractor):
         masked_image_path: Union[str, Path],
         brain_mask_path: Union[str, Path],
         log_file_path: Optional[Union[str, Path]] = None,
-        # TODO convert mode to enum
         mode: Union[str, Mode] = Mode.ACCURATE,
         device: Optional[Union[int, str]] = 0,
         do_tta: Optional[bool] = True,
