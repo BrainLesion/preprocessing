@@ -67,8 +67,8 @@ class SynthStripExtractor(BrainExtractor):
         """
         Resample the input image to match SynthStrip's expected input space.
 
-        Args:
-           input_nii (Nifti1Image): Input NIfTI image to conform.
+        Args: 
+            input_nii (Nifti1Image): Input NIfTI image to conform.
 
         Returns:
             A new NIfTI image with conformed shape and affine.
