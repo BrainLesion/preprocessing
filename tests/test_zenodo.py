@@ -1,162 +1,185 @@
-import pytest
-import shutil
-import zipfile
-from unittest.mock import MagicMock, patch
 from pathlib import Path
-from io import BytesIO
+from unittest.mock import MagicMock, patch
 
-from requests import RequestException
+import pytest
+import requests
 
 from brainles_preprocessing.utils.zenodo import (
-    ATLASES_FOLDER,
-    verify_or_download_atlases,
-    _get_latest_version_folder_name,
-    _get_zenodo_metadata_and_archive_url,
-    _download_atlases,
-    _extract_archive,
+    ZenodoException,
+    ZenodoRecord,
+    fetch_atlases,
+    fetch_synthstrip,
 )
 
-
-@pytest.fixture
-def mock_zenodo_metadata():
-    return {"version": "1.0.0"}, "https://fakeurl.com/archive.zip"
+# ---- Fixtures ----
 
 
 @pytest.fixture
-def mock_atlases_folder(tmp_path):
-    atlases_path = tmp_path / "atlases"
-    atlases_path.mkdir()
-    return atlases_path
-
-
-@patch("brainles_preprocessing.utils.zenodo.requests.get")
-def test_get_zenodo_metadata_and_archive_url(mock_get, mock_zenodo_metadata):
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = {
-        "metadata": mock_zenodo_metadata[0],
-        "links": {"archive": mock_zenodo_metadata[1]},
+def dummy_metadata():
+    return {
+        "version": "1.2.3",
+        "title": "Test Record",
     }
-    mock_get.return_value = mock_response
-
-    metadata, archive_url = _get_zenodo_metadata_and_archive_url()
-    assert metadata["version"] == "1.0.0"
-    assert archive_url == "https://fakeurl.com/archive.zip"
 
 
-@patch("brainles_preprocessing.utils.zenodo.requests.get")
-def test_get_zenodo_metadata_and_archive_url_failure(mock_get):
-    mock_get.side_effect = RequestException()
-    assert _get_zenodo_metadata_and_archive_url() == None
+@pytest.fixture
+def dummy_archive_url():
+    return "https://zenodo.org/record/dummy/archive.zip"
 
 
-@patch(
-    "brainles_preprocessing.utils.zenodo._get_latest_version_folder_name",
-    return_value=None,
-)
-@patch(
-    "brainles_preprocessing.utils.zenodo._get_zenodo_metadata_and_archive_url",
-    return_value=None,
-)
-@patch("brainles_preprocessing.utils.zenodo.logger.error")
-def test_verify_or_download_atlases_no_local_no_meta(
-    mock_sys_exit, mock_get_meta, mock_get_latest_version
+@pytest.fixture
+def dummy_zenodo_response(dummy_metadata, dummy_archive_url):
+    return dummy_metadata, dummy_archive_url
+
+
+# ---- Tests for _get_metadata_and_archive_url ----
+
+
+def test_get_metadata_and_archive_url_success(
+    monkeypatch, dummy_metadata, dummy_archive_url
 ):
-    with pytest.raises(SystemExit):
-        verify_or_download_atlases()
-    mock_sys_exit.assert_called_once_with(
-        "Atlases not found locally and Zenodo could not be reached. Exiting..."
+    response_mock = MagicMock()
+    response_mock.status_code = 200
+    response_mock.json.return_value = {
+        "metadata": dummy_metadata,
+        "links": {"archive": dummy_archive_url},
+    }
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    metadata, url = record._get_metadata_and_archive_url()
+
+    assert metadata == dummy_metadata
+    assert url == dummy_archive_url
+
+
+def test_get_metadata_and_archive_url_failure(monkeypatch):
+    response_mock = MagicMock()
+    response_mock.status_code = 404
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("invalid", Path("/tmp"), "test")
+
+    with pytest.raises(ZenodoException):
+        record._get_metadata_and_archive_url()
+
+
+def test_get_metadata_and_archive_url_connection_error(monkeypatch):
+    monkeypatch.setattr(
+        "requests.get",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            requests.exceptions.RequestException("Connection error")
+        ),
     )
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    assert record._get_metadata_and_archive_url() is None
 
 
-@patch(
-    "brainles_preprocessing.utils.zenodo._get_latest_version_folder_name",
-    return_value=None,
-)
-@patch("brainles_preprocessing.utils.zenodo._get_zenodo_metadata_and_archive_url")
-@patch("brainles_preprocessing.utils.zenodo._download_atlases")
-def test_verify_or_download_atlases_no_local(
-    mock_download, mock_zenodo_meta, mock_atlases_folder
+# ---- Tests for _get_latest_version_folder_name ----
+
+
+def test_get_latest_version_folder_name(tmp_path):
+    folder = tmp_path / "123_v1.2.3"
+    folder.mkdir()
+    (folder / "dummy.txt").touch()
+
+    record = ZenodoRecord("123", tmp_path, "test")
+    result = record._get_latest_version_folder_name(list(tmp_path.glob("*")))
+
+    assert result == "123_v1.2.3"
+
+
+def test_get_latest_version_folder_name_empty(tmp_path):
+    record = ZenodoRecord("123", tmp_path, "test")
+    assert record._get_latest_version_folder_name([]) is None
+
+
+def test_get_latest_version_folder_name_ignores_empty_folder(tmp_path):
+    folder = tmp_path / "123_v1.2.3"
+    folder.mkdir()
+    record = ZenodoRecord("123", tmp_path, "test")
+    assert record._get_latest_version_folder_name([folder]) is None
+
+
+# ---- Tests for fetch() method ----
+
+
+@patch.object(ZenodoRecord, "_get_metadata_and_archive_url")
+@patch.object(ZenodoRecord, "_download")
+def test_fetch_downloads_new_if_no_local(
+    mock_download, mock_metadata, tmp_path, dummy_zenodo_response
 ):
-    mock_zenodo_meta.return_value = ({"version": "1.0.0"}, "https://fakeurl.com")
-    mock_download.return_value = mock_atlases_folder / "atlases_v1.0.0"
+    mock_metadata.return_value = dummy_zenodo_response
+    mock_download.return_value = tmp_path / "123_v1.2.3"
 
-    atlases_path = verify_or_download_atlases()
-    assert atlases_path == mock_atlases_folder / "atlases_v1.0.0"
+    record = ZenodoRecord("123", tmp_path, "test")
+    result = record.fetch()
+
+    assert result.name == "123_v1.2.3"
+    mock_download.assert_called_once()
 
 
-@patch(
-    "brainles_preprocessing.utils.zenodo._get_latest_version_folder_name",
-    return_value="atlases_v1.0.0",
-)
-@patch("brainles_preprocessing.utils.zenodo.logger.info")
-@patch("brainles_preprocessing.utils.zenodo._get_zenodo_metadata_and_archive_url")
-def test_verify_or_download_atlases_latest_local(
-    mock_zenodo_meta, mock_logger_info, mock_atlases_folder
+@patch.object(ZenodoRecord, "_get_metadata_and_archive_url", return_value=None)
+def test_fetch_zenodo_unreachable_raises(mock_metadata, tmp_path):
+    record = ZenodoRecord("123", tmp_path, "test")
+
+    with pytest.raises(ZenodoException):
+        record.fetch()
+
+
+@patch.object(ZenodoRecord, "_get_metadata_and_archive_url")
+@patch.object(ZenodoRecord, "_download")
+def test_fetch_skips_if_latest_present(
+    mock_download, mock_metadata, tmp_path, dummy_zenodo_response
 ):
-    mock_zenodo_meta.return_value = ({"version": "1.0.0"}, "https://fakeurl.com")
+    local_folder = tmp_path / "123_v1.2.3"
+    local_folder.mkdir()
+    (local_folder / "dummy.txt").touch()
 
-    atlases_path = verify_or_download_atlases()
-    assert atlases_path == ATLASES_FOLDER / "atlases_v1.0.0"
-    mock_logger_info.assert_called_with(f"Latest atlases (1.0.0) are already present.")
+    mock_metadata.return_value = dummy_zenodo_response
+    record = ZenodoRecord("123", tmp_path, "test")
+
+    result = record.fetch()
+    assert result.name == "123_v1.2.3"
+    mock_download.assert_not_called()
 
 
-@patch("brainles_preprocessing.utils.zenodo.shutil.rmtree")
-@patch(
-    "brainles_preprocessing.utils.zenodo._get_latest_version_folder_name",
-    return_value="atlases_v1.0.0",
-)
-@patch("brainles_preprocessing.utils.zenodo.logger.info", return_value=None)
-@patch("brainles_preprocessing.utils.zenodo._get_zenodo_metadata_and_archive_url")
-@patch("brainles_preprocessing.utils.zenodo._download_atlases")
-def test_verify_or_download_atlases_old_local(
-    mock_download,
-    mock_zenodo_meta,
-    mock_logger_info,
-    mock_shutil_rmtree,
-    mock_atlases_folder,
+@patch.object(ZenodoRecord, "_get_metadata_and_archive_url")
+@patch.object(ZenodoRecord, "_download")
+def test_fetch_replaces_old_version(
+    mock_download, mock_metadata, tmp_path, dummy_zenodo_response
 ):
-    mock_zenodo_meta.return_value = ({"version": "2.0.0"}, "https://fakeurl.com")
-    mock_download.return_value = mock_atlases_folder / "atlases_v2.0.0"
+    old_folder = tmp_path / "123_v1.0.0"
+    old_folder.mkdir()
+    (old_folder / "dummy.txt").touch()
 
-    atlases_path = verify_or_download_atlases()
+    mock_metadata.return_value = dummy_zenodo_response
+    mock_download.return_value = tmp_path / "123_v1.2.3"
 
-    mock_logger_info.assert_called_with(
-        "New atlases available on Zenodo (2.0.0). Deleting old and fetching new atlases..."
-    )
+    record = ZenodoRecord("123", tmp_path, "test")
 
-    mock_shutil_rmtree.assert_called_once()
-
-    assert atlases_path == mock_atlases_folder / "atlases_v2.0.0"
-
-
-@patch("brainles_preprocessing.utils.zenodo._extract_archive")
-@patch("brainles_preprocessing.utils.zenodo.requests.get")
-def test_download_atlases(mock_get, mock_extract_archive, mock_zenodo_metadata):
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.iter_content = lambda chunk_size: [b"data"]
-    mock_get.return_value = mock_response
-
-    atlases_path = _download_atlases(mock_zenodo_metadata[0], mock_zenodo_metadata[1])
-    assert atlases_path.exists()
+    result = record.fetch()
+    assert result.name == "123_v1.2.3"
+    assert not old_folder.exists()
+    mock_download.assert_called_once()
 
 
-@patch("brainles_preprocessing.utils.zenodo.zipfile.ZipFile")
-def test_extract_archive(mock_zipfile, tmp_path):
-    mock_response = MagicMock()
-    mock_response.iter_content = lambda chunk_size: [b"data"]
-    record_folder = tmp_path / "atlases_v1.0.0"
-    record_folder.mkdir()
+# ---- fetch_atlases and fetch_synthstrip ----
 
-    dummy_zip = record_folder / "archive.zip"
-    dummy_zip.touch()
 
-    mock_zip = MagicMock()
-    mock_zip.namelist.return_value = ["file1.txt", "file2.txt"]
-    mock_zip.__enter__.return_value = mock_zip
-    mock_zipfile.return_value = mock_zip
+@patch("brainles_preprocessing.utils.zenodo.ZenodoRecord.fetch")
+def test_fetch_atlases_calls_fetch(mock_fetch):
+    mock_fetch.return_value = Path("/fake/path")
+    result = fetch_atlases()
+    assert result == Path("/fake/path")
+    mock_fetch.assert_called_once()
 
-    _extract_archive(mock_response, record_folder)
 
-    mock_zip.extract.assert_called()
+@patch("brainles_preprocessing.utils.zenodo.ZenodoRecord.fetch")
+def test_fetch_synthstrip_calls_fetch(mock_fetch):
+    mock_fetch.return_value = Path("/fake/path")
+    result = fetch_synthstrip()
+    assert result == Path("/fake/path")
+    mock_fetch.assert_called_once()
