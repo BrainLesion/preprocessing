@@ -24,6 +24,9 @@ class SynthStripExtractor(BrainExtractor):
     def __init__(self, border: int = 1):
         """
         Brain extraction using SynthStrip with preprocessing conforming to model requirements.
+
+        This is an optional dependency - to use this extractor, you need to install the `brainles_preprocessing` package with the `synthstrip` extra: `pip install brainles_preprocessing[synthstrip]`
+
         Adapted from https://github.com/nipreps/synthstrip
 
         Args:
@@ -53,7 +56,8 @@ class SynthStripExtractor(BrainExtractor):
             model.eval()
 
         # Load the model weights
-        weights = fetch_synthstrip()
+        weights_folder = fetch_synthstrip()
+        weights = weights_folder / "synthstrip.1.pt"
         checkpoint = torch.load(weights, map_location=device)
         model.load_state_dict(checkpoint["model_state_dict"])
 
