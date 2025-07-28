@@ -65,13 +65,10 @@ def test_get_metadata_and_archive_url_failure(monkeypatch):
         record._get_metadata_and_archive_url()
 
 
-def test_get_metadata_and_archive_url_connection_error(monkeypatch):
-    monkeypatch.setattr(
-        "requests.get",
-        lambda *args, **kwargs: (_ for _ in ()).throw(
-            requests.exceptions.RequestException("Connection error")
-        ),
-    )
+@patch(
+    "requests.get", side_effect=requests.exceptions.RequestException("Connection error")
+)
+def test_get_metadata_and_archive_url_connection_error(mock_get):
     record = ZenodoRecord("123", Path("/tmp"), "test")
 
     assert record._get_metadata_and_archive_url() is None
