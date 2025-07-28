@@ -76,7 +76,7 @@ class BasePreprocessor(ABC):
         defacer: Optional[Defacer] = None,
         n4_bias_corrector: Optional[N4BiasCorrector] = None,
         temp_folder: Optional[Union[str, Path]] = None,
-        use_gpu: Optional[bool] = None,
+        use_gpu: bool = True,
         limit_cuda_visible_devices: Optional[str] = None,
     ):
 
@@ -106,6 +106,7 @@ class BasePreprocessor(ABC):
         self.brain_extractor = brain_extractor
         self.defacer = defacer
 
+        self.use_gpu = use_gpu
         self._configure_gpu(
             use_gpu=use_gpu, limit_cuda_visible_devices=limit_cuda_visible_devices
         )
@@ -133,7 +134,9 @@ class BasePreprocessor(ABC):
             raise ValueError(f"Duplicate modality names found: {', '.join(duplicates)}")
 
     def _configure_gpu(
-        self, use_gpu: Optional[bool], limit_cuda_visible_devices: Optional[str] = None
+        self,
+        use_gpu: bool,
+        limit_cuda_visible_devices: Optional[str] = None,
     ) -> None:
         """
         Configures the environment for GPU usage based on the `use_gpu` parameter and CUDA availability.
@@ -141,7 +144,7 @@ class BasePreprocessor(ABC):
         Args:
             use_gpu (Optional[bool]): Determines the GPU usage strategy.
         """
-        if use_gpu or (use_gpu is None and self._cuda_is_available()):
+        if use_gpu and self._cuda_is_available():
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
             if limit_cuda_visible_devices:
                 os.environ["CUDA_VISIBLE_DEVICES"] = limit_cuda_visible_devices
@@ -315,7 +318,9 @@ class BasePreprocessor(ABC):
             self.brain_extractor = HDBetExtractor()
 
         atlas_mask = self.center_modality.extract_brain_region(
-            brain_extractor=self.brain_extractor, bet_dir_path=bet_dir
+            brain_extractor=self.brain_extractor,
+            bet_dir_path=bet_dir,
+            use_gpu=self.use_gpu,
         )
         for moving_modality in self.moving_modalities:
             logger.info(f"Applying brain mask to {moving_modality.modality_name}...")
