@@ -70,6 +70,9 @@ class SynthStripExtractor(BrainExtractor):
         Args:
            input_nii (Nifti1Image): Input NIfTI image to conform.
 
+        Raises:
+            ValueError: If the input NIfTI image does not have a valid affine.
+
         Returns:
             A new NIfTI image with conformed shape and affine.
         """
@@ -77,7 +80,8 @@ class SynthStripExtractor(BrainExtractor):
         shape = np.array(input_nii.shape[:3])
         affine = input_nii.affine
 
-        assert affine is not None, "Input NIfTI image must have a valid affine."
+        if affine is None:
+            raise ValueError("Input NIfTI image must have a valid affine.")
 
         # Get corner voxel centers in index coords
         corner_centers_ijk = (
@@ -181,7 +185,7 @@ class SynthStripExtractor(BrainExtractor):
         device = torch.device(device) if isinstance(device, str) else device
         model = self._setup_model(device=device)
 
-        if device == "cpu" and num_threads > 0:
+        if device.type == "cpu" and num_threads > 0:
             torch.set_num_threads(num_threads)
 
         # normalize intensities
