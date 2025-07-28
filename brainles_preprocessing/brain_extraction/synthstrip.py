@@ -2,7 +2,7 @@
 # https://github.com/nipreps/synthstrip/blob/main/nipreps/synthstrip/cli.py
 # Original copyright (c) 2024, NiPreps developers
 # Licensed under the Apache License, Version 2.0
-# Changes made by the BrainLes Preprocessing team (2025)
+# Changes made by the BrainLesion Preprocessing team (2025)
 
 from pathlib import Path
 from typing import Optional, Union, cast
@@ -11,7 +11,6 @@ import nibabel as nib
 import numpy as np
 import scipy
 import torch
-from loguru import logger
 from nibabel.nifti1 import Nifti1Image
 from nipreps.synthstrip.model import StripModel
 from nitransforms.linear import Affine
@@ -149,16 +148,31 @@ class SynthstripExtractor(BrainExtractor):
         input_image_path: Union[str, Path],
         masked_image_path: Union[str, Path],
         brain_mask_path: Union[str, Path],
-        log_file_path: Optional[Union[str, Path]] = None,
-        device: Optional[Union[int, str]] = 0,
-        num_threads: Optional[int] = 1,
-        border: Optional[int] = 1,
+        device: Union[torch.device, str] = "cuda",
+        num_threads: int = 1,
+        border: int = 1,
+        **kwargs,
     ) -> None:
+        """
+        Extract the brain from an input image using SynthStrip.
 
-        # TODO quickfix device param
-        model = self._setup_model(
-            device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        )
+        Args:
+            input_image_path (Union[str, Path]): Path to the input image.
+            masked_image_path (Union[str, Path]): Path to the output masked image.
+            brain_mask_path (Union[str, Path]): Path to the output brain mask.
+            device (Union[torch.device, str], optional): Device to use for computation. Defaults to "cuda".
+            num_threads (int, optional): Number of threads to use for computation in CPU mode. Defaults to 1.
+            border (int, optional): Mask border threshold in mm. Defaults to 1.
+
+        Returns:
+            None: The function saves the masked image and brain mask to the specified paths.
+        """
+
+        device = torch.device(device) if isinstance(device, str) else device
+        model = self._setup_model(device=device)
+
+        if device == "cpu" and num_threads > 0:
+            torch.set_num_threads(num_threads)
 
         # normalize intensities
         image = nib.load(input_image_path)
