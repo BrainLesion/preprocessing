@@ -21,8 +21,6 @@ class BrainExtractor:
         input_image_path: Union[str, Path],
         masked_image_path: Union[str, Path],
         brain_mask_path: Union[str, Path],
-        log_file_path: Optional[Union[str, Path]],
-        mode: Union[str, Mode],
         **kwargs,
     ) -> None:
         """
@@ -32,7 +30,6 @@ class BrainExtractor:
             input_image_path (str or Path): Path to the input image.
             masked_image_path (str or Path): Path where the brain-extracted image will be saved.
             brain_mask_path (str or Path): Path where the brain mask will be saved.
-            log_file_path (str or Path, Optional): Path to the log file.
             mode (str or Mode): Extraction mode.
             **kwargs: Additional keyword arguments.
         """
@@ -86,10 +83,10 @@ class HDBetExtractor(BrainExtractor):
         input_image_path: Union[str, Path],
         masked_image_path: Union[str, Path],
         brain_mask_path: Union[str, Path],
-        log_file_path: Optional[Union[str, Path]] = None,
         mode: Union[str, Mode] = Mode.ACCURATE,
         device: Optional[Union[int, str]] = 0,
-        do_tta: Optional[bool] = True,
+        do_tta: bool = True,
+        **kwargs,
     ) -> None:
         # GPU + accurate + TTA
         """
@@ -99,7 +96,6 @@ class HDBetExtractor(BrainExtractor):
             input_image_path (str or Path): Path to the input image.
             masked_image_path (str or Path): Path where the brain-extracted image will be saved.
             brain_mask_path (str or Path): Path where the brain mask will be saved.
-            log_file_path (str or Path, Optional): Path to the log file.
             mode (str or Mode): Extraction mode ('fast' or 'accurate').
             device (str or int): Device to use for computation (e.g., 0 for GPU 0, 'cpu' for CPU).
             do_tta (bool): whether to do test time data augmentation by mirroring along all axes.
