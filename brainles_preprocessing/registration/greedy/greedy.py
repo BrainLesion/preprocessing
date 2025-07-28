@@ -24,7 +24,9 @@ class GreedyRegistrator(Registrator):
         log_file_path: Optional[str] = None,
     ) -> None:
         """
-        Register images using greedy. Ref: https://pypi.org/project/picsl-greedy/ and https://greedy.readthedocs.io/en/latest/reference.html#greedy-usage
+        Register images using greedy. Ref: https://pypi.org/project/picsl-greedy/ and https://greedy.readthedocs.io/en/latest/reference.html#greedy-usage.
+
+        This is an optional dependency - to use this registrator, you need to install the `brainles_preprocessing` package with the `picsl_greedy` extra: `pip install brainles_preprocessing[picsl_greedy]`.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
