@@ -42,7 +42,7 @@ def fetch_synthstrip() -> Path:
     record = ZenodoRecord(
         record_id=SYNTHSTRIP_RECORD_ID,
         target_dir=SYNTHSTRIP_FOLDER,
-        label="synthstrip",
+        label="SynthStrip",
     )
     return record.fetch()
 
