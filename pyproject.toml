@@ -80,7 +80,7 @@ nipreps-synthstrip = { version = "^0.0.1", optional = true }
 
 
 [tool.poetry.extras]
-all = ["itk-elastix", "picsl_greedy"]
+all = ["itk-elastix", "picsl_greedy", "nipreps-synthstrip"]
 itk-elastix = ["itk-elastix"]
 picsl_greedy = ["picsl_greedy"]
 synthstrip = ["nipreps-synthstrip"]
