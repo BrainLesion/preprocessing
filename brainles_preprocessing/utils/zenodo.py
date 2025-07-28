@@ -127,7 +127,7 @@ class ZenodoRecord:
         latest = sorted(
             folders,
             reverse=True,
-            key=lambda x: tuple(map(int, str(x).split("_v")[1].split("."))),
+            key=lambda x: tuple(map(int, str(x.name).split("_v")[1].split("."))),
         )[0]
         if not list(latest.glob("*")):
             return None
