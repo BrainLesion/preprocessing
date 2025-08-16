@@ -155,7 +155,7 @@ We provide a range of different atlases via [zenodo](https://zenodo.org/records/
 -  slightly modified MNI152 and SRI24 atlas versions as employed for the [BraTS challenge algorithms](https://github.com/BrainLesion/BraTS)
 
 > [!NOTE]  
-> custom atlases of your choice in NIfTI format are also supported
+> Custom atlases of your choice in NIfTI format are also supported
 
 
 ### N4 Bias correction
