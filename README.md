@@ -152,7 +152,7 @@ As of now we do not offer inverse transforms for greedy and elastix. Please reso
 We provide a range of different atlases via [zenodo](https://zenodo.org/records/15927391), namely:
 -  [SRI24](https://www.nitrc.org/frs/download.php/4502/sri24_anatomy_unstripped_nifti.zip) and its [skull-stripped version](https://www.nitrc.org/frs/download.php/4499/sri24_anatomy_nifti.zip)
 -  MNI152: [MNI_ICBM_2009c_Nonlinear_Symmetric](https://nist.mni.mcgill.ca/icbm-152-nonlinear-atlases-2009/)
--  slightly modified MNI152 and SRI24 atlas versions as employed for the [BraTS challenge algorithms](https://github.com/BrainLesion/BraTS)
+-  Slightly modified MNI152 and SRI24 atlas versions as employed for the [BraTS challenge algorithms](https://github.com/BrainLesion/BraTS)
 
 > [!NOTE]  
 > Custom atlases of your choice in NIfTI format are also supported
