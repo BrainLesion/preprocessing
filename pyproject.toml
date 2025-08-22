@@ -57,7 +57,7 @@ simpleitk = ">=2.2.1"
 
 # registration
 antspyx = ">=0.5.4, <1.0.0"
-scipy = "<1.14"
+scipy = "^1.14"
 
 
 # hd-bet reqs
