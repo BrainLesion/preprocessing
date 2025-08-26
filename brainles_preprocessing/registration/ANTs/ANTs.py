@@ -101,22 +101,28 @@ class ANTsRegistrator(Registrator):
 
         fixed_image = ants.image_read(str(fixed_image_path))
         moving_image = ants.image_read(str(moving_image_path))
+
         registration_result = ants.registration(
             fixed=fixed_image,
             moving=moving_image,
             **registration_kwargs,
         )
-        transformed_image = registration_result["warpedmovout"]
 
         # Ensure output directories exist
         transformed_image_path.parent.mkdir(parents=True, exist_ok=True)
         matrix_path.parent.mkdir(parents=True, exist_ok=True)
 
-        ants.image_write(transformed_image, str(transformed_image_path))
-
         shutil.copyfile(
             src=registration_result["fwdtransforms"][0],
             dst=str(matrix_path),
+        )
+
+        self.transform(
+            fixed_image_path=fixed_image_path,
+            moving_image_path=moving_image_path,
+            transformed_image_path=transformed_image_path,
+            matrix_path=matrix_path,
+            log_file_path=log_file_path,
         )
 
         end_time = datetime.datetime.now()
@@ -194,6 +200,11 @@ class ANTsRegistrator(Registrator):
 
         fixed_image = ants.image_read(str(fixed_image_path))
         moving_image = ants.image_read(str(moving_image_path))
+
+        if "defaultvalue" not in transform_kwargs:
+            transform_kwargs["defaultvalue"] = (
+                moving_image.min()
+            )  # set out of view voxels by default to min value, i.e. air/ bg
 
         # Ensure output directory exist
         transformed_image_path.parent.mkdir(parents=True, exist_ok=True)
