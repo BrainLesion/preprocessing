@@ -153,6 +153,7 @@ class ANTsRegistrator(Registrator):
     ) -> None:
         """
         Apply a transformation using ANTs.
+        By default the padding value corresponds to the minimum of the moving image. Can be adjusted using the defaultvalue parameter.
 
         Args:
             fixed_image_path (str or Path): Path to the fixed image.

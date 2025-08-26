@@ -160,6 +160,7 @@ class NiftyRegRegistrator(Registrator):
     ) -> None:
         """
         Apply a transformation using NiftyReg.
+        By default the padding value corresponds to the minimum of the moving image.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
