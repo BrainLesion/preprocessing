@@ -10,8 +10,8 @@ file_exists() {
 }
 
 # Check if the correct number of arguments is provided
-if [ "$#" -ne 6 ]; then
-    echo "Usage: $0 <niftyreg_executable> <fixed_image> <moving_image> <transformed_image> <transformation_matrix> <interpolation_method>"
+if [ "$#" -ne 7 ]; then
+    echo "Usage: $0 <niftyreg_executable> <fixed_image> <moving_image> <transformed_image> <transformation_matrix> <interpolation_method> <padding_value>"
     exit 1
 fi
 
@@ -22,6 +22,7 @@ moving_image="$3"
 transformed_image="$4"
 transformation_matrix="$5"
 interpolation_method="$6"
+padding_value="$7"
 
 # Validate the existence of input files
 if ! file_exists "$fixed_image"; then
@@ -51,6 +52,7 @@ resample_command=(
     -trans "$transformation_matrix"
     -res "$transformed_image"
     -inter "$interpolation_method"
+    -pad "$padding_value"
 )
 
 if file_exists "$niftyreg_path"; then

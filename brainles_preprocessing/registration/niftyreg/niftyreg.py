@@ -8,6 +8,7 @@ from typing import List
 import numpy as np
 from auxiliary.runscript import ScriptRunner
 from auxiliary.turbopath import turbopath
+from auxiliary.io import read_image
 
 from brainles_preprocessing.registration.registrator import Registrator
 
@@ -79,12 +80,16 @@ class NiftyRegRegistrator(Registrator):
 
         matrix_path = Path(matrix_path).with_suffix(".txt")
 
+        # read moving image to get padding value
+        padding_value = float(read_image(moving_image_path).min())
+
         input_params = [
             turbopath(niftyreg_executable),
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
             str(matrix_path),
+            str(padding_value),
         ]
 
         # Call the run method to execute the script and capture the output in the log file
@@ -155,6 +160,7 @@ class NiftyRegRegistrator(Registrator):
     ) -> None:
         """
         Apply a transformation using NiftyReg.
+        By default the padding value corresponds to the minimum of the moving image.
 
         Args:
             fixed_image_path (str): Path to the fixed image.
@@ -199,13 +205,17 @@ class NiftyRegRegistrator(Registrator):
         else:
             transform_path = Path(matrix_path).with_suffix(".txt")
 
+        # read moving image to get padding value
+        padding_value = float(read_image(moving_image_path).min())
+
         input_params = [
             turbopath(niftyreg_executable),
             turbopath(fixed_image_path),
             turbopath(moving_image_path),
             turbopath(transformed_image_path),
             str(transform_path),
-            interpolator,  # interpolation method, 3 is Cubic
+            str(interpolator),  # interpolation method, 3 is Cubic
+            str(padding_value),
         ]
 
         # Call the run method to execute the script and capture the output in the log file
