@@ -45,6 +45,8 @@ def preprocess(input_dir: Path, output_dir: Path):
         raw_defaced_output_path=raw_deface_dir / f"t1c_defaced_raw.nii.gz",
         normalizer=percentile_normalizer,
         atlas_correction=True,
+        bet_mask_output_path=output_dir / f"bet_mask.nii.gz",
+        defacing_mask_output_path=output_dir / f"defacing_mask.nii.gz",
     )
     moving_modalities = [
         Modality(
@@ -92,6 +94,7 @@ def preprocess(input_dir: Path, output_dir: Path):
         save_dir_n4_bias_correction=output_dir / "n4_bias_correction",
         save_dir_brain_extraction=output_dir / "brain_extraction",
         save_dir_defacing=output_dir / "defacing",
+        save_dir_transformations=output_dir / "transformations",
     )
 
 
