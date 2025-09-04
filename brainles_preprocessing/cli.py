@@ -9,7 +9,7 @@ from brainles_preprocessing.modality import Modality, CenterModality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import Preprocessor
+from brainles_preprocessing.preprocessor import AtlasCentricPreprocessor
 
 
 def version_callback(value: bool):
@@ -59,7 +59,7 @@ def main(
         ),
     ],
     output_dir: Annotated[
-        str,
+        str | Path,
         typer.Option(
             "-o",
             "--output_dir",
@@ -117,11 +117,14 @@ def main(
         defacing_mask_output_path=output_dir / "t1c_defacing_mask.nii.gz",
     )
 
-    for modality in ["t1", "t2", "fla"]:
-        moving_modalities = [
+    moving_modalities = []
+    for input_path, modality in zip(
+        [input_t1, input_t2, input_fla], ["t1", "t2", "fla"]
+    ):
+        moving_modalities.append(
             Modality(
                 modality_name=modality,
-                input_path=eval(f"input_{modality}"),
+                input_path=input_path,
                 normalizer=percentile_normalizer,
                 # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
                 raw_skull_output_path=output_dir / f"{modality}_skull_raw.nii.gz",
@@ -134,18 +137,18 @@ def main(
                 normalized_defaced_output_path=output_dir
                 / f"{modality}_defaced_normalized.nii.gz",
             )
-        ]
+        )
 
-    # if the input atlas is the SRI24 BraTS atlas, set it to None, because it will be picked up through the package
-    if input_atlas == "SRI24 BraTS atlas":
-        input_atlas = None
+    optional_kwargs = {}
+    if input_atlas is not None:
+        optional_kwargs["atlas_image_path"] = input_atlas
 
     # instantiate and run the preprocessor using defaults for registration/ brain extraction/ defacing backends
-    preprocessor = Preprocessor(
+    preprocessor = AtlasCentricPreprocessor(
         center_modality=center,
         moving_modalities=moving_modalities,
         temp_folder=output_dir / "temp",
-        input_atlas=input_atlas,
+        **optional_kwargs,
     )
 
     preprocessor.run()
