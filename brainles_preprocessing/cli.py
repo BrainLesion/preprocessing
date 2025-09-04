@@ -118,11 +118,13 @@ def main(
     )
 
     moving_modalities = []
-    for modality in ["t1", "t2", "fla"]:
+    for input_path, modality in zip(
+        [input_t1, input_t2, input_fla], ["t1", "t2", "fla"]
+    ):
         moving_modalities.append(
             Modality(
                 modality_name=modality,
-                input_path=eval(f"input_{modality}"),
+                input_path=input_path,
                 normalizer=percentile_normalizer,
                 # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
                 raw_skull_output_path=output_dir / f"{modality}_skull_raw.nii.gz",
