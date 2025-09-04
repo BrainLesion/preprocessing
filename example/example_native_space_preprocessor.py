@@ -38,6 +38,8 @@ def preprocess(input_dir: Path, output_dir: Path):
         normalized_skull_output_path=norm_skull_dir / f"t1c_skull_normalized.nii.gz",
         raw_defaced_output_path=raw_deface_dir / f"t1c_defaced_raw.nii.gz",
         normalizer=percentile_normalizer,
+        bet_mask_output_path=output_dir / f"bet_mask.nii.gz",
+        defacing_mask_output_path=output_dir / f"defacing_mask.nii.gz",
     )
     moving_modalities = [
         Modality(
