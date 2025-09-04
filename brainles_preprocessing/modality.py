@@ -139,7 +139,9 @@ class Modality:
         else:
             self.normalized_defaced_output_path = None
 
-        self.steps = {k: None for k in PreprocessorSteps}
+        self.steps: Dict[PreprocessorSteps, Path | None] = {
+            k: None for k in PreprocessorSteps
+        }
         self.steps[PreprocessorSteps.INPUT] = self.input_path
 
     @property
@@ -265,7 +267,7 @@ class Modality:
             moving_image_path=self.current,
             transformed_image_path=registered,
             matrix_path=registered_matrix,
-            log_file_path=registered_log,
+            log_file_path=str(registered_log),
         )
         self.current = registered
         self.steps[step] = registered
@@ -394,24 +396,24 @@ class Modality:
             ), "Coregistration must be performed before applying atlas registration."
 
             registrator.transform(
-                fixed_image_path=fixed_image_path,
-                moving_image_path=self.steps[PreprocessorSteps.INPUT],
-                transformed_image_path=transformed,
+                fixed_image_path=str(fixed_image_path),
+                moving_image_path=str(self.steps[PreprocessorSteps.INPUT]),
+                transformed_image_path=str(transformed),
                 matrix_path=[
                     self.transformation_paths[
                         PreprocessorSteps.COREGISTERED
                     ],  # coregistration matrix
                     transformation_matrix_path,  # atlas registration matrix
                 ],
-                log_file_path=transformed_log,
+                log_file_path=str(transformed_log),
             )
         else:
             registrator.transform(
-                fixed_image_path=fixed_image_path,
-                moving_image_path=self.current,
-                transformed_image_path=transformed,
-                matrix_path=transformation_matrix_path,
-                log_file_path=transformed_log,
+                fixed_image_path=str(fixed_image_path),
+                moving_image_path=str(self.current),
+                transformed_image_path=str(transformed),
+                matrix_path=str(transformation_matrix_path),
+                log_file_path=str(transformed_log),
             )
 
         self.current = transformed
@@ -638,6 +640,12 @@ class CenterModality(Modality):
 
         if self.bet:
             self.current = bet
+
+        if self.bet_mask_output_path:
+            self.save_mask(
+                mask_path=mask_path,
+                output_path=self.bet_mask_output_path,
+            )
         return mask_path
 
     def deface(
@@ -684,7 +692,7 @@ class CenterModality(Modality):
                     moving_image_path=self.steps[PreprocessorSteps.BET],
                     transformed_image_path=atlas_bet,
                     matrix_path=atlas_bet_M,
-                    log_file_path=defaced_dir_path / "atlas_bet.log",
+                    log_file_path=str(defaced_dir_path / "atlas_bet.log"),
                 )
 
                 deface_mask_atlas = defaced_dir_path / "deface_mask_atlas.nii.gz"
@@ -704,6 +712,12 @@ class CenterModality(Modality):
                 defacer.deface(
                     input_image_path=self.steps[PreprocessorSteps.BET],
                     mask_image_path=mask_path,
+                )
+
+            if self.defacing_mask_output_path:
+                self.save_mask(
+                    mask_path=mask_path,
+                    output_path=self.defacing_mask_output_path,
                 )
 
             return mask_path
