@@ -36,7 +36,7 @@ class Registrator(ABC):
         transformed_image_path: Any,
         matrix_path: Any,
         log_file_path: str,
-        interpolator: str,
+        interpolator: str = "default",
         **kwargs
     ):
         """
@@ -61,7 +61,7 @@ class Registrator(ABC):
         transformed_image_path: Any,
         matrix_path: Any,
         log_file_path: str,
-        interpolator: str,
+        interpolator: str = "default",
     ):
         """
         Abstract method for inverse transforming images.
