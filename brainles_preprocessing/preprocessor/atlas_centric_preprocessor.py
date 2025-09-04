@@ -323,29 +323,34 @@ class AtlasCentricPreprocessor(BasePreprocessor):
         atlas_mask = self.center_modality.deface(
             defacer=self.defacer, defaced_dir_path=deface_dir
         )
-        # looping over _all_ modalities since .deface is no applying the computed mask
-        for moving_modality in self.all_modalities:
-            logger.info(f"Applying deface mask to {moving_modality.modality_name}...")
-            moving_modality.apply_deface_mask(
-                defacer=self.defacer,
-                mask_path=atlas_mask,
-                deface_dir=deface_dir,
-            )
+        if atlas_mask is not None:
+            # looping over _all_ modalities since .deface is no applying the computed mask
+            for moving_modality in self.all_modalities:
+                logger.info(
+                    f"Applying deface mask to {moving_modality.modality_name}..."
+                )
+                moving_modality.apply_deface_mask(
+                    defacer=self.defacer,
+                    mask_path=atlas_mask,
+                    deface_dir=deface_dir,
+                )
 
-        self._save_output(
-            src=deface_dir,
-            save_dir=save_dir_defacing,
-        )
-        # now we save images that are skull-stripped
-        logger.info("Saving defaced images...")
-        for modality in self.all_modalities:
-            if modality.raw_defaced_output_path:
-                modality.save_current_image(
-                    modality.raw_defaced_output_path,
-                    normalization=False,
-                )
-            if modality.normalized_defaced_output_path:
-                modality.save_current_image(
-                    modality.normalized_defaced_output_path,
-                    normalization=True,
-                )
+            self._save_output(
+                src=deface_dir,
+                save_dir=save_dir_defacing,
+            )
+            # now we save images that are skull-stripped
+            logger.info("Saving defaced images...")
+            for modality in self.all_modalities:
+                if modality.raw_defaced_output_path:
+                    modality.save_current_image(
+                        modality.raw_defaced_output_path,
+                        normalization=False,
+                    )
+                if modality.normalized_defaced_output_path:
+                    modality.save_current_image(
+                        modality.normalized_defaced_output_path,
+                        normalization=True,
+                    )
+        else:
+            logger.warning("Defacing was requested but no defacing mask was created.")

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from numpy.typing import NDArray
 
 
 class Normalizer(ABC):
@@ -10,7 +11,7 @@ class Normalizer(ABC):
         super().__init__()
 
     @abstractmethod
-    def normalize(self, image):
+    def normalize(self, image) -> NDArray:
         """
         Normalize the input image based on the chosen method.
 
