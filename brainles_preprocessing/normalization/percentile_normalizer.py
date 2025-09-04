@@ -1,5 +1,6 @@
 import numpy as np
 from .normalizer_base import Normalizer
+from numpy.typing import NDArray
 
 
 class PercentileNormalizer(Normalizer):
@@ -29,7 +30,7 @@ class PercentileNormalizer(Normalizer):
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
 
-    def normalize(self, image: np.ndarray):
+    def normalize(self, image: np.ndarray) -> NDArray:
         """
         Normalize the input image using percentile-based mapping.
 

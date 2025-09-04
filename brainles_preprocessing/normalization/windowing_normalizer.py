@@ -1,5 +1,6 @@
 import numpy as np
 from .normalizer_base import Normalizer
+from numpy.typing import NDArray
 
 
 class WindowingNormalizer(Normalizer):
@@ -19,7 +20,7 @@ class WindowingNormalizer(Normalizer):
         self.center = center
         self.width = width
 
-    def normalize(self, image):
+    def normalize(self, image) -> NDArray:
         """
         Normalize the input image using windowing.
 
