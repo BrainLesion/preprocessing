@@ -65,13 +65,11 @@ center = CenterModality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
     normalizer=percentile_normalizer,
-    # specify the output paths for the raw and normalized images of each step
-    raw_skull_output_path=output_folder / "raw_skull/t1c_skull_raw.nii.gz",
+    # specify the output paths for the raw and normalized images
     raw_bet_output_path=output_folder / "raw_bet/t1c_bet_raw.nii.gz",
-    raw_defaced_output_path=output_folder / "raw_defaced/t1c_defaced_raw.nii.gz",
+    raw_skull_output_path=output_folder / "raw_skull/t1c_skull_raw.nii.gz",
     normalized_skull_output_path=output_folder / "normalized_skull/t1c_skull_normalized.nii.gz",
-    normalized_bet_output_path=output_folder / "normalized_bet/t1c_bet_normalized.nii.gz",
-    normalized_defaced_output_path=output_folder / "normalized_defaced/t1c_defaced_normalized.nii.gz",
+    raw_defaced_output_path=output_folder / "raw_defaced/t1c_defaced_raw.nii.gz",
     # specify output paths for the brain extraction and defacing masks
     bet_mask_output_path=output_folder / "masks/t1c_bet_mask.nii.gz",
     defacing_mask_output_path=output_folder / "masks/t1c_defacing_mask.nii.gz",
@@ -83,13 +81,11 @@ moving_modalities = [
         modality_name="flair",
         input_path=patient_folder / "flair.nii.gz",
         normalizer=percentile_normalizer,
-        # specify the output paths for the raw and normalized images of each step
-        raw_skull_output_path=output_folder / "raw_skull/flair_skull_raw.nii.gz",
+        # specify the output paths for the raw and normalized images
         raw_bet_output_path=output_folder / "raw_bet/flair_bet_raw.nii.gz",
-        raw_defaced_output_path=output_folder / "raw_defaced/flair_defaced_raw.nii.gz",
+        raw_skull_output_path=output_folder / "raw_skull/flair_skull_raw.nii.gz",
         normalized_skull_output_path=output_folder / "normalized_skull/flair_skull_normalized.nii.gz",
-        normalized_bet_output_path=output_folder / "normalized_bet/flair_bet_normalized.nii.gz",
-        normalized_defaced_output_path=output_folder / "normalized_defaced/flair_defaced_normalized.nii.gz",
+        raw_defaced_output_path=output_folder / "raw_defaced/flair_defaced_raw.nii.gz",
         atlas_correction=True,
     )
 ]
