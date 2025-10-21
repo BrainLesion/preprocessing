@@ -8,12 +8,27 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 <!-- [![codecov](https://codecov.io/gh/BrainLesion/brainles-preprocessing/graph/badge.svg?token=A7FWUKO9Y4)](https://codecov.io/gh/BrainLesion/brainles-preprocessing) -->
 
-`BrainLes preprocessing` is a comprehensive tool for preprocessing tasks in biomedical imaging, with a focus on (but not limited to) multi-modal brain MRI. It can be used to build modular preprocessing pipelines:
+`BrainLes preprocessing` is a comprehensive, modular toolkit for preprocessing multi-modal brain MRI and other biomedical imaging data. It provides flexible preprocessing pipelines that can be customized to your specific needs.
 
-This includes **normalization**, **co-registration**, **atlas registration**, **skullstripping / brain extraction**, **N4 Bias correction** and **defacing**.
-We provide means to transform images and segmentations in both directions between native and atlas space.
+## Features
 
-BrainLes is written modular and `backend-agnostic` meaning it allows to skip or swap registration, brain extraction, N4 bias correction and defacing tools.
+### Core Preprocessing Steps
+- **Normalization**: Intensity normalization using various methods (e.g., percentile-based)
+- **Co-registration**: Align multiple modalities to a reference modality
+- **Atlas Registration**: Register images to standard atlas spaces (MNI152, SRI24, etc.)
+- **Brain Extraction**: Skull stripping using state-of-the-art methods (HD-BET, SynthStrip)
+- **N4 Bias Correction**: Correct intensity inhomogeneities
+- **Defacing**: Anonymize images by removing facial features
+
+### Preprocessing Modes
+- **Atlas-Centric**: Process images in atlas space with optional atlas-based intensity correction
+- **Native Space**: Process images in patient/native space without atlas registration
+
+### Key Benefits
+- **Modular & Backend-Agnostic**: Easily swap or skip preprocessing steps and choose from multiple backends
+- **Flexible Output Options**: Generate any combination of outputs (brain extracted, with skull, defaced, raw, normalized)
+- **Bidirectional Transforms**: Transform images and segmentations between native and atlas space
+- **Extensible**: Add custom normalizers, registrators, brain extractors, or defacing methods
 
 <!-- TODO include image here -->
 
@@ -36,18 +51,39 @@ We recommend using Python `3.10 / 3.11 / 3.12`.
 
 
 ## Usage
-A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
+
+### Atlas-Centric Preprocessing
+Use `AtlasCentricPreprocessor` to register images to an atlas, perform atlas correction, and skull strip. This is useful when you want all images in a common atlas space.
+
+**Key features:**
+- Co-registration of moving modalities to center modality
+- Registration to atlas space
+- Optional atlas correction (intensity adjustment based on atlas)
+- N4 bias correction
+- Brain extraction
+- Defacing for anonymization
+
+**Example with all output options:**
+
+This example demonstrates all possible output paths. You can specify any combination of:
+- **Raw outputs** (without normalization): `raw_bet_output_path`, `raw_skull_output_path`, `raw_defaced_output_path`
+- **Normalized outputs** (requires a normalizer): `normalized_bet_output_path`, `normalized_skull_output_path`, `normalized_defaced_output_path`
+- **Masks** (only for CenterModality): `bet_mask_output_path`, `defacing_mask_output_path`
+
+> **Note:** At least one output path must be specified per modality. All output paths are optional except that at least one must be provided.
+
 ```python
 from pathlib import Path
 from brainles_preprocessing.modality import Modality, CenterModality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import Preprocessor
+from brainles_preprocessing.preprocessor import AtlasCentricPreprocessor
 
-patient_folder = Path("/home/marcelrosier/preprocessing/patient")
+patient_folder = Path("/path/to/patient")
+output_folder = Path("/path/to/output")
 
-# specify a normalizer
+# specify a normalizer (required if using any normalized_* output paths)
 percentile_normalizer = PercentileNormalizer(
     lower_percentile=0.1,
     upper_percentile=99.9,
@@ -55,45 +91,165 @@ percentile_normalizer = PercentileNormalizer(
     upper_limit=1,
 )
 
-# define center and moving modalities
+# define center modality with all possible outputs
 center = CenterModality(
-    modality_name="t1c",
-    input_path=patient_folder / "t1c.nii.gz",
-    normalizer=percentile_normalizer,
-    # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
-    raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
-    raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
-    raw_defaced_output_path="patient/raw_defaced_dir/t1c_defaced_raw.nii.gz",
-    normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
-    normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
-    normalized_defaced_output_path="patient/norm_defaced_dir/t1c_defaced_normalized.nii.gz",
-    # specify output paths for the brain extraction and defacing masks
-    bet_mask_output_path="patient/masks/t1c_bet_mask.nii.gz",
-    defacing_mask_output_path="patient/masks/t1c_defacing_mask.nii.gz",
+    modality_name="t1c",  # required
+    input_path=patient_folder / "t1c.nii.gz",  # required
+    normalizer=percentile_normalizer,  # optional: required for normalized_* outputs
+    # Raw outputs (optional)
+    raw_bet_output_path=output_folder / "raw_bet/t1c_bet_raw.nii.gz",  # brain extracted
+    raw_skull_output_path=output_folder / "raw_skull/t1c_skull_raw.nii.gz",  # with skull
+    raw_defaced_output_path=output_folder / "raw_defaced/t1c_defaced_raw.nii.gz",  # defaced
+    # Normalized outputs (optional, requires normalizer)
+    normalized_bet_output_path=output_folder / "normalized_bet/t1c_bet_normalized.nii.gz",
+    normalized_skull_output_path=output_folder / "normalized_skull/t1c_skull_normalized.nii.gz",
+    normalized_defaced_output_path=output_folder / "normalized_defaced/t1c_defaced_normalized.nii.gz",
+    # Masks (optional, only for CenterModality)
+    bet_mask_output_path=output_folder / "masks/t1c_bet_mask.nii.gz",
+    defacing_mask_output_path=output_folder / "masks/t1c_defacing_mask.nii.gz",
+    # Optional parameters
+    atlas_correction=True,  # default: True
+    n4_bias_correction=False,  # default: False
 )
 
+# define moving modalities
 moving_modalities = [
     Modality(
-        modality_name="flair",
-        input_path=patient_folder / "flair.nii.gz",
-        normalizer=percentile_normalizer,
-        # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
-        raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
-        raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
-        raw_defaced_output_path="patient/raw_defaced_dir/fla_defaced_raw.nii.gz",
-        normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
-        normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
-        normalized_defaced_output_path="patient/norm_defaced_dir/fla_defaced_normalized.nii.gz",
+        modality_name="flair",  # required
+        input_path=patient_folder / "flair.nii.gz",  # required
+        normalizer=percentile_normalizer,  # optional: required for normalized_* outputs
+        # Raw outputs (optional)
+        raw_bet_output_path=output_folder / "raw_bet/flair_bet_raw.nii.gz",
+        raw_skull_output_path=output_folder / "raw_skull/flair_skull_raw.nii.gz",
+        raw_defaced_output_path=output_folder / "raw_defaced/flair_defaced_raw.nii.gz",
+        # Normalized outputs (optional, requires normalizer)
+        normalized_bet_output_path=output_folder / "normalized_bet/flair_bet_normalized.nii.gz",
+        normalized_skull_output_path=output_folder / "normalized_skull/flair_skull_normalized.nii.gz",
+        normalized_defaced_output_path=output_folder / "normalized_defaced/flair_defaced_normalized.nii.gz",
+        # Optional parameters
+        atlas_correction=True,  # default: True
+        n4_bias_correction=False,  # default: False
     )
 ]
 
-# instantiate and run the preprocessor using defaults for backends (registration, brain extraction, bias correction, defacing)
-preprocessor = Preprocessor(
+# instantiate and run the preprocessor
+preprocessor = AtlasCentricPreprocessor(
     center_modality=center,
     moving_modalities=moving_modalities,
+    # Optional: customize backends (defaults shown below)
+    # registrator=ANTsRegistrator(),
+    # brain_extractor=HDBetExtractor(),
+    # n4_bias_corrector=SitkN4BiasCorrector(),
+    # defacer=QuickshearDefacer(),
 )
 
-preprocessor.run()
+preprocessor.run(
+    # Optional: save intermediate results to these directories
+    save_dir_coregistration=output_folder / "coregistration",
+    save_dir_atlas_registration=output_folder / "atlas_registration",
+    save_dir_atlas_correction=output_folder / "atlas_correction",
+    save_dir_n4_bias_correction=output_folder / "n4_bias_correction",
+    save_dir_brain_extraction=output_folder / "brain_extraction",
+    save_dir_defacing=output_folder / "defacing",
+)
+
+```
+
+### Native Space Preprocessing
+Use `NativeSpacePreprocessor` to perform coregistration, N4 bias correction, brain extraction, and defacing while keeping images in native space (no atlas registration).
+
+**Key features:**
+- Co-registration of moving modalities to center modality
+- N4 bias correction
+- Brain extraction
+- Defacing for anonymization
+- **No atlas registration** - stays in native/patient space
+
+**Example with all output options:**
+
+This example demonstrates all possible output paths. You can specify any combination of:
+- **Raw outputs** (without normalization): `raw_bet_output_path`, `raw_skull_output_path`, `raw_defaced_output_path`
+- **Normalized outputs** (requires a normalizer): `normalized_bet_output_path`, `normalized_skull_output_path`, `normalized_defaced_output_path`
+- **Masks** (only for CenterModality): `bet_mask_output_path`, `defacing_mask_output_path`
+
+> **Note:** At least one output path must be specified per modality. All output paths are optional except that at least one must be provided.
+
+```python
+from pathlib import Path
+from brainles_preprocessing.modality import Modality, CenterModality
+from brainles_preprocessing.normalization.percentile_normalizer import (
+    PercentileNormalizer,
+)
+from brainles_preprocessing.preprocessor import NativeSpacePreprocessor
+
+patient_folder = Path("/path/to/patient")
+output_folder = Path("/path/to/output")
+
+# specify a normalizer (required if using any normalized_* output paths)
+percentile_normalizer = PercentileNormalizer(
+    lower_percentile=0.1,
+    upper_percentile=99.9,
+    lower_limit=0,
+    upper_limit=1,
+)
+
+# define center modality with all possible outputs
+center = CenterModality(
+    modality_name="t1c",  # required
+    input_path=patient_folder / "t1c.nii.gz",  # required
+    normalizer=percentile_normalizer,  # optional: required for normalized_* outputs
+    # Raw outputs (optional)
+    raw_bet_output_path=output_folder / "raw_bet/t1c_bet_raw.nii.gz",  # brain extracted
+    raw_skull_output_path=output_folder / "raw_skull/t1c_skull_raw.nii.gz",  # with skull
+    raw_defaced_output_path=output_folder / "raw_defaced/t1c_defaced_raw.nii.gz",  # defaced
+    # Normalized outputs (optional, requires normalizer)
+    normalized_bet_output_path=output_folder / "normalized_bet/t1c_bet_normalized.nii.gz",
+    normalized_skull_output_path=output_folder / "normalized_skull/t1c_skull_normalized.nii.gz",
+    normalized_defaced_output_path=output_folder / "normalized_defaced/t1c_defaced_normalized.nii.gz",
+    # Masks (optional, only for CenterModality)
+    bet_mask_output_path=output_folder / "masks/t1c_bet_mask.nii.gz",
+    defacing_mask_output_path=output_folder / "masks/t1c_defacing_mask.nii.gz",
+    # Optional parameters (not applicable for native space: no atlas_correction)
+    n4_bias_correction=False,  # default: False
+)
+
+# define moving modalities
+moving_modalities = [
+    Modality(
+        modality_name="flair",  # required
+        input_path=patient_folder / "flair.nii.gz",  # required
+        normalizer=percentile_normalizer,  # optional: required for normalized_* outputs
+        # Raw outputs (optional)
+        raw_bet_output_path=output_folder / "raw_bet/flair_bet_raw.nii.gz",
+        raw_skull_output_path=output_folder / "raw_skull/flair_skull_raw.nii.gz",
+        raw_defaced_output_path=output_folder / "raw_defaced/flair_defaced_raw.nii.gz",
+        # Normalized outputs (optional, requires normalizer)
+        normalized_bet_output_path=output_folder / "normalized_bet/flair_bet_normalized.nii.gz",
+        normalized_skull_output_path=output_folder / "normalized_skull/flair_skull_normalized.nii.gz",
+        normalized_defaced_output_path=output_folder / "normalized_defaced/flair_defaced_normalized.nii.gz",
+        # Optional parameters (not applicable for native space: no atlas_correction)
+        n4_bias_correction=False,  # default: False
+    )
+]
+
+# instantiate and run the preprocessor
+preprocessor = NativeSpacePreprocessor(
+    center_modality=center,
+    moving_modalities=moving_modalities,
+    # Optional: customize backends (defaults shown below)
+    # registrator=ANTsRegistrator(),
+    # brain_extractor=HDBetExtractor(),
+    # n4_bias_corrector=SitkN4BiasCorrector(),
+    # defacer=QuickshearDefacer(),
+)
+
+preprocessor.run(
+    # Optional: save intermediate results to these directories
+    save_dir_coregistration=output_folder / "coregistration",
+    save_dir_n4_bias_correction=output_folder / "n4_bias_correction",
+    save_dir_brain_extraction=output_folder / "brain_extraction",
+    save_dir_defacing=output_folder / "defacing",
+)
 
 ```
 
