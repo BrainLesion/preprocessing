@@ -36,16 +36,21 @@ We recommend using Python `3.10 / 3.11 / 3.12`.
 
 
 ## Usage
-A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair) could look like this:
+
+### Atlas-Centric Preprocessing
+Use `AtlasCentricPreprocessor` to register images to an atlas, perform atlas correction, and skull strip. This is useful when you want all images in a common atlas space.
+
+A minimal example to register (to the standard atlas using ANTs) and skull strip (using HDBet) a t1c image (center modality) with 1 moving modality (flair):
 ```python
 from pathlib import Path
 from brainles_preprocessing.modality import Modality, CenterModality
 from brainles_preprocessing.normalization.percentile_normalizer import (
     PercentileNormalizer,
 )
-from brainles_preprocessing.preprocessor import Preprocessor
+from brainles_preprocessing.preprocessor import AtlasCentricPreprocessor
 
-patient_folder = Path("/home/marcelrosier/preprocessing/patient")
+patient_folder = Path("/path/to/patient")
+output_folder = Path("/path/to/output")
 
 # specify a normalizer
 percentile_normalizer = PercentileNormalizer(
@@ -60,16 +65,17 @@ center = CenterModality(
     modality_name="t1c",
     input_path=patient_folder / "t1c.nii.gz",
     normalizer=percentile_normalizer,
-    # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
-    raw_skull_output_path="patient/raw_skull_dir/t1c_skull_raw.nii.gz",
-    raw_bet_output_path="patient/raw_bet_dir/t1c_bet_raw.nii.gz",
-    raw_defaced_output_path="patient/raw_defaced_dir/t1c_defaced_raw.nii.gz",
-    normalized_skull_output_path="patient/norm_skull_dir/t1c_skull_normalized.nii.gz",
-    normalized_bet_output_path="patient/norm_bet_dir/t1c_bet_normalized.nii.gz",
-    normalized_defaced_output_path="patient/norm_defaced_dir/t1c_defaced_normalized.nii.gz",
+    # specify the output paths for the raw and normalized images of each step
+    raw_skull_output_path=output_folder / "raw_skull/t1c_skull_raw.nii.gz",
+    raw_bet_output_path=output_folder / "raw_bet/t1c_bet_raw.nii.gz",
+    raw_defaced_output_path=output_folder / "raw_defaced/t1c_defaced_raw.nii.gz",
+    normalized_skull_output_path=output_folder / "normalized_skull/t1c_skull_normalized.nii.gz",
+    normalized_bet_output_path=output_folder / "normalized_bet/t1c_bet_normalized.nii.gz",
+    normalized_defaced_output_path=output_folder / "normalized_defaced/t1c_defaced_normalized.nii.gz",
     # specify output paths for the brain extraction and defacing masks
-    bet_mask_output_path="patient/masks/t1c_bet_mask.nii.gz",
-    defacing_mask_output_path="patient/masks/t1c_defacing_mask.nii.gz",
+    bet_mask_output_path=output_folder / "masks/t1c_bet_mask.nii.gz",
+    defacing_mask_output_path=output_folder / "masks/t1c_defacing_mask.nii.gz",
+    atlas_correction=True,
 )
 
 moving_modalities = [
@@ -77,23 +83,97 @@ moving_modalities = [
         modality_name="flair",
         input_path=patient_folder / "flair.nii.gz",
         normalizer=percentile_normalizer,
-        # specify the output paths for the raw and normalized images of each step - here only for atlas registered and brain extraction
-        raw_skull_output_path="patient/raw_skull_dir/fla_skull_raw.nii.gz",
-        raw_bet_output_path="patient/raw_bet_dir/fla_bet_raw.nii.gz",
-        raw_defaced_output_path="patient/raw_defaced_dir/fla_defaced_raw.nii.gz",
-        normalized_skull_output_path="patient/norm_skull_dir/fla_skull_normalized.nii.gz",
-        normalized_bet_output_path="patient/norm_bet_dir/fla_bet_normalized.nii.gz",
-        normalized_defaced_output_path="patient/norm_defaced_dir/fla_defaced_normalized.nii.gz",
+        # specify the output paths for the raw and normalized images of each step
+        raw_skull_output_path=output_folder / "raw_skull/flair_skull_raw.nii.gz",
+        raw_bet_output_path=output_folder / "raw_bet/flair_bet_raw.nii.gz",
+        raw_defaced_output_path=output_folder / "raw_defaced/flair_defaced_raw.nii.gz",
+        normalized_skull_output_path=output_folder / "normalized_skull/flair_skull_normalized.nii.gz",
+        normalized_bet_output_path=output_folder / "normalized_bet/flair_bet_normalized.nii.gz",
+        normalized_defaced_output_path=output_folder / "normalized_defaced/flair_defaced_normalized.nii.gz",
+        atlas_correction=True,
     )
 ]
 
 # instantiate and run the preprocessor using defaults for backends (registration, brain extraction, bias correction, defacing)
-preprocessor = Preprocessor(
+preprocessor = AtlasCentricPreprocessor(
     center_modality=center,
     moving_modalities=moving_modalities,
 )
 
-preprocessor.run()
+preprocessor.run(
+    save_dir_coregistration=output_folder / "coregistration",
+    save_dir_atlas_registration=output_folder / "atlas_registration",
+    save_dir_atlas_correction=output_folder / "atlas_correction",
+    save_dir_n4_bias_correction=output_folder / "n4_bias_correction",
+    save_dir_brain_extraction=output_folder / "brain_extraction",
+    save_dir_defacing=output_folder / "defacing",
+)
+
+```
+
+### Native Space Preprocessing
+Use `NativeSpacePreprocessor` to perform coregistration, N4 bias correction, brain extraction, and defacing while keeping images in native space (no atlas registration).
+
+A minimal example:
+```python
+from pathlib import Path
+from brainles_preprocessing.modality import Modality, CenterModality
+from brainles_preprocessing.normalization.percentile_normalizer import (
+    PercentileNormalizer,
+)
+from brainles_preprocessing.preprocessor import NativeSpacePreprocessor
+
+patient_folder = Path("/path/to/patient")
+output_folder = Path("/path/to/output")
+
+# specify a normalizer
+percentile_normalizer = PercentileNormalizer(
+    lower_percentile=0.1,
+    upper_percentile=99.9,
+    lower_limit=0,
+    upper_limit=1,
+)
+
+# define center and moving modalities
+center = CenterModality(
+    modality_name="t1c",
+    input_path=patient_folder / "t1c.nii.gz",
+    normalizer=percentile_normalizer,
+    # specify the output paths for the raw and normalized images
+    raw_bet_output_path=output_folder / "raw_bet/t1c_bet_raw.nii.gz",
+    raw_skull_output_path=output_folder / "raw_skull/t1c_skull_raw.nii.gz",
+    normalized_skull_output_path=output_folder / "normalized_skull/t1c_skull_normalized.nii.gz",
+    raw_defaced_output_path=output_folder / "raw_defaced/t1c_defaced_raw.nii.gz",
+    # specify output paths for the brain extraction and defacing masks
+    bet_mask_output_path=output_folder / "masks/t1c_bet_mask.nii.gz",
+    defacing_mask_output_path=output_folder / "masks/t1c_defacing_mask.nii.gz",
+)
+
+moving_modalities = [
+    Modality(
+        modality_name="flair",
+        input_path=patient_folder / "flair.nii.gz",
+        normalizer=percentile_normalizer,
+        # specify the output paths for the raw and normalized images
+        raw_bet_output_path=output_folder / "raw_bet/flair_bet_raw.nii.gz",
+        raw_skull_output_path=output_folder / "raw_skull/flair_skull_raw.nii.gz",
+        normalized_skull_output_path=output_folder / "normalized_skull/flair_skull_normalized.nii.gz",
+        raw_defaced_output_path=output_folder / "raw_defaced/flair_defaced_raw.nii.gz",
+    )
+]
+
+# instantiate and run the preprocessor
+preprocessor = NativeSpacePreprocessor(
+    center_modality=center,
+    moving_modalities=moving_modalities,
+)
+
+preprocessor.run(
+    save_dir_coregistration=output_folder / "coregistration",
+    save_dir_n4_bias_correction=output_folder / "n4_bias_correction",
+    save_dir_brain_extraction=output_folder / "brain_extraction",
+    save_dir_defacing=output_folder / "defacing",
+)
 
 ```
 
