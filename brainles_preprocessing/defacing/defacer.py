@@ -1,17 +1,26 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Union
-
+from typing import Union, Optional
+import numpy as np
 from auxiliary.io import read_image, write_image
 
 
 class Defacer(ABC):
-    """
-    Base class for defacing medical images using brain masks.
+    def __init__(self, 
+                 masking_value: Optional[Union[int, float]] = None,
+                 ):
+         
+        """
+        Base class for defacing medical images using brain masks.
 
-    Subclasses should implement the `deface` method to generate a defaced image
-    based on the provided input image and mask.
-    """
+        Subclasses should implement the `deface` method to generate a defaced image
+        based on the provided input image and mask.
+        """
+        # Here, masking value functions across a global value across all images and modalities
+        # If no value is passed, the minimum of a given input image is chosen
+        self.masking_value = masking_value
+
+
 
     @abstractmethod
     def deface(
@@ -63,8 +72,13 @@ class Defacer(ABC):
         if input_data.shape != mask_data.shape:
             raise ValueError("Input image and mask must have the same dimensions.")
 
-        # Apply mask (element-wise multiplication)
-        masked_data = input_data * mask_data
+        # check whether a global masking value was passed, otherwise choose minimum
+        if self.masking_value is None:
+            current_masking_value = np.min(input_data)
+        else:
+            current_masking_value = self.masking_value.astype(input_data.dtype)
+        # Apply mask (element-wise either input or masking value)
+        masked_data = np.where(masked_data.astype(bool), input_data, current_masking_value)
 
         # Save the defaced image
         write_image(
