@@ -74,7 +74,9 @@ class Defacer(ABC):
         if self.masking_value is None:
             current_masking_value = np.min(input_data)
         else:
-            current_masking_value = np.array(self.masking_value).astype(input_data.dtype).item()
+            current_masking_value = (
+                np.array(self.masking_value).astype(input_data.dtype).item()
+            )
         # Apply mask (element-wise either input or masking value)
         masked_data = np.where(
             mask_data.astype(bool), input_data, current_masking_value
