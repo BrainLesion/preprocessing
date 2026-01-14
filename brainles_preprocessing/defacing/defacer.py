@@ -22,9 +22,9 @@ class Defacer(ABC):
 
         @abstractmethod
         def deface(
-        self,
-        input_image_path: Union[str, Path],
-        mask_image_path: Union[str, Path],
+            self,
+            input_image_path: Union[str, Path],
+            mask_image_path: Union[str, Path],
         ) -> None:
             """
             Generate a defacing mask provided an input image.
