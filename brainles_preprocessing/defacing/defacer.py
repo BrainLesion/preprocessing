@@ -6,10 +6,10 @@ from auxiliary.io import read_image, write_image
 
 
 class Defacer(ABC):
-    def __init__(self, 
-                 masking_value: Optional[Union[int, float]] = None,
-                 ):
-         
+    def __init__(
+        self,
+        masking_value: Optional[Union[int, float]] = None,
+    ):
         """
         Base class for defacing medical images using brain masks.
 
@@ -19,8 +19,6 @@ class Defacer(ABC):
         # Here, masking value functions across a global value across all images and modalities
         # If no value is passed, the minimum of a given input image is chosen
         self.masking_value = masking_value
-
-
 
     @abstractmethod
     def deface(
@@ -78,7 +76,9 @@ class Defacer(ABC):
         else:
             current_masking_value = self.masking_value.astype(input_data.dtype)
         # Apply mask (element-wise either input or masking value)
-        masked_data = np.where(masked_data.astype(bool), input_data, current_masking_value)
+        masked_data = np.where(
+            masked_data.astype(bool), input_data, current_masking_value
+        )
 
         # Save the defaced image
         write_image(
