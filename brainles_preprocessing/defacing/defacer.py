@@ -18,6 +18,8 @@ class Defacer(ABC):
         """
         # Here, masking value functions as a global value across all images and modalities
         # If no value is passed, the minimum of a given input image is chosen
+        # TODO: Consider extending this to modality-specific masking values in the future, this should
+        # probably be implemented as a property of the the specific modality
         self.masking_value = masking_value
 
         @abstractmethod
