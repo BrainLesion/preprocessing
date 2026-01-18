@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import nibabel as nib
 from auxiliary.io import read_image, write_image
@@ -35,6 +35,7 @@ class QuickshearDefacer(Defacer):
         buffer: float = 10.0,
         force_atlas_registration: bool = True,
         atlas_image_path: Union[str, Path, Atlas] = Atlas.SRI24,
+        masking_value: Optional[Union[int, float]] = None,
     ):
         """Initialize Quickshear defacer
 
@@ -42,8 +43,9 @@ class QuickshearDefacer(Defacer):
             buffer (float, optional): buffer parameter from quickshear algorithm. Defaults to 10.0.
             force_atlas_registration (bool, optional): If True, forces atlas registration of the BET mask before defacing to potentially boost quickshear performance. Defaults to True.
             atlas_image_path (Union[str, Path, Atlas], optional): Path to the atlas image or an Atlas enum value that will be used for the optional atlas registrations. Defaults to Atlas.SRI24.
+            masking_value (Optional[Union[int, float]], optional): global value to be inserted in the masked areas. Default is None which leads to the minimum of each respective image.
         """
-        super().__init__()
+        super().__init__(masking_value=masking_value)
         self.buffer = buffer
         self.force_atlas_registration = force_atlas_registration
         self.atlas_image_path = atlas_image_path
