@@ -11,6 +11,7 @@ import sys
 import nibabel as nb
 import numpy as np
 from numpy.typing import NDArray
+from scipy.ndimage import convolve
 
 try:
     from duecredit import BibTeX, due
@@ -83,14 +84,11 @@ def edge_mask(mask):
     brain = mask.any(axis=0)
 
     # Simple edge detection
-    edgemask = (
-        4 * brain
-        - np.roll(brain, 1, 0)
-        - np.roll(brain, -1, 0)
-        - np.roll(brain, 1, 1)
-        - np.roll(brain, -1, 1)
-        != 0
-    )
+    kernel = np.array([[0, -1, 0],
+                       [-1, 4, -1],
+                       [0, -1, 0]])
+    edgemask = (convolve(brain, kernel, mode='constant', cval=0.0) != 0)
+
     return edgemask.astype("uint8")
 
 
