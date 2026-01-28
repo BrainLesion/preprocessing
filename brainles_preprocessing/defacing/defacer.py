@@ -75,7 +75,7 @@ class Defacer(ABC):
         if input_data.shape != mask_data.shape:
             raise ValueError("Input image and mask must have the same dimensions.")
 
-        # check whether a global masking value was passed, otherwise choose minimum
+        # Check whether a global masking value was passed, otherwise choose minimum
         if self.masking_value is None:
             current_masking_value = np.min(input_data)
         else:
