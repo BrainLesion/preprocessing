@@ -84,10 +84,8 @@ def edge_mask(mask):
     brain = mask.any(axis=0)
 
     # Simple edge detection
-    kernel = np.array([[0, -1, 0],
-                       [-1, 4, -1],
-                       [0, -1, 0]])
-    edgemask = (convolve(brain, kernel, mode='constant', cval=0.0) != 0)
+    kernel = np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
+    edgemask = convolve(brain, kernel, mode="constant", cval=0.0) != 0
 
     return edgemask.astype("uint8")
 
