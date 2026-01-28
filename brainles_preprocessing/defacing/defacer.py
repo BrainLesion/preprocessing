@@ -22,20 +22,20 @@ class Defacer(ABC):
         # probably be implemented as a property of the the specific modality
         self.masking_value = masking_value
 
-        @abstractmethod
-        def deface(
-            self,
-            input_image_path: Union[str, Path],
-            mask_image_path: Union[str, Path],
-        ) -> None:
-            """
-            Generate a defacing mask provided an input image.
+    @abstractmethod
+    def deface(
+        self,
+        input_image_path: Union[str, Path],
+        mask_image_path: Union[str, Path],
+    ) -> None:
+        """
+        Generate a defacing mask provided an input image.
 
-            Args:
-                input_image_path (str or Path): Path to the input image (NIfTI format).
-                mask_image_path (str or Path): Path to the output mask image (NIfTI format).
-            """
-            pass
+        Args:
+            input_image_path (str or Path): Path to the input image (NIfTI format).
+            mask_image_path (str or Path): Path to save the output mask image (NIfTI format).
+        """
+        pass
 
     def apply_mask(
         self,
@@ -51,6 +51,9 @@ class Defacer(ABC):
             mask_path (str or Path): Path to the brain mask image (NIfTI format).
             defaced_image_path (str or Path): Path to save the resulting defaced image (NIfTI format).
         """
+
+        input_image_path = Path(input_image_path)
+        mask_path = Path(mask_path)
 
         if not input_image_path.is_file():
             raise FileNotFoundError(
@@ -72,7 +75,7 @@ class Defacer(ABC):
         if input_data.shape != mask_data.shape:
             raise ValueError("Input image and mask must have the same dimensions.")
 
-        # check whether a global masking value was passed, otherwise choose minimum
+        # Check whether a global masking value was passed, otherwise choose minimum
         if self.masking_value is None:
             current_masking_value = np.min(input_data)
         else:
