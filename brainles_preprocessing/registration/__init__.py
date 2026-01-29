@@ -1,6 +1,5 @@
 import warnings
 
-
 try:
     from .ANTs.ANTs import ANTsRegistrator
 except ImportError:
@@ -10,7 +9,6 @@ except ImportError:
 
 
 from .niftyreg.niftyreg import NiftyRegRegistrator
-
 
 try:
     from .elastix.elastix import ElastixRegistrator
