@@ -6,8 +6,6 @@ from typing import Union
 from auxiliary.io import read_image, write_image
 
 
-
-
 class BrainExtractor:
     @abstractmethod
     def extract(
@@ -69,5 +67,3 @@ class BrainExtractor:
             )
         except Exception as e:
             raise RuntimeError(f"Error writing output file: {e}") from e
-
-
