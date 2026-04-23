@@ -11,10 +11,8 @@ from typing import List, Optional, Union
 
 from loguru import logger
 
-from brainles_preprocessing.brain_extraction.brain_extractor import (
-    BrainExtractor,
-    HDBetExtractor,
-)
+from brainles_preprocessing.brain_extraction.brain_extractor import BrainExtractor
+from brainles_preprocessing.brain_extraction.hd_bet import HDBetExtractor
 from brainles_preprocessing.constants import PreprocessorSteps
 from brainles_preprocessing.defacing import Defacer, QuickshearDefacer
 from brainles_preprocessing.modality import CenterModality, Modality
