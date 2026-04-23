@@ -1,1 +1,2 @@
-from .brain_extractor import HDBetExtractor
+from .hd_bet import HDBetExtractor
+from .synthstrip import SynthStripExtractor
