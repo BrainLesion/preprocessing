@@ -1,2 +1,5 @@
 from .hd_bet import HDBetExtractor
-from .synthstrip import SynthStripExtractor
+try:
+    from .synthstrip import SynthStripExtractor
+except ImportError:
+    pass
