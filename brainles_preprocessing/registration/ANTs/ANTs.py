@@ -172,7 +172,7 @@ class ANTsRegistrator(Registrator):
         # TODO - self.transformation_params
         # we update the transformation parameters with the provided kwargs
         transform_kwargs = {**self.transformation_params, **kwargs}
-        interpolator = transform_kwargs.pop('interpolator', interpolator)
+        interpolator = transform_kwargs.pop("interpolator", interpolator)
 
         assert interpolator in VALID_INTERPOLATORS, (
             f"Invalid interpolator: {interpolator}. "
