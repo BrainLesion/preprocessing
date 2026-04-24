@@ -1,12 +1,12 @@
 # TODO add typing and docs
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union
 
 from auxiliary.io import read_image, write_image
 
 
-class BrainExtractor:
+class BrainExtractor(ABC):
     @abstractmethod
     def extract(
         self,
