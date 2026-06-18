@@ -141,11 +141,19 @@ class ZenodoRecord:
                 # Zenodo returns JSON error details in the response body.
                 try:
                     error_detail = response.json()
-                except (ValueError, requests.exceptions.JSONDecodeError):
+                except ValueError:
                     error_detail = response.text.strip()
 
+                if response.status_code == 404:
+                    error_prefix = (
+                        f"Cannot find record '{self.record_id}' on Zenodo"
+                    )
+                else:
+                    error_prefix = (
+                        f"Failed to fetch record '{self.record_id}' from Zenodo"
+                    )
                 error_msg = (
-                    f"Cannot find record '{self.record_id}' on Zenodo "
+                    f"{error_prefix} "
                     f"(status_code={response.status_code}). "
                     f"Response: {error_detail}"
                 )
