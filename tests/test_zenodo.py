@@ -57,11 +57,28 @@ def test_get_metadata_and_archive_url_success(
 def test_get_metadata_and_archive_url_failure(monkeypatch):
     response_mock = MagicMock()
     response_mock.status_code = 404
+    response_mock.json.return_value = {
+        "message": "The record does not exist.",
+        "status": 404,
+    }
 
     monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
     record = ZenodoRecord("invalid", Path("/tmp"), "test")
 
-    with pytest.raises(ZenodoException):
+    with pytest.raises(ZenodoException, match="The record does not exist"):
+        record._get_metadata_and_archive_url()
+
+
+def test_get_metadata_and_archive_url_failure_with_text_body(monkeypatch):
+    response_mock = MagicMock()
+    response_mock.status_code = 403
+    response_mock.json.side_effect = ValueError("No JSON")
+    response_mock.text = "Rate limit exceeded. Please try again later."
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    with pytest.raises(ZenodoException, match="Rate limit exceeded"):
         record._get_metadata_and_archive_url()
 
 

@@ -137,9 +137,17 @@ class ZenodoRecord:
         try:
             response = requests.get(f"{self.BASE_URL}/{self.record_id}")
             if response.status_code != 200:
+                # Include the response body for easier debugging.
+                # Zenodo returns JSON error details in the response body.
+                try:
+                    error_detail = response.json()
+                except (ValueError, requests.exceptions.JSONDecodeError):
+                    error_detail = response.text.strip()
+
                 error_msg = (
                     f"Cannot find record '{self.record_id}' on Zenodo "
-                    f"({response.status_code=})."
+                    f"(status_code={response.status_code}). "
+                    f"Response: {error_detail}"
                 )
                 logger.error(error_msg)
                 raise ZenodoException(error_msg)
