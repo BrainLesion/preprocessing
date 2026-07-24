@@ -13,6 +13,15 @@ class Mode(Enum):
 
 
 class HDBetExtractor(BrainExtractor):
+    def __init__(self, masking_value: Optional[Union[int, float]] = None):
+        """
+        Brain extraction HDBet implementation.
+
+        Args:
+            masking_value (Optional[Union[int, float]], optional): global value to be inserted in the masked areas. Default is None which leads to the minimum of each respective image.
+        """
+        super().__init__(masking_value=masking_value)
+
     def extract(
         self,
         input_image_path: Union[str, Path],
@@ -74,3 +83,5 @@ class HDBetExtractor(BrainExtractor):
                 )
             except Exception as e:
                 raise RuntimeError(f"Error copying mask file: {e}") from e
+
+
