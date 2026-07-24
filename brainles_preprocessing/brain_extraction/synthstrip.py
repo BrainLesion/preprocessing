@@ -222,8 +222,14 @@ class SynthStripExtractor(BrainExtractor):
 
         # write the masked output
         img_data = image.get_fdata()
-        bg = np.min([0, img_data.min()])
-        img_data[mask == 0] = bg
+        # check whether a global masking value was passed, otherwise choose minimum
+        if self.masking_value is None:
+            current_masking_value = np.min(img_data)
+        else:
+            current_masking_value = (
+                np.array(self.masking_value).astype(img_data.dtype).item()
+            )
+        img_data[mask == 0] = current_masking_value
         Nifti1Image(img_data, image.affine, image.header).to_filename(
             masked_image_path,
         )
