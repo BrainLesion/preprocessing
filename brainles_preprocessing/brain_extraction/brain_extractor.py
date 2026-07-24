@@ -2,7 +2,6 @@
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Optional, Union
-from enum import Enum
 import numpy as np
 
 from auxiliary.io import read_image, write_image
