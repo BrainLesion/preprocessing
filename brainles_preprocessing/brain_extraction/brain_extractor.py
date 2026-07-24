@@ -99,5 +99,3 @@ class BrainExtractor(ABC):
             )
         except Exception as e:
             raise RuntimeError(f"Error writing output file: {e}") from e
-
-

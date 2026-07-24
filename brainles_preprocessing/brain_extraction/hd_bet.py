@@ -83,5 +83,3 @@ class HDBetExtractor(BrainExtractor):
                 )
             except Exception as e:
                 raise RuntimeError(f"Error copying mask file: {e}") from e
-
-
