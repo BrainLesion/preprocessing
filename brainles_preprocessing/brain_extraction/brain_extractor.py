@@ -1,13 +1,11 @@
 # TODO add typing and docs
-import shutil
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Optional, Union
 from enum import Enum
 import numpy as np
 
 from auxiliary.io import read_image, write_image
-from brainles_hd_bet import run_hd_bet
 
 
 class Mode(Enum):
@@ -32,6 +30,7 @@ class BrainExtractor(ABC):
         # probably be implemented as a property of the specific modality
         self.masking_value = masking_value
 
+class BrainExtractor(ABC):
     @abstractmethod
     def extract(
         self,
