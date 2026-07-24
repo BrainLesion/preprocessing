@@ -8,11 +8,6 @@ import numpy as np
 from auxiliary.io import read_image, write_image
 
 
-class Mode(Enum):
-    FAST = "fast"
-    ACCURATE = "accurate"
-
-
 class BrainExtractor(ABC):
     def __init__(
         self,
@@ -45,7 +40,6 @@ class BrainExtractor(ABC):
             input_image_path (str or Path): Path to the input image.
             masked_image_path (str or Path): Path where the brain-extracted image will be saved.
             brain_mask_path (str or Path): Path where the brain mask will be saved.
-            mode (str or Mode): Extraction mode.
             **kwargs: Additional keyword arguments.
         """
         pass
