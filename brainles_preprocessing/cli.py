@@ -59,7 +59,7 @@ def main(
         ),
     ],
     output_dir: Annotated[
-        str | Path,
+        str,
         typer.Option(
             "-o",
             "--output_dir",
