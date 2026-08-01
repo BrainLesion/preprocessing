@@ -101,8 +101,8 @@ class ZenodoRecord:
         key = self._cache_key()
 
         # Fast path: return immediately if already resolved in this process
-        if key in ZenodoRecord._cache:
-            cached = ZenodoRecord._cache[key]
+        cached = ZenodoRecord._cache.get(key)
+        if cached is not None:
             logger.debug(f"Using cached {self.label} path: {cached}")
             return cached
 
