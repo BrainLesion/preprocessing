@@ -59,11 +59,15 @@ def main(
         ),
     ],
     output_dir: Annotated[
-        str | Path,
+        Path,
         typer.Option(
             "-o",
             "--output_dir",
             help="The path to the output directory",
+            exists=False,
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
         ),
     ],
     input_atlas: Annotated[
@@ -89,7 +93,6 @@ def main(
     Preprocess the input images according to the BraTS protocol.
     """
 
-    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # specify a normalizer
