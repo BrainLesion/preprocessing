@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import shutil
-import threading
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -59,10 +58,6 @@ class ZenodoRecord:
 
     # Process-level cache: maps (record_id, target_dir) -> resolved Path
     _cache: ClassVar[Dict[Tuple[str, str], Path]] = {}
-    # Per-record locks to prevent redundant concurrent fetches of the same record
-    _locks: ClassVar[Dict[Tuple[str, str], threading.Lock]] = {}
-    # Protects access to _locks itself
-    _meta_lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(
         self,
@@ -77,48 +72,28 @@ class ZenodoRecord:
     @classmethod
     def clear_cache(cls) -> None:
         """Clear the process-level fetch cache. Primarily intended for testing."""
-        with cls._meta_lock:
-            cls._cache.clear()
-            cls._locks.clear()
+        cls._cache.clear()
 
     def _cache_key(self) -> Tuple[str, str]:
         return (self.record_id, str(self.target_dir))
-
-    def _get_record_lock(self) -> threading.Lock:
-        key = self._cache_key()
-        with ZenodoRecord._meta_lock:
-            if key not in ZenodoRecord._locks:
-                ZenodoRecord._locks[key] = threading.Lock()
-            return ZenodoRecord._locks[key]
 
     def fetch(self) -> Path:
         """Fetch the latest version of the record from Zenodo or from local storage.
 
         Results are cached for the lifetime of the process so that repeated calls
-        (e.g. when processing many subjects in a loop or in parallel) do not trigger
-        redundant Zenodo API requests.
+        (e.g. when processing many subjects in a loop) do not trigger redundant
+        Zenodo API requests.
         """
         key = self._cache_key()
 
-        # Fast path: return immediately if already resolved in this process
         cached = ZenodoRecord._cache.get(key)
         if cached is not None:
             logger.debug(f"Using cached {self.label} path: {cached}")
             return cached
 
-        # Acquire per-record lock so that concurrent callers wait rather than
-        # all hitting the Zenodo API simultaneously.
-        lock = self._get_record_lock()
-        with lock:
-            # Double-check after acquiring the lock
-            if key in ZenodoRecord._cache:
-                cached = ZenodoRecord._cache[key]
-                logger.debug(f"Using cached {self.label} path: {cached}")
-                return cached
-
-            result = self._fetch_uncached()
-            ZenodoRecord._cache[key] = result
-            return result
+        result = self._fetch_uncached()
+        ZenodoRecord._cache[key] = result
+        return result
 
     def _fetch_uncached(self) -> Path:
         """Perform the actual Zenodo check / download without consulting the cache."""
