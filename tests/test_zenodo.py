@@ -14,6 +14,14 @@ from brainles_preprocessing.utils.zenodo import (
 # ---- Fixtures ----
 
 
+@pytest.fixture(autouse=True)
+def clear_zenodo_cache():
+    """Ensure the process-level ZenodoRecord cache is clean before every test."""
+    ZenodoRecord.clear_cache()
+    yield
+    ZenodoRecord.clear_cache()
+
+
 @pytest.fixture
 def dummy_metadata():
     return {
@@ -178,6 +186,76 @@ def test_fetch_replaces_old_version(
     assert result.name == "123_v1.2.3"
     assert not old_folder.exists()
     mock_download.assert_called_once()
+
+
+# ---- Tests for process-level caching ----
+
+
+@patch.object(ZenodoRecord, "_fetch_uncached")
+def test_fetch_caches_result(mock_fetch_uncached, tmp_path):
+    """Second call to fetch() returns cached result without hitting _fetch_uncached."""
+    expected_path = tmp_path / "123_v1.2.3"
+    mock_fetch_uncached.return_value = expected_path
+
+    record = ZenodoRecord("123", tmp_path, "test")
+
+    result1 = record.fetch()
+    result2 = record.fetch()
+
+    assert result1 == expected_path
+    assert result2 == expected_path
+    # _fetch_uncached should only be called once despite two fetch() calls
+    mock_fetch_uncached.assert_called_once()
+
+
+@patch.object(ZenodoRecord, "_fetch_uncached")
+def test_fetch_cache_shared_across_instances(mock_fetch_uncached, tmp_path):
+    """Two separate ZenodoRecord instances with the same record_id share the cache."""
+    expected_path = tmp_path / "123_v1.2.3"
+    mock_fetch_uncached.return_value = expected_path
+
+    record1 = ZenodoRecord("123", tmp_path, "test")
+    record2 = ZenodoRecord("123", tmp_path, "other_label")
+
+    result1 = record1.fetch()
+    result2 = record2.fetch()
+
+    assert result1 == expected_path
+    assert result2 == expected_path
+    mock_fetch_uncached.assert_called_once()
+
+
+@patch.object(ZenodoRecord, "_fetch_uncached")
+def test_fetch_cache_different_records_independent(mock_fetch_uncached, tmp_path):
+    """Different record_ids each trigger their own fetch."""
+    path_a = tmp_path / "aaa_v1.0.0"
+    path_b = tmp_path / "bbb_v2.0.0"
+    mock_fetch_uncached.side_effect = [path_a, path_b]
+
+    record_a = ZenodoRecord("aaa", tmp_path, "a")
+    record_b = ZenodoRecord("bbb", tmp_path, "b")
+
+    result_a = record_a.fetch()
+    result_b = record_b.fetch()
+
+    assert result_a == path_a
+    assert result_b == path_b
+    assert mock_fetch_uncached.call_count == 2
+
+
+def test_clear_cache_resets_state(tmp_path):
+    """clear_cache() forces a fresh Zenodo check on the next fetch() call."""
+    with patch.object(ZenodoRecord, "_fetch_uncached") as mock_fetch_uncached:
+        expected_path = tmp_path / "123_v1.2.3"
+        mock_fetch_uncached.return_value = expected_path
+
+        record = ZenodoRecord("123", tmp_path, "test")
+        record.fetch()
+        assert mock_fetch_uncached.call_count == 1
+
+        ZenodoRecord.clear_cache()
+        record.fetch()
+        assert mock_fetch_uncached.call_count == 2
 
 
 # ---- fetch_atlases and fetch_synthstrip ----
