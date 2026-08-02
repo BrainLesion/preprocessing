@@ -5,7 +5,7 @@ import threading
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import ClassVar, Dict, List, Tuple
 
 import requests
 from loguru import logger
@@ -58,11 +58,11 @@ class ZenodoRecord:
     BASE_URL = "https://zenodo.org/api/records"
 
     # Process-level cache: maps (record_id, target_dir) -> resolved Path
-    _cache: Dict[Tuple[str, str], Path] = {}
+    _cache: ClassVar[Dict[Tuple[str, str], Path]] = {}
     # Per-record locks to prevent redundant concurrent fetches of the same record
-    _locks: Dict[Tuple[str, str], threading.Lock] = {}
+    _locks: ClassVar[Dict[Tuple[str, str], threading.Lock]] = {}
     # Protects access to _locks itself
-    _meta_lock: threading.Lock = threading.Lock()
+    _meta_lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(
         self,
