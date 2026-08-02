@@ -4,7 +4,7 @@ import shutil
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import ClassVar, Dict, List, Tuple
 
 import requests
 from loguru import logger
@@ -56,6 +56,9 @@ class ZenodoException(Exception):
 class ZenodoRecord:
     BASE_URL = "https://zenodo.org/api/records"
 
+    # Process-level cache: maps (record_id, target_dir) -> resolved Path
+    _cache: ClassVar[Dict[Tuple[str, str], Path]] = {}
+
     def __init__(
         self,
         record_id: str,
@@ -66,8 +69,34 @@ class ZenodoRecord:
         self.target_dir = target_dir
         self.label = label
 
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clear the process-level fetch cache. Primarily intended for testing."""
+        cls._cache.clear()
+
+    def _cache_key(self) -> Tuple[str, str]:
+        return (self.record_id, str(self.target_dir))
+
     def fetch(self) -> Path:
-        """Fetch the latest version of the record from Zenodo or from local storage."""
+        """Fetch the latest version of the record from Zenodo or from local storage.
+
+        Results are cached for the lifetime of the process so that repeated calls
+        (e.g. when processing many subjects in a loop) do not trigger redundant
+        Zenodo API requests.
+        """
+        key = self._cache_key()
+
+        cached = ZenodoRecord._cache.get(key)
+        if cached is not None:
+            logger.debug(f"Using cached {self.label} path: {cached}")
+            return cached
+
+        result = self._fetch_uncached()
+        ZenodoRecord._cache[key] = result
+        return result
+
+    def _fetch_uncached(self) -> Path:
+        """Perform the actual Zenodo check / download without consulting the cache."""
         zenodo_response = self._get_metadata_and_archive_url()
 
         pattern = self._glob_pattern()
