@@ -1,12 +1,29 @@
 # TODO add typing and docs
 from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
+import numpy as np
 
 from auxiliary.io import read_image, write_image
 
 
 class BrainExtractor(ABC):
+    def __init__(
+        self,
+        masking_value: Optional[Union[int, float]] = None,
+    ):
+        """
+        Base class for skull stripping medical images using brain masks.
+
+        Subclasses should implement the `extract` method to generate a skull stripped image
+        based on the provided input image and mask.
+        """
+        # Just as in the defacer, masking value is a global value defined across all images and modalities
+        # If no value is passed, the minimum of a given input image is chosen
+        # TODO: Consider extending this to modality-specific masking values in the future, this should
+        # probably be implemented as a property of the specific modality
+        self.masking_value = masking_value
+
     @abstractmethod
     def extract(
         self,
@@ -22,7 +39,6 @@ class BrainExtractor(ABC):
             input_image_path (str or Path): Path to the input image.
             masked_image_path (str or Path): Path where the brain-extracted image will be saved.
             brain_mask_path (str or Path): Path where the brain mask will be saved.
-            mode (str or Mode): Extraction mode.
             **kwargs: Additional keyword arguments.
         """
         pass
@@ -55,8 +71,17 @@ class BrainExtractor(ABC):
         if input_data.shape != mask_data.shape:
             raise ValueError("Input image and mask must have the same dimensions.")
 
-        # Mask and save it
-        masked_data = input_data * mask_data
+        # check whether a global masking value was passed, otherwise choose minimum
+        if self.masking_value is None:
+            current_masking_value = np.min(input_data)
+        else:
+            current_masking_value = (
+                np.array(self.masking_value).astype(input_data.dtype).item()
+            )
+        # Apply mask (element-wise either input or masking value)
+        masked_data = np.where(
+            mask_data.astype(bool), input_data, current_masking_value
+        )
 
         try:
             write_image(
