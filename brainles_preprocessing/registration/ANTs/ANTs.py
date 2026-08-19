@@ -169,14 +169,15 @@ class ANTsRegistrator(Registrator):
         """
         start_time = datetime.datetime.now()
 
+        # TODO - self.transformation_params
+        # we update the transformation parameters with the provided kwargs
+        transform_kwargs = {**self.transformation_params, **kwargs}
+        interpolator = transform_kwargs.pop("interpolator", interpolator)
+
         assert interpolator in VALID_INTERPOLATORS, (
             f"Invalid interpolator: {interpolator}. "
             f"Valid options are: {', '.join(VALID_INTERPOLATORS)}."
         )
-
-        # TODO - self.transformation_params
-        # we update the transformation parameters with the provided kwargs
-        transform_kwargs = {**self.transformation_params, **kwargs}
 
         # Convert all paths to Path objects
         fixed_image_path = Path(fixed_image_path)
