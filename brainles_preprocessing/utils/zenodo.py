@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import tempfile
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -15,6 +16,11 @@ ATLASES_RECORD_ID = "15236131"
 
 SYNTHSTRIP_FOLDER = Path(__file__).parent.parent / "brain_extraction" / "weights"
 SYNTHSTRIP_RECORD_ID = "16535633"
+
+# Timeout (seconds) for Zenodo HTTP requests. Without this a stalled connection
+# (e.g. behind an authenticating proxy) can hang the process indefinitely.
+METADATA_TIMEOUT = 30
+DOWNLOAD_TIMEOUT = 60
 
 
 def fetch_atlases() -> Path:
@@ -114,10 +120,11 @@ class ZenodoRecord:
             return self._download(metadata, archive_url)
 
         logger.info(f"Found local {self.label}: {latest_local}")
+        local_folder = self.target_dir / latest_local
 
         if not zenodo_response:
             logger.warning(f"Zenodo unreachable. Using latest downloaded {self.label}.")
-            return self.target_dir / latest_local
+            return local_folder
 
         metadata, archive_url = zenodo_response
         remote_version = metadata["version"]
@@ -125,18 +132,30 @@ class ZenodoRecord:
 
         if remote_version == local_version:
             logger.info(f"Latest {self.label} ({remote_version}) already present.")
-            return self.target_dir / latest_local
+            return local_folder
 
         logger.info(
             f"New version of {self.label} available on Zenodo ({remote_version}). Replacing local copy..."
         )
-        shutil.rmtree(
-            self.target_dir / latest_local,
-            onerror=lambda func, path, excinfo: logger.warning(
-                f"Failed to delete {path}: {excinfo}"
-            ),
-        )
-        return self._download(metadata, archive_url)
+        # Download the new version *before* removing the old one, so a failed
+        # upgrade never leaves us without a usable copy.
+        try:
+            new_folder = self._download(metadata, archive_url)
+        except ZenodoException as e:
+            logger.warning(
+                f"Failed to download {self.label} {remote_version} ({e}). "
+                f"Keeping local version {local_version}."
+            )
+            return local_folder
+
+        if new_folder != local_folder and local_folder.exists():
+            shutil.rmtree(
+                local_folder,
+                onerror=lambda func, path, excinfo: logger.warning(
+                    f"Failed to delete {path}: {excinfo}"
+                ),
+            )
+        return new_folder
 
     def _glob_pattern(self) -> str:
         return f"{self.record_id}_v*.*.*"
@@ -151,33 +170,56 @@ class ZenodoRecord:
         self,
         folders: List[Path],
     ) -> str | None:
-        if not folders:
-            return None
-        latest = sorted(
-            folders,
-            reverse=True,
-            key=lambda x: tuple(map(int, str(x.name).split("_v")[1].split("."))),
-        )[0]
-        if not list(latest.glob("*")):
-            return None
-        return latest.name
+        """Return the name of the newest non-empty version folder, if any.
+
+        Folders that are empty or whose name cannot be parsed as a version are
+        skipped rather than treated as "nothing available locally", so a leftover
+        empty directory cannot shadow an intact older copy.
+        """
+        candidates = []
+        for folder in folders:
+            if not folder.is_dir():
+                continue
+            try:
+                version = tuple(map(int, folder.name.split("_v")[1].split(".")))
+            except (IndexError, ValueError):
+                logger.debug(f"Ignoring unparsable {self.label} folder: {folder.name}")
+                continue
+            candidates.append((version, folder))
+
+        for _, folder in sorted(candidates, key=lambda item: item[0], reverse=True):
+            if any(folder.iterdir()):
+                return folder.name
+            logger.warning(f"Ignoring empty {self.label} folder: {folder.name}")
+
+        return None
 
     def _get_metadata_and_archive_url(self) -> Tuple[Dict, str] | None:
+        """Return (metadata, archive_url) or None if Zenodo could not be queried.
+
+        Returning None on *any* failure — including HTTP error statuses such as
+        502/504 — lets the caller fall back to a local copy.
+        """
         try:
-            response = requests.get(f"{self.BASE_URL}/{self.record_id}")
-            if response.status_code != 200:
-                error_msg = (
-                    f"Cannot find record '{self.record_id}' on Zenodo "
-                    f"({response.status_code=})."
-                )
-                logger.error(error_msg)
-                raise ZenodoException(error_msg)
-
-            data = response.json()
-            return data["metadata"], data["links"]["archive"]
-
+            response = requests.get(
+                f"{self.BASE_URL}/{self.record_id}", timeout=METADATA_TIMEOUT
+            )
         except requests.exceptions.RequestException as e:
             logger.warning(f"Failed to fetch metadata from Zenodo: {e}")
+            return None
+
+        if response.status_code != 200:
+            logger.warning(
+                f"Zenodo returned an unexpected status for record "
+                f"'{self.record_id}' ({response.status_code=})."
+            )
+            return None
+
+        try:
+            data = response.json()
+            return data["metadata"], data["links"]["archive"]
+        except (ValueError, KeyError, TypeError) as e:
+            logger.warning(f"Unexpected response payload from Zenodo: {e}")
             return None
 
     def _download(
@@ -185,12 +227,24 @@ class ZenodoRecord:
         metadata: Dict,
         archive_url: str,
     ) -> Path:
+        """Download and extract the record, staging it in a temporary directory.
+
+        The final folder only appears once extraction succeeded, so a failed
+        download cannot leave an empty version folder behind.
+        """
         folder = self._build_folder_path(metadata["version"])
-        folder.mkdir(parents=True, exist_ok=True)
 
         logger.info(f"Downloading {self.label} from Zenodo. This may take a while...")
 
-        response = requests.get(archive_url, stream=True)
+        try:
+            response = requests.get(
+                archive_url, stream=True, timeout=DOWNLOAD_TIMEOUT
+            )
+        except requests.exceptions.RequestException as e:
+            msg = f"Failed to download {self.label}: {e}"
+            logger.error(msg)
+            raise ZenodoException(msg) from e
+
         if response.status_code != 200:
             msg = (
                 f"Failed to download {self.label}. Status code: {response.status_code}"
@@ -198,7 +252,30 @@ class ZenodoRecord:
             logger.error(msg)
             raise ZenodoException(msg)
 
-        self._extract_archive(response, folder)
+        self.target_dir.mkdir(parents=True, exist_ok=True)
+        # Staged inside target_dir so the final move is a rename on the same
+        # filesystem. The leading dot keeps it out of _glob_pattern().
+        staging_dir = Path(
+            tempfile.mkdtemp(prefix=f".tmp_{self.record_id}_", dir=self.target_dir)
+        )
+        try:
+            self._extract_archive(response, staging_dir)
+            if folder.exists():
+                shutil.rmtree(
+                    folder,
+                    onerror=lambda func, path, excinfo: logger.warning(
+                        f"Failed to delete {path}: {excinfo}"
+                    ),
+                )
+            staging_dir.replace(folder)
+        except Exception as e:
+            shutil.rmtree(staging_dir, ignore_errors=True)
+            if isinstance(e, ZenodoException):
+                raise
+            msg = f"Failed to extract {self.label}: {e}"
+            logger.error(msg)
+            raise ZenodoException(msg) from e
+
         logger.info(f"{self.label.title()} extracted to {folder}")
         return folder
 
