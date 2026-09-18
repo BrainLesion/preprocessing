@@ -239,6 +239,7 @@ class Modality:
         registration_dir: Union[str, Path],
         moving_image_name: str,
         step: PreprocessorSteps,
+        interpolator: Optional[str] = None,
     ) -> Path:
         """
         Register the current modality to a fixed image using the specified registrator.
@@ -249,6 +250,7 @@ class Modality:
             registration_dir (str or Path): Directory to store registration results.
             moving_image_name (str): Name of the moving image.
             step (PreprocessorSteps): The current preprocessing step.
+            interpolator (Optional[str]): Interpolation method used during transformation. Available options depend on the chosen registrator.
 
         Returns:
             Path: Path to the registration matrix.
@@ -262,12 +264,15 @@ class Modality:
         # Note, add file ending depending on registration backend!
         registered_matrix = registration_dir / f"M_{moving_image_name}"
 
+        interpolator_kwargs = {"interpolator": interpolator} if interpolator else {}
+
         registrator.register(
             fixed_image_path=fixed_image_path,
             moving_image_path=self.current,
             transformed_image_path=registered,
             matrix_path=registered_matrix,
             log_file_path=str(registered_log),
+            **interpolator_kwargs,
         )
         self.current = registered
         self.steps[step] = registered
@@ -364,6 +369,7 @@ class Modality:
         moving_image_name: str,
         transformation_matrix_path: Union[str, Path],
         step: PreprocessorSteps,
+        interpolator: Optional[str] = None,
     ) -> None:
         """
         Transform the current modality using the specified registrator and transformation matrix.
@@ -375,6 +381,7 @@ class Modality:
             moving_image_name (str): Name of the moving image.
             transformation_matrix_path (str or Path): Path to the transformation matrix.
             step (PreprocessorSteps): The current preprocessing step.
+            interpolator (Optional[str]): Interpolation method used during transformation. Available options depend on the chosen registrator.
         Returns:
             None
         """
@@ -384,6 +391,8 @@ class Modality:
 
         transformed = registration_dir_path / f"{moving_image_name}.nii.gz"
         transformed_log = registration_dir_path / f"{moving_image_name}.log"
+
+        interpolator_kwargs = {"interpolator": interpolator} if interpolator else {}
 
         if (
             isinstance(registrator, (ANTsRegistrator, NiftyRegRegistrator))
@@ -406,6 +415,7 @@ class Modality:
                     transformation_matrix_path,  # atlas registration matrix
                 ],
                 log_file_path=str(transformed_log),
+                **interpolator_kwargs,
             )
         else:
             registrator.transform(
@@ -414,6 +424,7 @@ class Modality:
                 transformed_image_path=str(transformed),
                 matrix_path=str(transformation_matrix_path),
                 log_file_path=str(transformed_log),
+                **interpolator_kwargs,
             )
 
         self.current = transformed

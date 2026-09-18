@@ -61,6 +61,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: Union[str, Path],
         log_file_path: Union[str, Path],
+        interpolator: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
@@ -72,6 +73,7 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str or Path): Path to the transformed image (output).
             matrix_path (str or Path): Path to the transformation matrix (output).
             log_file_path (str or Path): Path to the log file.
+            interpolator (Optional[str]): Interpolator to use for the transformation. Defaults to the instantiated transformation parameters, or 'linear' if not set.
             **kwargs: Additional registration parameters to update the instantiated defaults.
 
         Raises:
@@ -123,6 +125,7 @@ class ANTsRegistrator(Registrator):
             transformed_image_path=transformed_image_path,
             matrix_path=matrix_path,
             log_file_path=log_file_path,
+            interpolator=interpolator,
         )
 
         end_time = datetime.datetime.now()
@@ -148,7 +151,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
-        interpolator: str = "nearestNeighbor",
+        interpolator: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
@@ -161,7 +164,7 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str or Path): Path to the transformed image (output).
             matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
-            interpolator (str): Interpolator to use for the transformation. Default is 'nearestNeighbor'.
+            interpolator (Optional[str]): Interpolator to use for the transformation. Defaults to the instantiated transformation parameters, or 'linear' if not set.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
         Raises:
             AssertionError: If the interpolator is not valid.
@@ -169,14 +172,18 @@ class ANTsRegistrator(Registrator):
         """
         start_time = datetime.datetime.now()
 
+        # TODO - self.transformation_params
+        # we update the transformation parameters with the provided kwargs
+        transform_kwargs = {**self.transformation_params, **kwargs}
+
+        # the interpolator argument takes precedence over the instantiated defaults
+        default_interpolator = transform_kwargs.pop("interpolator", "linear")
+        interpolator = interpolator or default_interpolator
+
         assert interpolator in VALID_INTERPOLATORS, (
             f"Invalid interpolator: {interpolator}. "
             f"Valid options are: {', '.join(VALID_INTERPOLATORS)}."
         )
-
-        # TODO - self.transformation_params
-        # we update the transformation parameters with the provided kwargs
-        transform_kwargs = {**self.transformation_params, **kwargs}
 
         # Convert all paths to Path objects
         fixed_image_path = Path(fixed_image_path)
@@ -243,7 +250,7 @@ class ANTsRegistrator(Registrator):
         transformed_image_path: Union[str, Path],
         matrix_path: str | Path | List[str | Path],
         log_file_path: Union[str, Path],
-        interpolator: str = "nearestNeighbor",
+        interpolator: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
@@ -255,7 +262,7 @@ class ANTsRegistrator(Registrator):
             transformed_image_path (str or Path): Path to the transformed image (output).
             matrix_path (str or Path or List[str | Path]): Path to the transformation matrix or a list of matrices.
             log_file_path (str or Path): Path to the log file.
-            interpolator (str): Interpolator to use for the transformation. Default is 'nearestNeighbor'.
+            interpolator (Optional[str]): Interpolator to use for the transformation. Defaults to the instantiated transformation parameters, or 'linear' if not set.
             **kwargs: Additional transformation parameters to update the instantiated defaults.
         """
         if not isinstance(matrix_path, list):

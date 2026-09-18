@@ -155,7 +155,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str | Path | List[str | Path],
         log_file_path: str,
-        interpolator: str = "0",
+        interpolator: str = "1",
         **kwargs: dict,
     ) -> None:
         """
@@ -236,7 +236,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str | Path | List[str | Path],
         log_file_path: str,
-        interpolator: str = "0",
+        interpolator: str = "1",
     ) -> None:
         """
         Apply inverse transformation using NiftyReg.
