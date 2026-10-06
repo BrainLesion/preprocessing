@@ -721,7 +721,6 @@ class CenterModality(Modality):
                     mask_image_path=deface_mask_atlas,
                 )
 
-                # the deface mask is binary, resample it with nearest neighbour
                 if isinstance(registrator, ANTsRegistrator):
                     nn_interpolator = "nearestNeighbor"
                 elif isinstance(registrator, NiftyRegRegistrator):
