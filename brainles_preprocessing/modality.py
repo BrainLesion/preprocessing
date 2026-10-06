@@ -250,10 +250,13 @@ class Modality:
             registration_dir (str or Path): Directory to store registration results.
             moving_image_name (str): Name of the moving image.
             step (PreprocessorSteps): The current preprocessing step.
-            interpolator (Optional[str]): Interpolation method used during transformation. Available options depend on the chosen registrator.
+            interpolator (Optional[str]): Interpolation method used during registration. Only supported by ANTsRegistrator; omit it for other registrators to use the backend default.
 
         Returns:
             Path: Path to the registration matrix.
+
+        Raises:
+            ValueError: If an interpolator is passed for a registrator other than ANTsRegistrator.
         """
         fixed_image_path = Path(fixed_image_path)
         registration_dir = Path(registration_dir)
@@ -263,6 +266,12 @@ class Modality:
 
         # Note, add file ending depending on registration backend!
         registered_matrix = registration_dir / f"M_{moving_image_name}"
+
+        if interpolator is not None and not isinstance(registrator, ANTsRegistrator):
+            raise ValueError(
+                f"'interpolator' is only supported by ANTsRegistrator for registration, "
+                f"got {type(registrator).__name__}. Omit it to use the backend default."
+            )
 
         interpolator_kwargs = {"interpolator": interpolator} if interpolator else {}
 
@@ -712,12 +721,23 @@ class CenterModality(Modality):
                     mask_image_path=deface_mask_atlas,
                 )
 
+                # the deface mask is binary, resample it with nearest neighbour
+                if isinstance(registrator, ANTsRegistrator):
+                    nn_interpolator = "nearestNeighbor"
+                elif isinstance(registrator, NiftyRegRegistrator):
+                    nn_interpolator = "0"
+                else:
+                    raise NotImplementedError(
+                        f"Nearest-neighbour mask resampling is not configured for {type(registrator).__name__}."
+                    )
+
                 registrator.inverse_transform(
                     fixed_image_path=self.steps[PreprocessorSteps.BET],
                     moving_image_path=deface_mask_atlas,
                     transformed_image_path=mask_path,
                     matrix_path=atlas_bet_M,
                     log_file_path=defaced_dir_path / "inverse_transform.log",
+                    interpolator=nn_interpolator,
                 )
             else:
                 defacer.deface(
