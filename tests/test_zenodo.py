@@ -214,8 +214,9 @@ def test_fetch_replaces_old_version(
 
     result = record.fetch()
     assert result.name == "123_v1.2.3"
-    assert not old_folder.exists()
     mock_download.assert_called_once()
+    # Removal of the old version is delegated to _download (atomic replace).
+    assert mock_download.call_args.kwargs["stale_folder"] == old_folder
 
 
 # ---- Tests for downloading record files ----
@@ -264,6 +265,95 @@ def test_download_file_raises_on_error(tmp_path):
         record = ZenodoRecord("123", tmp_path, "test")
         with pytest.raises(ZenodoException):
             record._download_file("https://example.org/a.nii", tmp_path / "a.nii")
+
+
+def test_download_file_request_exception_raises_zenodo_exception(tmp_path):
+    with patch(
+        "requests.get",
+        side_effect=requests.exceptions.RequestException("connection reset"),
+    ):
+        record = ZenodoRecord("123", tmp_path, "test")
+        with pytest.raises(ZenodoException):
+            record._download_file("https://example.org/a.nii", tmp_path / "a.nii")
+
+
+def test_download_extracts_nested_zip(tmp_path):
+    inner = BytesIO()
+    with zipfile.ZipFile(inner, "w") as z:
+        z.writestr("deep.txt", "deep")
+    outer = BytesIO()
+    with zipfile.ZipFile(outer, "w") as z:
+        z.writestr("nested.zip", inner.getvalue())
+
+    files = [{"key": "outer.zip", "links": {"self": "https://example.org/o.zip"}}]
+    with patch("requests.get", return_value=_fake_response(outer.getvalue())):
+        record = ZenodoRecord("123", tmp_path, "test")
+        folder = record._download({"version": "1.0.0"}, files)
+
+    assert (folder / "deep.txt").read_text() == "deep"
+    assert not list(folder.rglob("*.zip"))
+
+
+def test_download_failure_keeps_previous_version_and_cleans_temp(tmp_path):
+    old_folder = tmp_path / "123_v1.0.0"
+    old_folder.mkdir()
+    (old_folder / "keep.nii").write_text("old")
+
+    files = [{"key": "a.nii", "links": {"self": "https://example.org/a.nii"}}]
+    with patch("requests.get", return_value=_fake_response(b"", status_code=500)):
+        record = ZenodoRecord("123", tmp_path, "test")
+        with pytest.raises(ZenodoException):
+            record._download({"version": "1.2.3"}, files, stale_folder=old_folder)
+
+    # Previous version is untouched and no partial/temp installs remain.
+    assert (old_folder / "keep.nii").read_text() == "old"
+    assert not (tmp_path / "123_v1.2.3").exists()
+    assert not list(tmp_path.glob(".123_v1.2.3.tmp.*"))
+
+
+def test_download_replaces_stale_version_on_success(tmp_path):
+    old_folder = tmp_path / "123_v1.0.0"
+    old_folder.mkdir()
+    (old_folder / "keep.nii").write_text("old")
+
+    files = [{"key": "a.nii", "links": {"self": "https://example.org/a.nii"}}]
+    with patch("requests.get", return_value=_fake_response(b"AAAA")):
+        record = ZenodoRecord("123", tmp_path, "test")
+        folder = record._download({"version": "1.2.3"}, files, stale_folder=old_folder)
+
+    assert not old_folder.exists()
+    assert (folder / "a.nii").read_bytes() == b"AAAA"
+    assert not list(tmp_path.glob(".123_v1.2.3.tmp.*"))
+
+
+def test_get_metadata_and_files_invalid_file_descriptor_returns_none(
+    monkeypatch, dummy_metadata
+):
+    response_mock = MagicMock()
+    response_mock.status_code = 200
+    response_mock.json.return_value = {
+        "metadata": dummy_metadata,
+        "files": [{"key": "a.nii"}],  # missing links.self
+    }
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    assert record._get_metadata_and_files() is None
+
+
+def test_get_metadata_and_files_missing_version_returns_none(monkeypatch):
+    response_mock = MagicMock()
+    response_mock.status_code = 200
+    response_mock.json.return_value = {
+        "metadata": {"title": "no version"},
+        "files": [{"key": "a.nii", "links": {"self": "https://example.org/a.nii"}}],
+    }
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    assert record._get_metadata_and_files() is None
 
 
 # ---- Tests for process-level caching ----

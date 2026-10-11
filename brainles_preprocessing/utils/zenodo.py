@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import tempfile
 import zipfile
 from pathlib import Path
 from typing import ClassVar, Dict, List, Tuple
@@ -8,6 +9,9 @@ from typing import ClassVar, Dict, List, Tuple
 import requests
 from loguru import logger
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+# (connect, read) timeout in seconds for every request to Zenodo.
+REQUEST_TIMEOUT = (10, 60)
 
 ATLASES_FOLDER = Path(__file__).parent.parent / "registration" / "atlases"
 ATLASES_RECORD_ID = "15236131"
@@ -129,13 +133,14 @@ class ZenodoRecord:
         logger.info(
             f"New version of {self.label} available on Zenodo ({remote_version}). Replacing local copy..."
         )
-        shutil.rmtree(
-            self.target_dir / latest_local,
-            onerror=lambda func, path, excinfo: logger.warning(
-                f"Failed to delete {path}: {excinfo}"
-            ),
+        # The old version is only removed once the new one has been fully
+        # downloaded and staged, so a failed download never destroys a
+        # known-good local copy.
+        return self._download(
+            metadata,
+            files,
+            stale_folder=self.target_dir / latest_local,
         )
-        return self._download(metadata, files)
 
     def _glob_pattern(self) -> str:
         return f"{self.record_id}_v*.*.*"
@@ -174,7 +179,9 @@ class ZenodoRecord:
             returns an unexpected response.
         """
         try:
-            response = requests.get(f"{self.BASE_URL}/{self.record_id}")
+            response = requests.get(
+                f"{self.BASE_URL}/{self.record_id}", timeout=REQUEST_TIMEOUT
+            )
             if response.status_code != 200:
                 error_msg = (
                     f"Cannot find record '{self.record_id}' on Zenodo "
@@ -185,14 +192,27 @@ class ZenodoRecord:
 
             data = response.json()
             metadata = data["metadata"]
+            if not isinstance(metadata, dict) or not isinstance(
+                metadata.get("version"), str
+            ):
+                raise ValueError("record metadata is missing a string 'version'")
 
             files = data.get("files")
             if files:
+                for entry in files:
+                    if (
+                        not isinstance(entry, dict)
+                        or not isinstance(entry.get("key"), str)
+                        or not isinstance(entry.get("links", {}).get("self"), str)
+                    ):
+                        raise ValueError(
+                            f"invalid file descriptor in record: {entry!r}"
+                        )
                 return metadata, files
 
             # Fallback for the deprecated archive link (kept for compatibility).
             archive_url = data.get("links", {}).get("archive")
-            if archive_url:
+            if isinstance(archive_url, str):
                 return metadata, [
                     {"key": f"{self.record_id}.zip", "links": {"self": archive_url}}
                 ]
@@ -215,20 +235,47 @@ class ZenodoRecord:
         self,
         metadata: Dict,
         files: List[Dict],
+        stale_folder: Path | None = None,
     ) -> Path:
         folder = self._build_folder_path(metadata["version"])
-        folder.mkdir(parents=True, exist_ok=True)
+        self.target_dir.mkdir(parents=True, exist_ok=True)
+
+        # Stage everything in a temporary directory first, so a failed download
+        # never leaves a partial install or destroys an existing good version.
+        temp_folder = Path(
+            tempfile.mkdtemp(dir=self.target_dir, prefix=f".{folder.name}.tmp.")
+        )
 
         logger.info(f"Downloading {self.label} from Zenodo. This may take a while...")
 
-        for file in files:
-            key = file["key"]
-            file_url = file["links"]["self"]
-            destination = folder / key
-            self._download_file(file_url, destination)
+        try:
+            for file in files:
+                key = file["key"]
+                file_url = file["links"]["self"]
+                destination = temp_folder / key
+                self._download_file(file_url, destination)
 
-            if destination.suffix == ".zip":
-                self._extract_zip(destination, folder)
+                if destination.suffix == ".zip":
+                    self._extract_zip(destination, temp_folder)
+
+            if folder.exists():
+                shutil.rmtree(folder, ignore_errors=True)
+            if (
+                stale_folder is not None
+                and stale_folder != folder
+                and stale_folder.exists()
+            ):
+                shutil.rmtree(
+                    stale_folder,
+                    onerror=lambda func, path, excinfo: logger.warning(
+                        f"Failed to delete {path}: {excinfo}"
+                    ),
+                )
+
+            temp_folder.rename(folder)
+        except BaseException:
+            shutil.rmtree(temp_folder, ignore_errors=True)
+            raise
 
         logger.info(f"{self.label.title()} downloaded to {folder}")
         return folder
@@ -237,28 +284,33 @@ class ZenodoRecord:
         chunk_size = 1024 * 1024  # 1 MiB
         destination.parent.mkdir(parents=True, exist_ok=True)
 
-        response = requests.get(url, stream=True)
-        if response.status_code != 200:
-            msg = (
-                f"Failed to download {self.label} file '{destination.name}'. "
-                f"Status code: {response.status_code}"
-            )
-            logger.error(msg)
-            raise ZenodoException(msg)
+        try:
+            response = requests.get(url, stream=True, timeout=REQUEST_TIMEOUT)
+            if response.status_code != 200:
+                msg = (
+                    f"Failed to download {self.label} file '{destination.name}'. "
+                    f"Status code: {response.status_code}"
+                )
+                logger.error(msg)
+                raise ZenodoException(msg)
 
-        with Progress(
-            SpinnerColumn(),
-            TextColumn(f"[cyan]Downloading {destination.name}..."),
-            TextColumn("[cyan]{task.completed:.2f} MB"),
-            transient=True,
-        ) as progress:
-            task = progress.add_task("", total=None)
-            with open(destination, "wb") as f:
-                for chunk in response.iter_content(chunk_size=chunk_size):
-                    if not chunk:
-                        continue
-                    f.write(chunk)
-                    progress.update(task, advance=len(chunk) / (1024**2))
+            with Progress(
+                SpinnerColumn(),
+                TextColumn(f"[cyan]Downloading {destination.name}..."),
+                TextColumn("[cyan]{task.completed:.2f} MB"),
+                transient=True,
+            ) as progress:
+                task = progress.add_task("", total=None)
+                with open(destination, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        if not chunk:
+                            continue
+                        f.write(chunk)
+                        progress.update(task, advance=len(chunk) / (1024**2))
+        except requests.exceptions.RequestException as e:
+            msg = f"Failed to download {self.label} file '{destination.name}': {e}"
+            logger.error(msg)
+            raise ZenodoException(msg) from e
 
     def _extract_zip(
         self,
@@ -275,3 +327,9 @@ class ZenodoRecord:
                     z.extract(name, folder)
                     progress.update(task, completed=i + 1)
         zip_path.unlink()  # Remove the archive after extraction
+
+        # Extract any archives nested inside this one (e.g. a record whose
+        # archive contains the SynthStrip weights zip).
+        for nested in folder.rglob("*.zip"):
+            if nested.is_file():
+                self._extract_zip(nested, folder)
