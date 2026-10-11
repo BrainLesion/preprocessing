@@ -252,7 +252,7 @@ class ZenodoRecord:
             for file in files:
                 key = file["key"]
                 file_url = file["links"]["self"]
-                destination = temp_folder / key
+                destination = self._safe_destination(temp_folder, key)
                 self._download_file(file_url, destination)
 
                 if destination.suffix == ".zip":
@@ -260,6 +260,11 @@ class ZenodoRecord:
 
             if folder.exists():
                 shutil.rmtree(folder, ignore_errors=True)
+
+            # Install the fully staged version before removing the previous one,
+            # so an interrupted/failed swap can never leave us with neither.
+            temp_folder.rename(folder)
+
             if (
                 stale_folder is not None
                 and stale_folder != folder
@@ -271,14 +276,25 @@ class ZenodoRecord:
                         f"Failed to delete {path}: {excinfo}"
                     ),
                 )
-
-            temp_folder.rename(folder)
         except BaseException:
             shutil.rmtree(temp_folder, ignore_errors=True)
             raise
 
         logger.info(f"{self.label.title()} downloaded to {folder}")
         return folder
+
+    @staticmethod
+    def _safe_destination(base: Path, key: str) -> Path:
+        """Join ``key`` onto ``base`` and reject paths that escape it.
+
+        ``key`` comes from the (remote) record metadata, so it must not be able
+        to write outside the staging directory via ``..`` or an absolute path.
+        """
+        base_resolved = base.resolve()
+        destination = (base_resolved / key).resolve()
+        if destination != base_resolved and base_resolved not in destination.parents:
+            raise ZenodoException(f"Unsafe file key in record: {key!r}")
+        return destination
 
     def _download_file(self, url: str, destination: Path) -> None:
         chunk_size = 1024 * 1024  # 1 MiB
@@ -324,6 +340,7 @@ class ZenodoRecord:
                     f"[cyan]Extracting {zip_path.name}...", total=len(names)
                 )
                 for i, name in enumerate(names):
+                    self._safe_destination(folder, name)
                     z.extract(name, folder)
                     progress.update(task, completed=i + 1)
         zip_path.unlink()  # Remove the archive after extraction

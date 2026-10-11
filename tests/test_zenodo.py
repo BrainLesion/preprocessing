@@ -326,6 +326,55 @@ def test_download_replaces_stale_version_on_success(tmp_path):
     assert not list(tmp_path.glob(".123_v1.2.3.tmp.*"))
 
 
+@pytest.mark.parametrize("unsafe_key", ["../escape.nii", "/tmp/escape.nii"])
+def test_download_rejects_unsafe_key(tmp_path, unsafe_key):
+    files = [{"key": unsafe_key, "links": {"self": "https://example.org/a.nii"}}]
+    with patch("requests.get", return_value=_fake_response(b"AAAA")):
+        record = ZenodoRecord("123", tmp_path, "test")
+        with pytest.raises(ZenodoException):
+            record._download({"version": "1.2.3"}, files)
+
+    assert not (tmp_path / "escape.nii").exists()
+    assert not (tmp_path.parent / "escape.nii").exists()
+    assert not (tmp_path / "123_v1.2.3").exists()
+    assert not list(tmp_path.glob(".123_v1.2.3.tmp.*"))
+
+
+def test_download_extract_rejects_unsafe_zip_member(tmp_path):
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w") as z:
+        z.writestr("../escape.txt", "evil")
+
+    files = [{"key": "evil.zip", "links": {"self": "https://example.org/e.zip"}}]
+    with patch("requests.get", return_value=_fake_response(buffer.getvalue())):
+        record = ZenodoRecord("123", tmp_path, "test")
+        with pytest.raises(ZenodoException):
+            record._download({"version": "1.2.3"}, files)
+
+    assert not (tmp_path / "escape.txt").exists()
+    assert not (tmp_path.parent / "escape.txt").exists()
+    assert not list(tmp_path.glob(".123_v1.2.3.tmp.*"))
+
+
+def test_download_keeps_stale_version_if_install_fails(tmp_path):
+    old_folder = tmp_path / "123_v1.0.0"
+    old_folder.mkdir()
+    (old_folder / "keep.nii").write_text("old")
+
+    files = [{"key": "a.nii", "links": {"self": "https://example.org/a.nii"}}]
+    with patch("requests.get", return_value=_fake_response(b"AAAA")), patch(
+        "pathlib.Path.rename", side_effect=OSError("boom")
+    ):
+        record = ZenodoRecord("123", tmp_path, "test")
+        with pytest.raises(OSError):
+            record._download({"version": "1.2.3"}, files, stale_folder=old_folder)
+
+    # The known-good version must survive a failed install.
+    assert (old_folder / "keep.nii").read_text() == "old"
+    assert not (tmp_path / "123_v1.2.3").exists()
+    assert not list(tmp_path.glob(".123_v1.2.3.tmp.*"))
+
+
 def test_get_metadata_and_files_invalid_file_descriptor_returns_none(
     monkeypatch, dummy_metadata
 ):
