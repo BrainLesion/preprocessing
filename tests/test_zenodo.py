@@ -1,5 +1,7 @@
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+import zipfile
 
 import pytest
 import requests
@@ -31,38 +33,83 @@ def dummy_metadata():
 
 
 @pytest.fixture
-def dummy_archive_url():
-    return "https://zenodo.org/record/dummy/archive.zip"
+def dummy_files():
+    return [
+        {
+            "key": "dummy.nii",
+            "links": {
+                "self": "https://zenodo.org/record/dummy/files/dummy.nii/content"
+            },
+        }
+    ]
 
 
 @pytest.fixture
-def dummy_zenodo_response(dummy_metadata, dummy_archive_url):
-    return dummy_metadata, dummy_archive_url
+def dummy_zenodo_response(dummy_metadata, dummy_files):
+    return dummy_metadata, dummy_files
 
 
-# ---- Tests for _get_metadata_and_archive_url ----
+# ---- Tests for _get_metadata_and_files ----
 
 
-def test_get_metadata_and_archive_url_success(
-    monkeypatch, dummy_metadata, dummy_archive_url
-):
+def test_get_metadata_and_files_success(monkeypatch, dummy_metadata, dummy_files):
     response_mock = MagicMock()
     response_mock.status_code = 200
     response_mock.json.return_value = {
         "metadata": dummy_metadata,
-        "links": {"archive": dummy_archive_url},
+        "files": dummy_files,
     }
 
     monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
     record = ZenodoRecord("123", Path("/tmp"), "test")
 
-    metadata, url = record._get_metadata_and_archive_url()
+    metadata, files = record._get_metadata_and_files()
 
     assert metadata == dummy_metadata
-    assert url == dummy_archive_url
+    assert files == dummy_files
 
 
-def test_get_metadata_and_archive_url_failure(monkeypatch):
+def test_get_metadata_and_files_falls_back_to_archive(monkeypatch, dummy_metadata):
+    archive_url = "https://zenodo.org/record/dummy/archive.zip"
+    response_mock = MagicMock()
+    response_mock.status_code = 200
+    response_mock.json.return_value = {
+        "metadata": dummy_metadata,
+        "links": {"archive": archive_url},
+    }
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    metadata, files = record._get_metadata_and_files()
+
+    assert metadata == dummy_metadata
+    assert files[0]["links"]["self"] == archive_url
+
+
+def test_get_metadata_and_files_no_files_returns_none(monkeypatch, dummy_metadata):
+    response_mock = MagicMock()
+    response_mock.status_code = 200
+    response_mock.json.return_value = {"metadata": dummy_metadata}
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    assert record._get_metadata_and_files() is None
+
+
+def test_get_metadata_and_files_malformed_response_returns_none(monkeypatch):
+    response_mock = MagicMock()
+    response_mock.status_code = 200
+    response_mock.json.return_value = {"unexpected": "shape"}
+
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: response_mock)
+    record = ZenodoRecord("123", Path("/tmp"), "test")
+
+    assert record._get_metadata_and_files() is None
+
+
+def test_get_metadata_and_files_failure(monkeypatch):
     response_mock = MagicMock()
     response_mock.status_code = 404
 
@@ -70,16 +117,16 @@ def test_get_metadata_and_archive_url_failure(monkeypatch):
     record = ZenodoRecord("invalid", Path("/tmp"), "test")
 
     with pytest.raises(ZenodoException):
-        record._get_metadata_and_archive_url()
+        record._get_metadata_and_files()
 
 
 @patch(
     "requests.get", side_effect=requests.exceptions.RequestException("Connection error")
 )
-def test_get_metadata_and_archive_url_connection_error(mock_get):
+def test_get_metadata_and_files_connection_error(mock_get):
     record = ZenodoRecord("123", Path("/tmp"), "test")
 
-    assert record._get_metadata_and_archive_url() is None
+    assert record._get_metadata_and_files() is None
 
 
 # ---- Tests for _get_latest_version_folder_name ----
@@ -111,7 +158,7 @@ def test_get_latest_version_folder_name_ignores_empty_folder(tmp_path):
 # ---- Tests for fetch() method ----
 
 
-@patch.object(ZenodoRecord, "_get_metadata_and_archive_url")
+@patch.object(ZenodoRecord, "_get_metadata_and_files")
 @patch.object(ZenodoRecord, "_download")
 def test_fetch_downloads_new_if_no_local(
     mock_download, mock_metadata, tmp_path, dummy_zenodo_response
@@ -126,7 +173,7 @@ def test_fetch_downloads_new_if_no_local(
     mock_download.assert_called_once()
 
 
-@patch.object(ZenodoRecord, "_get_metadata_and_archive_url", return_value=None)
+@patch.object(ZenodoRecord, "_get_metadata_and_files", return_value=None)
 def test_fetch_zenodo_unreachable_raises(mock_metadata, tmp_path):
     record = ZenodoRecord("123", tmp_path, "test")
 
@@ -134,7 +181,7 @@ def test_fetch_zenodo_unreachable_raises(mock_metadata, tmp_path):
         record.fetch()
 
 
-@patch.object(ZenodoRecord, "_get_metadata_and_archive_url")
+@patch.object(ZenodoRecord, "_get_metadata_and_files")
 @patch.object(ZenodoRecord, "_download")
 def test_fetch_skips_if_latest_present(
     mock_download, mock_metadata, tmp_path, dummy_zenodo_response
@@ -151,7 +198,7 @@ def test_fetch_skips_if_latest_present(
     mock_download.assert_not_called()
 
 
-@patch.object(ZenodoRecord, "_get_metadata_and_archive_url")
+@patch.object(ZenodoRecord, "_get_metadata_and_files")
 @patch.object(ZenodoRecord, "_download")
 def test_fetch_replaces_old_version(
     mock_download, mock_metadata, tmp_path, dummy_zenodo_response
@@ -169,6 +216,54 @@ def test_fetch_replaces_old_version(
     assert result.name == "123_v1.2.3"
     assert not old_folder.exists()
     mock_download.assert_called_once()
+
+
+# ---- Tests for downloading record files ----
+
+
+def _fake_response(content: bytes, status_code: int = 200):
+    response = MagicMock()
+    response.status_code = status_code
+    response.iter_content.return_value = [content]
+    return response
+
+
+def test_download_writes_individual_files(tmp_path):
+    files = [
+        {"key": "a.nii", "links": {"self": "https://example.org/a.nii"}},
+        {"key": "sub/b.nii", "links": {"self": "https://example.org/b.nii"}},
+    ]
+    responses = [_fake_response(b"AAAA"), _fake_response(b"BBBB")]
+    with patch("requests.get", side_effect=responses):
+        record = ZenodoRecord("123", tmp_path, "test")
+        folder = record._download({"version": "1.2.3"}, files)
+
+    assert folder == tmp_path / "123_v1.2.3"
+    assert (folder / "a.nii").read_bytes() == b"AAAA"
+    assert (folder / "sub" / "b.nii").read_bytes() == b"BBBB"
+
+
+def test_download_extracts_zip_file(tmp_path):
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w") as z:
+        z.writestr("inner.txt", "hello")
+    zip_bytes = buffer.getvalue()
+
+    files = [{"key": "weights.zip", "links": {"self": "https://example.org/w.zip"}}]
+    with patch("requests.get", return_value=_fake_response(zip_bytes)):
+        record = ZenodoRecord("123", tmp_path, "test")
+        folder = record._download({"version": "1.0.0"}, files)
+
+    assert (folder / "inner.txt").read_text() == "hello"
+    assert not (folder / "weights.zip").exists()
+
+
+def test_download_file_raises_on_error(tmp_path):
+    response = _fake_response(b"", status_code=500)
+    with patch("requests.get", return_value=response):
+        record = ZenodoRecord("123", tmp_path, "test")
+        with pytest.raises(ZenodoException):
+            record._download_file("https://example.org/a.nii", tmp_path / "a.nii")
 
 
 # ---- Tests for process-level caching ----

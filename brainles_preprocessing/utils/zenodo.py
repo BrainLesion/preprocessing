@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import shutil
 import zipfile
-from io import BytesIO
 from pathlib import Path
 from typing import ClassVar, Dict, List, Tuple
 
@@ -97,7 +96,7 @@ class ZenodoRecord:
 
     def _fetch_uncached(self) -> Path:
         """Perform the actual Zenodo check / download without consulting the cache."""
-        zenodo_response = self._get_metadata_and_archive_url()
+        zenodo_response = self._get_metadata_and_files()
 
         pattern = self._glob_pattern()
         matching_folders = list(self.target_dir.glob(pattern))
@@ -110,8 +109,8 @@ class ZenodoRecord:
                 raise ZenodoException(msg)
 
             logger.info(f"{self.label.title()} not found locally.")
-            metadata, archive_url = zenodo_response
-            return self._download(metadata, archive_url)
+            metadata, files = zenodo_response
+            return self._download(metadata, files)
 
         logger.info(f"Found local {self.label}: {latest_local}")
 
@@ -119,7 +118,7 @@ class ZenodoRecord:
             logger.warning(f"Zenodo unreachable. Using latest downloaded {self.label}.")
             return self.target_dir / latest_local
 
-        metadata, archive_url = zenodo_response
+        metadata, files = zenodo_response
         remote_version = metadata["version"]
         local_version = latest_local.split("_v")[1]
 
@@ -136,7 +135,7 @@ class ZenodoRecord:
                 f"Failed to delete {path}: {excinfo}"
             ),
         )
-        return self._download(metadata, archive_url)
+        return self._download(metadata, files)
 
     def _glob_pattern(self) -> str:
         return f"{self.record_id}_v*.*.*"
@@ -162,7 +161,18 @@ class ZenodoRecord:
             return None
         return latest.name
 
-    def _get_metadata_and_archive_url(self) -> Tuple[Dict, str] | None:
+    def _get_metadata_and_files(self) -> Tuple[Dict, List[Dict]] | None:
+        """Retrieve the record metadata and its file list from Zenodo.
+
+        Zenodo's API used to expose a single ``links["archive"]`` URL pointing to
+        a zip of all files. That link has been removed, so the record's ``files``
+        list is used instead: each entry provides a ``key`` and a ``links["self"]``
+        download URL.
+
+        Returns:
+            A ``(metadata, files)`` tuple, or ``None`` if Zenodo is unreachable or
+            returns an unexpected response.
+        """
         try:
             response = requests.get(f"{self.BASE_URL}/{self.record_id}")
             if response.status_code != 200:
@@ -174,65 +184,94 @@ class ZenodoRecord:
                 raise ZenodoException(error_msg)
 
             data = response.json()
-            return data["metadata"], data["links"]["archive"]
+            metadata = data["metadata"]
+
+            files = data.get("files")
+            if files:
+                return metadata, files
+
+            # Fallback for the deprecated archive link (kept for compatibility).
+            archive_url = data.get("links", {}).get("archive")
+            if archive_url:
+                return metadata, [
+                    {"key": f"{self.record_id}.zip", "links": {"self": archive_url}}
+                ]
+
+            logger.warning(
+                f"Zenodo record '{self.record_id}' does not expose any downloadable files."
+            )
+            return None
 
         except requests.exceptions.RequestException as e:
             logger.warning(f"Failed to fetch metadata from Zenodo: {e}")
+            return None
+        except (KeyError, ValueError) as e:
+            logger.warning(
+                f"Unexpected Zenodo response for record '{self.record_id}': {e}"
+            )
             return None
 
     def _download(
         self,
         metadata: Dict,
-        archive_url: str,
+        files: List[Dict],
     ) -> Path:
         folder = self._build_folder_path(metadata["version"])
         folder.mkdir(parents=True, exist_ok=True)
 
         logger.info(f"Downloading {self.label} from Zenodo. This may take a while...")
 
-        response = requests.get(archive_url, stream=True)
+        for file in files:
+            key = file["key"]
+            file_url = file["links"]["self"]
+            destination = folder / key
+            self._download_file(file_url, destination)
+
+            if destination.suffix == ".zip":
+                self._extract_zip(destination, folder)
+
+        logger.info(f"{self.label.title()} downloaded to {folder}")
+        return folder
+
+    def _download_file(self, url: str, destination: Path) -> None:
+        chunk_size = 1024 * 1024  # 1 MiB
+        destination.parent.mkdir(parents=True, exist_ok=True)
+
+        response = requests.get(url, stream=True)
         if response.status_code != 200:
             msg = (
-                f"Failed to download {self.label}. Status code: {response.status_code}"
+                f"Failed to download {self.label} file '{destination.name}'. "
+                f"Status code: {response.status_code}"
             )
             logger.error(msg)
             raise ZenodoException(msg)
 
-        self._extract_archive(response, folder)
-        logger.info(f"{self.label.title()} extracted to {folder}")
-        return folder
-
-    def _extract_archive(
-        self,
-        response: requests.Response,
-        folder: Path,
-    ):
-        chunk_size = 1024  # 1KB
-        buffer = BytesIO()
-
         with Progress(
             SpinnerColumn(),
-            TextColumn(f"[cyan]Downloading {self.label}..."),
+            TextColumn(f"[cyan]Downloading {destination.name}..."),
             TextColumn("[cyan]{task.completed:.2f} MB"),
             transient=True,
         ) as progress:
             task = progress.add_task("", total=None)
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                buffer.write(chunk)
-                progress.update(task, advance=len(chunk) / (chunk_size**2))
+            with open(destination, "wb") as f:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if not chunk:
+                        continue
+                    f.write(chunk)
+                    progress.update(task, advance=len(chunk) / (1024**2))
 
-        with zipfile.ZipFile(buffer) as z:
-            z.extractall(folder)
-
-        for file in folder.iterdir():
-            if file.is_file() and file.suffix == ".zip":
-                with zipfile.ZipFile(file) as inner_zip:
-                    files = inner_zip.namelist()
-                    with Progress(transient=True) as progress:
-                        task = progress.add_task(
-                            f"[cyan]Extracting inner zip...", total=len(files)
-                        )
-                        for i, f in enumerate(files):
-                            inner_zip.extract(f, folder)
-                            progress.update(task, completed=i + 1)
-                file.unlink()  # Remove inner zip after extraction
+    def _extract_zip(
+        self,
+        zip_path: Path,
+        folder: Path,
+    ) -> None:
+        with zipfile.ZipFile(zip_path) as z:
+            names = z.namelist()
+            with Progress(transient=True) as progress:
+                task = progress.add_task(
+                    f"[cyan]Extracting {zip_path.name}...", total=len(names)
+                )
+                for i, name in enumerate(names):
+                    z.extract(name, folder)
+                    progress.update(task, completed=i + 1)
+        zip_path.unlink()  # Remove the archive after extraction
