@@ -8,7 +8,6 @@ from picsl_greedy import Greedy3D
 from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils import check_and_add_suffix
 
-
 VALID_INTERPOLATORS = ["NN", "LINEAR", "LABEL"]
 
 

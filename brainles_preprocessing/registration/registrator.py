@@ -61,7 +61,7 @@ class Registrator(ABC):
         matrix_path: Any,
         log_file_path: str,
         interpolator: str = "default",
-        **kwargs
+        **kwargs,
     ):
         """
         Abstract method for transforming images.

@@ -390,7 +390,7 @@ class Modality:
             moving_image_name (str): Name of the moving image.
             transformation_matrix_path (str or Path): Path to the transformation matrix.
             step (PreprocessorSteps): The current preprocessing step.
-            interpolator (Optional[str]): Interpolation method used during transformation. "linear" and "nearestNeighbor" are supported by all registrators; further options depend on the chosen registrator.
+            interpolator (Optional[str]): Interpolation method used during transformation. "linear" and "nearestNeighbor" are supported by ANTsRegistrator, NiftyRegRegistrator and GreedyRegistrator; further options depend on the chosen registrator. ElastixRegistrator does not support choosing an interpolator.
         Returns:
             None
 
