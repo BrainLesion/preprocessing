@@ -21,6 +21,8 @@ VALID_INTERPOLATORS = {
 
 
 class NiftyRegRegistrator(Registrator):
+    INTERPOLATOR_MAP = {"linear": "1", "nearestNeighbor": "0"}
+
     def __init__(
         self,
         registration_abspath: str = os.path.dirname(os.path.abspath(__file__)),
@@ -155,7 +157,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str | Path | List[str | Path],
         log_file_path: str,
-        interpolator: str = "0",
+        interpolator: str = "1",
         **kwargs: dict,
     ) -> None:
         """
@@ -168,10 +170,11 @@ class NiftyRegRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str | Path | List[str | Path]): Path(s) to the transformation matrix(es).
             log_file_path (str): Path to the log file.
-            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC). Default is '1' (linear).
+            interpolator (str): Interpolation order (0, 1, 3, 4) (0=NN, 1=LIN; 3=CUB, 4=SINC) or "linear"/"nearestNeighbor". Default is '1' (linear).
         Raises:
             AssertionError: If the interpolator is not valid.
         """
+        interpolator = self.normalize_interpolator(interpolator)
         assert (
             interpolator in VALID_INTERPOLATORS
         ), f"Invalid interpolator: {interpolator}. Valid options are: {', '.join([f'{k} ({v})' for k, v in VALID_INTERPOLATORS.items()])}"
@@ -236,7 +239,7 @@ class NiftyRegRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str | Path | List[str | Path],
         log_file_path: str,
-        interpolator: str = "0",
+        interpolator: str = "1",
     ) -> None:
         """
         Apply inverse transformation using NiftyReg.

@@ -239,6 +239,7 @@ class Modality:
         registration_dir: Union[str, Path],
         moving_image_name: str,
         step: PreprocessorSteps,
+        interpolator: Optional[str] = None,
     ) -> Path:
         """
         Register the current modality to a fixed image using the specified registrator.
@@ -249,9 +250,13 @@ class Modality:
             registration_dir (str or Path): Directory to store registration results.
             moving_image_name (str): Name of the moving image.
             step (PreprocessorSteps): The current preprocessing step.
+            interpolator (Optional[str]): Interpolation method used during registration. Only supported by ANTsRegistrator; omit it for other registrators to use the backend default.
 
         Returns:
             Path: Path to the registration matrix.
+
+        Raises:
+            ValueError: If an interpolator is passed for a registrator other than ANTsRegistrator.
         """
         fixed_image_path = Path(fixed_image_path)
         registration_dir = Path(registration_dir)
@@ -262,12 +267,21 @@ class Modality:
         # Note, add file ending depending on registration backend!
         registered_matrix = registration_dir / f"M_{moving_image_name}"
 
+        if interpolator is not None and not isinstance(registrator, ANTsRegistrator):
+            raise ValueError(
+                f"'interpolator' is only supported by ANTsRegistrator for registration, "
+                f"got {type(registrator).__name__}. Omit it to use the backend default."
+            )
+
+        interpolator_kwargs = {"interpolator": interpolator} if interpolator else {}
+
         registrator.register(
             fixed_image_path=fixed_image_path,
             moving_image_path=self.current,
             transformed_image_path=registered,
             matrix_path=registered_matrix,
             log_file_path=str(registered_log),
+            **interpolator_kwargs,
         )
         self.current = registered
         self.steps[step] = registered
@@ -364,6 +378,7 @@ class Modality:
         moving_image_name: str,
         transformation_matrix_path: Union[str, Path],
         step: PreprocessorSteps,
+        interpolator: Optional[str] = None,
     ) -> None:
         """
         Transform the current modality using the specified registrator and transformation matrix.
@@ -375,8 +390,12 @@ class Modality:
             moving_image_name (str): Name of the moving image.
             transformation_matrix_path (str or Path): Path to the transformation matrix.
             step (PreprocessorSteps): The current preprocessing step.
+            interpolator (Optional[str]): Interpolation method used during transformation. "linear" and "nearestNeighbor" are supported by ANTsRegistrator, NiftyRegRegistrator and GreedyRegistrator; further options depend on the chosen registrator. ElastixRegistrator does not support choosing an interpolator.
         Returns:
             None
+
+        Raises:
+            ValueError: If an interpolator is passed for a registrator that does not support it.
         """
         fixed_image_path = Path(fixed_image_path)
         registration_dir_path = Path(registration_dir_path)
@@ -384,6 +403,12 @@ class Modality:
 
         transformed = registration_dir_path / f"{moving_image_name}.nii.gz"
         transformed_log = registration_dir_path / f"{moving_image_name}.log"
+
+        interpolator_kwargs = (
+            {"interpolator": registrator.normalize_interpolator(interpolator)}
+            if interpolator
+            else {}
+        )
 
         if (
             isinstance(registrator, (ANTsRegistrator, NiftyRegRegistrator))
@@ -406,6 +431,7 @@ class Modality:
                     transformation_matrix_path,  # atlas registration matrix
                 ],
                 log_file_path=str(transformed_log),
+                **interpolator_kwargs,
             )
         else:
             registrator.transform(
@@ -414,6 +440,7 @@ class Modality:
                 transformed_image_path=str(transformed),
                 matrix_path=str(transformation_matrix_path),
                 log_file_path=str(transformed_log),
+                **interpolator_kwargs,
             )
 
         self.current = transformed
@@ -707,6 +734,7 @@ class CenterModality(Modality):
                     transformed_image_path=mask_path,
                     matrix_path=atlas_bet_M,
                     log_file_path=defaced_dir_path / "inverse_transform.log",
+                    interpolator="nearestNeighbor",
                 )
             else:
                 defacer.deface(

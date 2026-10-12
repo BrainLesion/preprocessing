@@ -1,5 +1,6 @@
 from pathlib import Path
 import tempfile
+from unittest.mock import patch
 
 import numpy as np
 from registrator_base import RegistratorBase
@@ -19,6 +20,33 @@ class TestANTsRegistrator(RegistratorBase, unittest.TestCase):
     def get_method_and_extension(self):
         return "ants", "mat"
 
+    def test_normalize_interpolator(self):
+        self.assertEqual(
+            ANTsRegistrator.normalize_interpolator("nearestNeighbor"), "nearestNeighbor"
+        )
+
+    @patch("brainles_preprocessing.registration.ANTs.ANTs.ants")
+    def test_transform_interpolator_precedence(self, mock_ants):
+        registrator = ANTsRegistrator(transformation_params={"interpolator": "linear"})
+        kwargs = dict(
+            fixed_image_path=self.fixed_image,
+            moving_image_path=self.moving_image,
+            transformed_image_path=self.output_dir + "/ants_precedence.nii.gz",
+            matrix_path=self.transform_matrix,
+            log_file_path=self.output_dir + "/ants_precedence.log",
+        )
+
+        registrator.transform(**kwargs)
+        self.assertEqual(
+            mock_ants.apply_transforms.call_args.kwargs["interpolator"], "linear"
+        )
+
+        registrator.transform(interpolator="nearestNeighbor", **kwargs)
+        self.assertEqual(
+            mock_ants.apply_transforms.call_args.kwargs["interpolator"],
+            "nearestNeighbor",
+        )
+
 
 class TestNiftyRegRegistrator(RegistratorBase, unittest.TestCase):
     def get_registrator(self):
@@ -26,6 +54,11 @@ class TestNiftyRegRegistrator(RegistratorBase, unittest.TestCase):
 
     def get_method_and_extension(self):
         return "niftyreg", "txt"
+
+    def test_normalize_interpolator(self):
+        self.assertEqual(
+            NiftyRegRegistrator.normalize_interpolator("nearestNeighbor"), "0"
+        )
 
     def test_invert_affine_transform(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -99,6 +132,10 @@ class TestElastixRegistrator(RegistratorBase, unittest.TestCase):
 
     def get_method_and_extension(self):
         return "elastix", "txt"
+
+    def test_normalize_interpolator_raises(self):
+        with self.assertRaises(ValueError):
+            ElastixRegistrator.normalize_interpolator("nearestNeighbor")
 
 
 class TestGreedyRegistrator(RegistratorBase, unittest.TestCase):

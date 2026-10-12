@@ -53,9 +53,9 @@ class Transform:
             moving_image (Union[str, Path]): Path to the moving image. E.g., this could be a segmentation in atlas space.
             output_img_path (Union[str, Path]): Path where the transformed image will be saved.
             log_file_path (Union[str, Path]): Path to the log file where transformation details will be written.
-            interpolator (Optional[str]): Interpolation method used during transformation.
+            interpolator (Optional[str]): Interpolation method used during transformation. Defaults to "nearestNeighbor", which is suited for labels/segmentations; use "linear" for intensity images.
             inverse (bool): If True, applies the inverse transformation. Default is False.
-                Available options depend on the chosen registrator:
+                "linear" and "nearestNeighbor" are supported by ANTsRegistrator, NiftyRegRegistrator and GreedyRegistrator. ElastixRegistrator does not support choosing an interpolator. Further options depend on the chosen registrator:
 
                 - **ANTsRegistrator**:
                     - "linear"
@@ -104,6 +104,8 @@ class Transform:
             "matrix_path": transforms,
             "log_file_path": str(log_file_path),
         }
+        if interpolator is None and self.registrator.INTERPOLATOR_MAP is not None:
+            interpolator = "nearestNeighbor"
         if interpolator is not None:
             kwargs["interpolator"] = interpolator
 

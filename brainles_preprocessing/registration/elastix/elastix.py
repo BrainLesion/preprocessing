@@ -80,7 +80,7 @@ class ElastixRegistrator(Registrator):
         transformed_image_path: str,
         matrix_path: str,
         log_file_path: Optional[str] = None,
-        interpolator: str = "linear",
+        interpolator: Optional[str] = None,
         **kwargs
     ) -> None:
         """
@@ -92,7 +92,14 @@ class ElastixRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
             log_file_path (Optional[str]): Path to the log file.
+            interpolator (Optional[str]): Not supported by elastix. Must be None.
+
+        Raises:
+            ValueError: If an interpolator is provided.
         """
+        if interpolator is not None:
+            self.normalize_interpolator(interpolator)
+
         parameter_object = self.__initialize_parameter_object()
 
         # check if the matrix file exists
