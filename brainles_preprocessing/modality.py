@@ -390,9 +390,12 @@ class Modality:
             moving_image_name (str): Name of the moving image.
             transformation_matrix_path (str or Path): Path to the transformation matrix.
             step (PreprocessorSteps): The current preprocessing step.
-            interpolator (Optional[str]): Interpolation method used during transformation. Available options depend on the chosen registrator.
+            interpolator (Optional[str]): Interpolation method used during transformation. "linear" and "nearestNeighbor" are supported by all registrators; further options depend on the chosen registrator.
         Returns:
             None
+
+        Raises:
+            ValueError: If an interpolator is passed for a registrator that does not support it.
         """
         fixed_image_path = Path(fixed_image_path)
         registration_dir_path = Path(registration_dir_path)
@@ -401,7 +404,11 @@ class Modality:
         transformed = registration_dir_path / f"{moving_image_name}.nii.gz"
         transformed_log = registration_dir_path / f"{moving_image_name}.log"
 
-        interpolator_kwargs = {"interpolator": interpolator} if interpolator else {}
+        interpolator_kwargs = (
+            {"interpolator": registrator.normalize_interpolator(interpolator)}
+            if interpolator
+            else {}
+        )
 
         if (
             isinstance(registrator, (ANTsRegistrator, NiftyRegRegistrator))
@@ -721,22 +728,13 @@ class CenterModality(Modality):
                     mask_image_path=deface_mask_atlas,
                 )
 
-                if isinstance(registrator, ANTsRegistrator):
-                    nn_interpolator = "nearestNeighbor"
-                elif isinstance(registrator, NiftyRegRegistrator):
-                    nn_interpolator = "0"
-                else:
-                    raise NotImplementedError(
-                        f"Nearest-neighbour mask resampling is not configured for {type(registrator).__name__}."
-                    )
-
                 registrator.inverse_transform(
                     fixed_image_path=self.steps[PreprocessorSteps.BET],
                     moving_image_path=deface_mask_atlas,
                     transformed_image_path=mask_path,
                     matrix_path=atlas_bet_M,
                     log_file_path=defaced_dir_path / "inverse_transform.log",
-                    interpolator=nn_interpolator,
+                    interpolator="nearestNeighbor",
                 )
             else:
                 defacer.deface(
