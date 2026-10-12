@@ -87,6 +87,10 @@ class ANTsRegistrator(Registrator):
         # We update the registration parameters with the provided kwargs
         registration_kwargs = {**self.registration_params, **kwargs}
 
+        interpolator = self._resolve_interpolator(
+            interpolator, dict(self.transformation_params)
+        )
+
         # Convert all paths to Path objects
         fixed_image_path = Path(fixed_image_path)
         moving_image_path = Path(moving_image_path)
@@ -141,6 +145,7 @@ class ANTsRegistrator(Registrator):
             moving_image_path=moving_image_path,
             transformed_image_path=transformed_image_path,
             matrix_path=matrix_path,
+            interpolator=interpolator,
             operation_name="registration",
             start_time=start_time,
             end_time=end_time,
@@ -178,14 +183,7 @@ class ANTsRegistrator(Registrator):
         # we update the transformation parameters with the provided kwargs
         transform_kwargs = {**self.transformation_params, **kwargs}
 
-        # the interpolator argument takes precedence over the instantiated defaults
-        default_interpolator = transform_kwargs.pop("interpolator", "linear")
-        interpolator = self.normalize_interpolator(interpolator or default_interpolator)
-
-        assert interpolator in VALID_INTERPOLATORS, (
-            f"Invalid interpolator: {interpolator}. "
-            f"Valid options are: {', '.join(VALID_INTERPOLATORS)}."
-        )
+        interpolator = self._resolve_interpolator(interpolator, transform_kwargs)
 
         # Convert all paths to Path objects
         fixed_image_path = Path(fixed_image_path)
@@ -279,6 +277,31 @@ class ANTsRegistrator(Registrator):
             interpolator=interpolator,
             **kwargs,
         )
+
+    def _resolve_interpolator(
+        self, interpolator: Optional[str], transform_kwargs: Dict[str, Any]
+    ) -> str:
+        """
+        Resolve the interpolator to use. The argument takes precedence over the instantiated transformation parameters, which default to 'linear'.
+
+        Args:
+            interpolator (Optional[str]): Interpolator passed to the calling method.
+            transform_kwargs (Dict[str, Any]): Transformation parameters; the 'interpolator' key is removed.
+
+        Returns:
+            str: The validated interpolator.
+
+        Raises:
+            AssertionError: If the interpolator is not valid.
+        """
+        default_interpolator = transform_kwargs.pop("interpolator", "linear")
+        interpolator = self.normalize_interpolator(interpolator or default_interpolator)
+
+        assert interpolator in VALID_INTERPOLATORS, (
+            f"Invalid interpolator: {interpolator}. "
+            f"Valid options are: {', '.join(VALID_INTERPOLATORS)}."
+        )
+        return interpolator
 
     @staticmethod
     def _log_to_file(
