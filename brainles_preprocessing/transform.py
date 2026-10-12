@@ -41,7 +41,7 @@ class Transform:
         moving_image: Union[str, Path],
         output_img_path: Union[str, Path],
         log_file_path: Union[str, Path],
-        interpolator: Optional[str] = None,
+        interpolator: str = "nearestNeighbor",
         inverse: bool = False,
     ) -> None:
         """
@@ -53,13 +53,13 @@ class Transform:
             moving_image (Union[str, Path]): Path to the moving image. E.g., this could be a segmentation in atlas space.
             output_img_path (Union[str, Path]): Path where the transformed image will be saved.
             log_file_path (Union[str, Path]): Path to the log file where transformation details will be written.
-            interpolator (Optional[str]): Interpolation method used during transformation.
+            interpolator (str): Interpolation method used during transformation. Defaults to "nearestNeighbor", which is suited for labels/segmentations; use "linear" for intensity images.
             inverse (bool): If True, applies the inverse transformation. Default is False.
-                Available options depend on the chosen registrator:
+                "linear" and "nearestNeighbor" are supported by all registrators. Further options depend on the chosen registrator:
 
                 - **ANTsRegistrator**:
-                    - "linear" (default)
-                    - "nearestNeighbor"
+                    - "linear"
+                    - "nearestNeighbor" (default)
                     - "multiLabel" (deprecated, prefer "genericLabel")
                     - "gaussian"
                     - "bSpline"
@@ -70,8 +70,8 @@ class Transform:
                     - "genericLabel" (recommended for label images)
 
                 - **NiftyReg**:
-                    - "0": nearest neighbor
-                    - "1": linear (default)
+                    - "0": nearest neighbor (default)
+                    - "1": linear
                     - "3": cubic spline
                     - "4": sinc
 
@@ -103,9 +103,8 @@ class Transform:
             "transformed_image_path": output_img_path,
             "matrix_path": transforms,
             "log_file_path": str(log_file_path),
+            "interpolator": interpolator,
         }
-        if interpolator is not None:
-            kwargs["interpolator"] = interpolator
 
         if inverse:
             self.registrator.inverse_transform(**kwargs)
