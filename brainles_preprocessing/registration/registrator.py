@@ -1,11 +1,35 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict, Optional
 
 
 class Registrator(ABC):
     # TODO probably the init here should be removed?
     # def __init__(self, backend):
     #     self.backend = backend
+
+    # Maps the shared interpolator names ("linear", "nearestNeighbor") to the backend-specific value.
+    # None means the backend does not support choosing an interpolator.
+    INTERPOLATOR_MAP: Optional[Dict[str, str]] = None
+
+    @classmethod
+    def normalize_interpolator(cls, interpolator: str) -> str:
+        """
+        Map a shared interpolator name to the backend-specific value. Backend-specific values are passed through unchanged.
+
+        Args:
+            interpolator (str): Shared name ("linear", "nearestNeighbor") or backend-specific value.
+
+        Returns:
+            str: The backend-specific interpolator value.
+
+        Raises:
+            ValueError: If the backend does not support choosing an interpolator.
+        """
+        if cls.INTERPOLATOR_MAP is None:
+            raise ValueError(
+                f"{cls.__name__} does not support choosing an interpolator."
+            )
+        return cls.INTERPOLATOR_MAP.get(interpolator, interpolator)
 
     @abstractmethod
     def register(

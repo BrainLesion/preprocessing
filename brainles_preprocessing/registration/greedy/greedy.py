@@ -9,7 +9,12 @@ from brainles_preprocessing.registration.registrator import Registrator
 from brainles_preprocessing.utils import check_and_add_suffix
 
 
+VALID_INTERPOLATORS = ["NN", "LINEAR", "LABEL"]
+
+
 class GreedyRegistrator(Registrator):
+    INTERPOLATOR_MAP = {"linear": "LINEAR", "nearestNeighbor": "NN"}
+
     def __init__(
         self,
     ):
@@ -72,10 +77,15 @@ class GreedyRegistrator(Registrator):
             transformed_image_path (str): Path to the transformed image (output).
             matrix_path (str): Path to the transformation matrix (output). This gets overwritten if it already exists.
             log_file_path (Optional[str]): Path to the log file, which is not used.
-            interpolator (Optional[str]): The interpolator to use; one of NN, LINEAR or LABEL. Defaults to LINEAR.
+            interpolator (Optional[str]): The interpolator to use; one of NN, LINEAR or LABEL, or "linear"/"nearestNeighbor". Defaults to LINEAR.
+        Raises:
+            AssertionError: If the interpolator is not valid.
         """
         registor = Greedy3D()
-        interpolator_upper = interpolator.upper()
+        interpolator_upper = self.normalize_interpolator(interpolator).upper()
+        assert (
+            interpolator_upper in VALID_INTERPOLATORS
+        ), f"Invalid interpolator: {interpolator}. Valid options are: {', '.join(VALID_INTERPOLATORS)}"
         if "LABEL" in interpolator_upper:
             interpolator_upper += " 0.3vox"
 

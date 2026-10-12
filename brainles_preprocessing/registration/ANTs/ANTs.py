@@ -25,6 +25,8 @@ VALID_INTERPOLATORS = [
 
 
 class ANTsRegistrator(Registrator):
+    INTERPOLATOR_MAP = {"linear": "linear", "nearestNeighbor": "nearestNeighbor"}
+
     def __init__(
         self,
         registration_params: Optional[Dict[str, Any]] = None,
@@ -178,7 +180,7 @@ class ANTsRegistrator(Registrator):
 
         # the interpolator argument takes precedence over the instantiated defaults
         default_interpolator = transform_kwargs.pop("interpolator", "linear")
-        interpolator = interpolator or default_interpolator
+        interpolator = self.normalize_interpolator(interpolator or default_interpolator)
 
         assert interpolator in VALID_INTERPOLATORS, (
             f"Invalid interpolator: {interpolator}. "
