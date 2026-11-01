@@ -47,6 +47,7 @@ def test_no_name_conflicts(dummy_registrator, dummy_brain_extractor, dummy_defac
         registrator=dummy_registrator,
         brain_extractor=dummy_brain_extractor,
         defacer=dummy_defacer,
+        atlas_image_path="tmp/atlas.nii.gz",
     )
 
 
