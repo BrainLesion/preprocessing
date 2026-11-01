@@ -158,8 +158,12 @@ def run_quickshear(bet_img: nb.nifti1.Nifti1Image, buffer: int = 10) -> NDArray:
     ys = np.arange(0, mask_RPS.shape[1]) * slope + yint
     defaced_mask_RPS = np.ones(mask_RPS.shape, dtype="bool")
 
-    for x, y in zip(np.nonzero(ys > 0)[0], ys.astype(int)):
-        y_clipped = min(y, mask_RPS.shape[2])
+    for x in np.nonzero(ys > 0)[0]:
+        # Read the cutoff from ys[x]: zipping the filtered indices with the
+        # unfiltered ys array pairs each position with the wrong cutoff
+        # whenever ys starts with a nonpositive prefix, and a negative cutoff
+        # would make the slice erase the wrong region.
+        y_clipped = min(int(ys[x]), mask_RPS.shape[2])
         defaced_mask_RPS[:, x, :y_clipped] = 0
 
     defaced_mask = nb.orientations.apply_orientation(defaced_mask_RPS, from_RPS)
