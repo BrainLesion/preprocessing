@@ -21,7 +21,9 @@ from brainles_preprocessing.utils.zenodo import fetch_synthstrip
 
 class SynthStripExtractor(BrainExtractor):
 
-    def __init__(self, border: int = 1):
+    def __init__(
+        self, border: int = 1, masking_value: Optional[Union[int, float]] = None
+    ):
         """
         Brain extraction using SynthStrip with preprocessing conforming to model requirements.
 
@@ -31,9 +33,10 @@ class SynthStripExtractor(BrainExtractor):
 
         Args:
             border (int): Mask border threshold in mm. Defaults to 1.
-        """
+            masking_value (Optional[Union[int, float]], optional): global value to be inserted in the masked areas. Default is None which leads to the minimum of each respective image.
 
-        super().__init__()
+        """
+        super().__init__(masking_value=masking_value)
         self.border = border
 
     def _setup_model(self, device: torch.device) -> StripModel:
@@ -219,8 +222,8 @@ class SynthStripExtractor(BrainExtractor):
 
         # write the masked output
         img_data = image.get_fdata()
-        bg = np.min([0, img_data.min()])
-        img_data[mask == 0] = bg
+        # actual application of mask through helper function
+        img_data = self.inner_apply_mask(img_data, mask)
         Nifti1Image(img_data, image.affine, image.header).to_filename(
             masked_image_path,
         )
