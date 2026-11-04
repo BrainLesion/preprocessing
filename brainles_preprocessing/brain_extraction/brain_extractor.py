@@ -80,13 +80,9 @@ class BrainExtractor(ABC):
         except Exception as e:
             raise RuntimeError(f"Error writing output file: {e}") from e
 
-
-
     def inner_apply_mask(
-        self,
-        input_data: np.ndarray,
-        mask_data: np.ndarray
-                ) -> np.ndarray:
+        self, input_data: np.ndarray, mask_data: np.ndarray
+    ) -> np.ndarray:
         """
         Actual application of brain mask implemented as a helper function for consistency
         between brain extractor and Synthstrip
