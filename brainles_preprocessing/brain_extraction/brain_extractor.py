@@ -67,6 +67,34 @@ class BrainExtractor(ABC):
         except Exception as e:
             raise RuntimeError(f"Error reading files: {e}") from e
 
+        # Apply mask (element-wise either input or masking value)
+        masked_data = self.inner_apply_mask(input_data, mask_data)
+
+        try:
+            write_image(
+                input_array=masked_data,
+                output_path=str(bet_image_path),
+                reference_path=str(input_image_path),
+                create_parent_directory=True,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Error writing output file: {e}") from e
+
+
+
+    def inner_apply_mask(
+        self,
+        input_data: np.ndarray,
+        mask_data: np.ndarray
+                ) -> np.ndarray:
+        """
+        Actual application of brain mask implemented as a helper function for consistency
+        between brain extractor and Synthstrip
+
+        Args:
+            input_data (str or Path): image array.
+            mask_path (str or Path): mask array.
+        """
         # Check that the input and mask have the same shape
         if input_data.shape != mask_data.shape:
             raise ValueError("Input image and mask must have the same dimensions.")
@@ -82,13 +110,4 @@ class BrainExtractor(ABC):
         masked_data = np.where(
             mask_data.astype(bool), input_data, current_masking_value
         )
-
-        try:
-            write_image(
-                input_array=masked_data,
-                output_path=str(bet_image_path),
-                reference_path=str(input_image_path),
-                create_parent_directory=True,
-            )
-        except Exception as e:
-            raise RuntimeError(f"Error writing output file: {e}") from e
+        return masked_data
